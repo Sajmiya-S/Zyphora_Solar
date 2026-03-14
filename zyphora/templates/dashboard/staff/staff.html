@@ -1,0 +1,196 @@
+
+
+
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+
+{% block link %}
+
+    <link rel="stylesheet" href="">
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container-fluid mt-4">
+
+    <div class="row">
+
+        <!-- LEFT SIDE -->
+        <div class="col-lg-8">
+
+            <!-- 🔹 My Tasks -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header fw-bold">
+                    My Tasks
+                </div>
+                <div class="card-body">
+
+                    <div class="task-item mb-3 p-3 border rounded">
+                        <h6>Green Villa Solar Project</h6>
+                        <p class="mb-1">Task: Panel Mounting</p>
+                        <p class="mb-1">Location: Kazhakkoottam</p>
+                        <p class="mb-1 text-danger">Deadline: 12 March</p>
+                        <button class="btn btn-sm btn-success">
+                            Mark as Completed
+                        </button>
+                    </div>
+
+                    <div class="task-item p-3 border rounded">
+                        <h6>Commercial Solar Site</h6>
+                        <p class="mb-1">Task: Electrical Wiring</p>
+                        <p class="mb-1">Location: Technopark</p>
+                        <p class="mb-1 text-warning">Deadline: 15 March</p>
+                        <button class="btn btn-sm btn-success">
+                            Mark as Completed
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 🔹 Assigned Projects -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header fw-bold">
+                    Assigned Projects
+                </div>
+                <div class="card-body">
+
+                    <div class="mb-3">
+                        <strong>Hybrid Solar - Beach House</strong>
+                        <div class="progress mt-2">
+                            <div class="progress-bar bg-success"
+                                 style="width: 70%">
+                                70%
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <strong>On-grid Solar - Apartment</strong>
+                        <div class="progress mt-2">
+                            <div class="progress-bar bg-info"
+                                 style="width: 40%">
+                                40%
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT SIDE -->
+        <div class="col-lg-4">
+
+            <!-- 🔹 Today Schedule -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header fw-bold">
+                    Today's Schedule
+                </div>
+                <div class="card-body">
+
+                    <p>09:00 AM – Site Visit</p>
+                    <p>11:30 AM – Structure Fixing</p>
+                    <p>02:00 PM – Wiring Work</p>
+
+                </div>
+            </div>
+
+ 
+            <!-- Installation checklist -->
+            <div class="progress mb-3">
+                <div id="checklistProgress" 
+                    class="progress-bar bg-success" 
+                    style="width: 0%">
+                    0%
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header fw-bold">
+                    Installation Checklist
+                </div>
+
+                <div class="card-body">
+
+                    <form>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="siteInspection">
+                            <label class="form-check-label" for="siteInspection">
+                                Site Inspection Completed
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="structureFixing">
+                            <label class="form-check-label" for="structureFixing">
+                                Mounting Structure Fixed
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="panelMounting">
+                            <label class="form-check-label" for="panelMounting">
+                                Solar Panels Mounted
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="wiring">
+                            <label class="form-check-label" for="wiring">
+                                DC & AC Wiring Completed
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="inverter">
+                            <label class="form-check-label" for="inverter">
+                                Inverter Installed & Connected
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="testing">
+                            <label class="form-check-label" for="testing">
+                                System Testing & Commissioning Done
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            Save Checklist
+                        </button>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const checkboxes = document.querySelectorAll('.form-check-input');
+    const progressBar = document.getElementById('checklistProgress');
+
+    function updateProgress() {
+        const total = checkboxes.length;
+        const checked = document.querySelectorAll('.form-check-input:checked').length;
+        const percent = Math.round((checked / total) * 100);
+
+        progressBar.style.width = percent + "%";
+        progressBar.innerText = percent + "%";
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateProgress);
+    });
+</script>
+
+{% endblock %}

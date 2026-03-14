@@ -1,0 +1,101 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block link %}
+<link rel="stylesheet" href="{% static 'css/dashboard/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item">
+        <a href="{% url request.user.role %}">{{request.user.role|title}} Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">
+        My Profile
+    </li>
+  </ol>
+</nav>
+
+<div class="container mt-4">
+
+    <h1>My Profile</h1>
+
+    <!-- Profile Card -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+        {% with profile=employee.get_profile %}
+
+            <!-- Employee Name -->
+            <h2 class="mb-2 text-center">
+                {% if profile.name %}
+                    {{ profile.name }}
+                {% else %}
+                    {{ profile.user.username|upper }}
+                {% endif %}
+            </h2>
+
+            <!-- FULL WIDTH DIVIDER -->
+            <hr class="border-2 mb-4">
+
+            <!-- Profile Content -->
+            <div class="row">
+
+                <!-- Profile Picture -->
+                <div class="col-md-5 text-center mt-5 mb-5">
+                    {% if profile.profile_pic %}
+                        <img src="/media/{{ profile.profile_pic }}"
+                             alt="{{ profile.name }}"
+                             class="rounded-circle img-fluid profile-img">
+                    {% else %}
+                        <img src="{% static 'images/profile.avif' %}"
+                             alt="Profile Pic"
+                             class="rounded-circle img-fluid profile-img">
+                    {% endif %}
+                </div>
+
+                <!-- Employee Details -->
+                <div class="col-md-7">
+
+                    <p><strong>Designation:</strong>
+                        {% if profile.designation %}
+                            {{ profile.designation }}
+                        {% else %}
+                            {{ profile.user.role|title }}
+                        {% endif %}
+                    </p>
+
+                    <p><strong>Email:</strong> {{ profile.user.email }}</p>
+                    <p><strong>Phone:</strong> {{ profile.phone }}</p>
+                    <p><strong>Address:</strong> {{ profile.address }}</p>
+                    <p><strong>Date Joined:</strong> {{ profile.date_joined }}</p>
+
+                    <!-- Role Specific Details -->
+                    {% if profile %}
+                        {% if profile.user.role == 'engineer' %}
+                            <p><strong>Specialization:</strong> {{ profile.specialization }}</p>
+                        {% elif profile.user.role == 'accountant' %}
+                            <p><strong>Access Level:</strong> {{ profile.access_level }}</p>
+                        {% elif profile.user.role == 'staff' %}
+                            <p><strong>Supervisor:</strong> {{ profile.supervisor }}</p>
+                        {% endif %}
+                    {% endif %}
+
+                </div>
+            </div>
+        {% endwith %}
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-center align-items-center mb-4">
+        <a href="{% url 'editemp' employee.id %}" class="btn btn-warning mx-4">
+            <i class="bi bi-pencil"></i> Edit
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

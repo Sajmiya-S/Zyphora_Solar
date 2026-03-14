@@ -1,0 +1,42 @@
+{% extends "dashboard/dashboard.html" %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <div class="container-fluid">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Payments</li>
+        </ol>
+    </div>
+</nav>
+
+<div class="d-flex justify-content-between mb-3">
+    <h4>Payments</h4>
+    <a href="{% url 'create_payment' %}" class="btn btn-primary">Add Payment</a>
+</div>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Invoice</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Date</th>
+            <th>Received By</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for payment in payments %}
+        <tr>
+            <td>{{ payment.invoice }}</td>
+            <td>{{ payment.amount }}</td>
+            <td>{{ payment.method }}</td>
+            <td>{{ payment.payment_date }}</td>
+            <td>{{ payment.received_by }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

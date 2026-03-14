@@ -1,0 +1,45 @@
+{% extends "dashboard/dashboard.html" %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <div class="container-fluid">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Invoice list</li>
+        </ol>
+    </div>
+</nav>
+
+<div class="d-flex justify-content-between mb-3">
+    <h4>Invoices</h4>
+    <a href="{% url 'create_invoice' %}" class="btn btn-primary">Add Invoice</a>
+</div>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Invoice No</th>
+            <th>Project</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for invoice in invoices %}
+        <tr>
+            <td>{{ invoice.invoice_number }}</td>
+            <td>{{ invoice.project }}</td>
+            <td>{{ invoice.total_amount }}</td>
+            <td>{{ invoice.status }}</td>
+            <td>
+                <a href="{% url 'edit_invoice' invoice.id %}" class="btn btn-sm btn-warning">Edit</a>
+                <a href="{% url 'delete_invoice' invoice.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure delete this invoice?')">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

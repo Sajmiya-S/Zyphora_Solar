@@ -1,0 +1,33 @@
+{% extends 'public_view/base.html' %}
+
+{% block link %}
+<link rel="stylesheet" href="/static/css/public_view/blog.css">
+{% endblock %}
+
+{% block code %}
+<div id="blog-page">
+    <div class="zyphora-blog-hero d-flex align-items-center justify-content-center text-center">
+        <div class="container">
+            <h1 class="zyphora-title">Our Blog</h1>
+            <p class="zyphora-subtitle">
+                Tips, news, and updates about solar energy
+            </p>
+        </div>
+    </div>  
+
+    <div class="blog-list">
+        {% for post in blog_posts %}
+        <div class="blog-card">
+            <img src="/media/{{ post.image }}" alt="{{ post.title }}">
+            <div class="blog-content">
+                <h5 class="blog-title">{{ post.title }}</h5>
+                <p class="blog-excerpt">{{ post.summary }}</p>
+                <a href="{% url 'blog_detail' post.slug %}" class="blog-btn">Read More</a>
+            </div>
+        </div>
+        {% empty %}
+        <p>No blog posts found.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

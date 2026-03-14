@@ -1,0 +1,133 @@
+
+.breadcrumb {
+    background: transparent;
+    padding-bottom: 20px;
+    font-size: 14px;
+}
+
+.breadcrumb a {
+    text-decoration: none;
+    color: #0d6efd;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+
+
+.review-page h2{
+font-weight:600;
+}
+
+.page-header{
+margin-bottom:20px;
+}
+
+
+/* REVIEW GRID */
+
+.review-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+gap:18px;
+}
+
+
+/* REVIEW CARD */
+
+.review-card{
+border-radius:10px;
+padding:18px;
+display:flex;
+flex-direction:column;
+justify-content:space-between;
+box-shadow:0 3px 10px rgba(113, 103, 97, 0.05);
+transition:0.2s;
+}
+
+.review-card:hover{
+transform:translateY(-2px);
+box-shadow:0 6px 14px rgba(138, 135, 126, 0.08);
+}
+
+
+/* HEADER */
+
+.review-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:6px;
+}
+
+
+/* REVIEW TEXT */
+
+.review-text{
+margin-top:10px;
+font-size:14px;
+line-height:1.6;
+}
+
+
+/* STAR RATING */
+
+.star-rating{
+color:#facc15;
+margin-top:4px;
+}
+
+
+/* ACTIONS */
+
+.review-actions{
+margin-top:14px;
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+}
+
+
+/* EMPTY STATE */
+
+.empty-state{
+text-align:center;
+padding:40px;
+color:#777;
+}
+
+.empty-state i{
+font-size:40px;
+margin-bottom:10px;
+}
+
+
+/* PAGINATION */
+
+.pagination{
+gap:4px;
+}
+
+
+/* MOBILE */
+
+@media (max-width:768px){
+
+.review-grid{
+grid-template-columns:1fr;
+}
+
+.review-card{
+padding:16px;
+}
+
+.review-text{
+font-size:13px;
+}
+
+.review-actions{
+justify-content:space-between;
+}
+
+}

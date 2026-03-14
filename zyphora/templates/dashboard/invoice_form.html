@@ -1,0 +1,23 @@
+{% extends "dashboard/dashboard.html" %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <div class="container-fluid">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Update  invoice</li>
+        </ol>
+    </div>
+</nav>
+
+<h4>{{ title }}</h4>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-success">Save</button>
+    <a href="{% url 'invoice_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+
+{% endblock %}

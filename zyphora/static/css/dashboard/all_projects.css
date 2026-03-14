@@ -1,0 +1,55 @@
+
+.status-lead{
+    background:#6c757d;
+    color:white;
+}
+
+.status-site_visit{
+    background:#0dcaf0;
+    color:white;
+}
+
+.status-design_prep{
+    background:#6610f2;
+    color:white;
+}
+
+.status-design_approval{
+    background:#20c997;
+    color:white;
+}
+
+.status-design_costing{
+    background:#ffc107;
+    color:black;
+}
+
+.status-costing_approval{
+    background:#fd7e14;
+    color:white;
+}
+
+.status-structure{
+    background:#0d6efd;
+    color:white;
+}
+
+.status-electrical{
+    background:#6f42c1;
+    color:white;
+}
+
+.status-licensing{
+    background:#198754;
+    color:white;
+}
+
+.status-energisation{
+    background:#20c997;
+    color:white;
+}
+
+.status-completed{
+    background:#198754;
+    color:white;
+}

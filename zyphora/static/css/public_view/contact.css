@@ -1,0 +1,90 @@
+/* Hero Section */
+.zyphora-contact-hero {
+    height: 50vh;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                url(/static/images/contact-hero.png) center/cover no-repeat;
+    color: #ffffff;
+}
+
+.zyphora-title {
+    font-size: 3rem;
+    font-weight: 700;
+}
+
+.zyphora-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Contact Cards */
+.contact-info-card,
+.contact-form-card {
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+    transition: 0.3s ease;
+}
+
+.contact-info-card:hover,
+.contact-form-card:hover {
+    transform: translateY(-5px);
+}
+.contact-form-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; 
+}
+
+.contact-form-card input,
+.contact-form-card textarea,
+.contact-form-card select {
+    border-radius: 10px;
+    padding: 10px;
+    width: 100%;
+    border: 1px solid #ccc; 
+    box-sizing: border-box; 
+    transition: all 0.3s ease; 
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.contact-form-card input:focus,
+.contact-form-card textarea:focus,
+.contact-form-card select:focus {
+    border: 2px solid #4CAF50;
+    outline: none; 
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
+.contact-form-card textarea {
+    height: auto;
+}
+
+/* Button */
+.zyphora-btn {
+    background: #198754;
+    color: white;
+    font-weight: 600;
+    border-radius: 30px;
+    padding: 12px;
+    transition: 0.3s ease;
+}
+
+.zyphora-btn:hover {
+    background: #146c43;
+    color: white;
+}
+
+#map {
+    height: 300px;
+    width: 100%;
+    border-radius: 15px;           /* Rounded corners */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);  /* Soft shadow */
+    margin-bottom: 20px;
+    transition: transform 0.3s ease;
+}
+
+#map:hover {
+    transform: scale(1.02);  /* Slight zoom on hover */
+}
+

@@ -1,0 +1,359 @@
+/* ================= BASE ================= */
+
+html, body{
+height:100%;
+margin:0;
+overflow-x:hidden;
+}
+
+/* ================= LAYOUT ================= */
+
+.dashboard-wrapper{
+display:flex;
+min-height:100vh;
+}
+
+/* ================= SIDEBAR ================= */
+
+.sidebar{
+width:240px;
+height:100vh;
+position:fixed;
+top:0;
+left:0;
+overflow-y:auto;
+transition:width .25s ease;
+z-index:1050;
+background:var(--bs-body-bg);
+border-right:1px solid rgba(0,0,0,.05);
+}
+
+/* Sidebar header */
+
+.sidebar-header{
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:16px;
+border-bottom:1px solid rgba(0,0,0,.05);
+}
+
+/* ================= LOGO ================= */
+
+.sidebar-logo{
+display:flex;
+align-items:center;
+}
+
+.sidebar-logo-full{
+max-width:160px;
+}
+
+.sidebar-logo-mini{
+display:none;
+width:40px;
+}
+
+/* ================= SIDEBAR HEADINGS ================= */
+
+.sidebar-heading{
+padding:.5rem 1rem;
+font-size:.75rem;
+text-transform:uppercase;
+letter-spacing:.05em;
+font-weight:600;
+
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+}
+
+/* ================= TOGGLE BUTTON ================= */
+
+.toggle-btn{
+background:transparent;
+border:none;
+color:var(--bs-body-color);
+font-size:20px;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+/* ================= SIDEBAR LINKS ================= */
+
+
+#sidebar{
+position:fixed;
+top:0;
+left:0;
+height:100vh;
+width:240px;
+overflow-y:auto;
+overflow-x:hidden;
+scroll-behavior:smooth;
+}
+
+/* Sidebar menu scroll safety */
+
+#sidebarMenu{
+padding-bottom:40px;
+}
+
+
+.sidebar .nav-link{
+padding:10px 12px;
+border-radius:6px;
+transition:all .2s ease;
+display:flex;
+align-items:center;
+gap:12px;
+white-space:nowrap;
+}
+
+.sidebar .nav-link:hover{
+transform:translateX(3px);
+}
+
+.sidebar .nav-link.active{
+background:var(--bs-primary);
+color:white !important;
+}
+
+.sidebar .nav-item{
+position:relative;
+}
+
+/* ================= ICONS ================= */
+
+.nav-icon{
+font-size:18px;
+width:24px;
+min-width:24px;
+text-align:center;
+}
+
+.link-text{
+white-space:nowrap;
+}
+
+/* ================= MAIN WRAPPER ================= */
+
+.main-wrapper{
+margin-left:240px;
+width:calc(100% - 240px);
+min-height:100vh;
+display:flex;
+flex-direction:column;
+transition:margin-left .25s ease, width .25s ease;
+}
+
+/* ================= NAVBAR ================= */
+
+.navbar{
+height:70px;
+position:sticky;
+top:0;
+z-index:1000;
+}
+
+/* ================= MAIN CONTENT ================= */
+
+.main-content{
+flex:1;
+padding:32px 36px;
+overflow-y:auto;
+background-color:var(--bs-body-bg);
+}
+
+/* ================= DESKTOP COLLAPSE ================= */
+
+#sidebarToggleCheckbox:checked ~ .dashboard-wrapper .sidebar{
+width:80px;
+}
+
+#sidebarToggleCheckbox:checked ~ .dashboard-wrapper .main-wrapper{
+margin-left:80px;
+width:calc(100% - 80px);
+}
+
+/* Hide text when collapsed */
+
+#sidebarToggleCheckbox:checked ~ .dashboard-wrapper .link-text{
+display:none;
+}
+
+#sidebarToggleCheckbox:checked ~ .dashboard-wrapper .sidebar-heading{
+display:none;
+}
+
+#sidebarToggleCheckbox:checked ~ .dashboard-wrapper .nav-link{
+justify-content:center;
+}
+
+/* Logo switch */
+
+#sidebarToggleCheckbox:checked ~ .dashboard-wrapper .sidebar-logo-full{
+display:none;
+}
+
+#sidebarToggleCheckbox:checked ~ .dashboard-wrapper .sidebar-logo-mini{
+display:block;
+margin:auto;
+}
+
+/* ================= ICON COLORS ================= */
+
+.text-primary{color:#0d6efd!important;}
+.text-success{color:#198754!important;}
+.text-warning{color:#ffc107!important;}
+.text-danger{color:#dc3545!important;}
+.text-info{color:#0dcaf0!important;}
+.text-purple{color:#6f42c1!important;}
+
+/* ================= HOVER ================= */
+
+.nav-link:hover,
+.nav-link.active{
+background-color:rgba(0,0,0,0.05);
+border-radius:.5rem;
+}
+
+/* ================= SUBMENU ARROW ================= */
+
+.submenu-arrow{
+transition:transform .3s;
+}
+
+.nav-link[aria-expanded="true"] .submenu-arrow{
+transform:rotate(180deg);
+}
+
+/* ================= BADGES ================= */
+
+.badge-pill{
+font-size:.65rem;
+font-weight:600;
+}
+
+/* ================= SIDEBAR SCROLL ================= */
+
+#sidebar{
+overflow-y:auto;
+height:100vh;
+}
+
+/* ================= LIGHT MODE ================= */
+
+[data-bs-theme="light"] .sidebar .nav-link{
+color:black!important;
+font-weight:500;
+}
+
+[data-bs-theme="light"] .sidebar .nav-link:hover{
+background:aliceblue;
+}
+
+/* ================= DARK MODE ================= */
+
+[data-bs-theme="dark"] .sidebar .nav-link{
+color:white!important;
+font-weight:500;
+}
+
+[data-bs-theme="dark"] .sidebar .nav-link:hover{
+background:#2a2a2a;
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:991px){
+
+.sidebar{
+width:70px;
+left:0;
+}
+
+/* Hide text & headings */
+
+.sidebar .link-text{
+display:none;
+}
+
+.sidebar-heading{
+display:none;
+}
+
+/* Center icons */
+
+.sidebar .nav-link{
+justify-content:center;
+}
+
+/* Logo switch */
+
+.sidebar-logo-full{
+display:none;
+}
+
+.sidebar-logo-mini{
+display:block;
+margin:auto;
+}
+
+/* Main content */
+
+.main-wrapper{
+margin-left:70px;
+width:calc(100% - 70px);
+}
+
+/* Expand sidebar */
+
+#sidebarToggleCheckbox:checked ~ .dashboard-wrapper .sidebar{
+width:240px;
+}
+
+/* Show text */
+
+#sidebarToggleCheckbox:checked ~ .dashboard-wrapper .link-text{
+display:inline;
+}
+
+#sidebarToggleCheckbox:checked ~ .dashboard-wrapper .sidebar-heading{
+display:block;
+}
+
+#sidebarToggleCheckbox:checked ~ .dashboard-wrapper .nav-link{
+justify-content:flex-start;
+}
+
+/* Logo swap */
+
+#sidebarToggleCheckbox:checked ~ .dashboard-wrapper .sidebar-logo-full{
+display:block;
+}
+
+#sidebarToggleCheckbox:checked ~ .dashboard-wrapper .sidebar-logo-mini{
+display:none;
+}
+
+/* Shift content when expanded */
+
+#sidebarToggleCheckbox:checked ~ .dashboard-wrapper .main-wrapper{
+margin-left:240px;
+width:calc(100% - 240px);
+}
+
+}
+
+/* ================= SMALL MOBILE ================= */
+
+@media(max-width:576px){
+
+.main-content{
+padding:20px 16px;
+}
+
+}

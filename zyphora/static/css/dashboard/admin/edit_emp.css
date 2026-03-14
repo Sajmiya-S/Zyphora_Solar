@@ -1,0 +1,130 @@
+/* ===============================
+   FORM CARD
+================================ */
+
+.card{
+    border-radius: 12px;
+    border: none;
+}
+
+.card-body{
+    padding: 30px;
+}
+
+
+/* ===============================
+   FORM INPUTS
+================================ */
+
+.form-control{
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 15px;
+}
+
+textarea.form-control{
+    min-height: 160px;
+}
+
+
+/* ===============================
+   RIGHT SIDE IMAGE SECTION
+================================ */
+
+.col-md-5.text-center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* ===============================
+   PROFILE IMAGE
+================================ */
+
+.profile-img{
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 6px solid #f2f2f2;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transition: 0.3s ease;
+}
+
+.profile-img:hover{
+    transform: scale(1.03);
+}
+
+
+/* ===============================
+   IMAGE WRAPPER
+================================ */
+
+.profile-pic-wrapper{
+    position: relative;
+    display: inline-block;
+}
+
+
+/* ===============================
+   EDIT BUTTON
+================================ */
+
+.edit-icon{
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    font-size: 18px;
+}
+
+
+/* ===============================
+   SWITCH
+================================ */
+
+.form-check-input{
+    width: 45px;
+    height: 22px;
+}
+
+
+/* ===============================
+   BUTTONS
+================================ */
+
+.btn-success,
+.btn-secondary{
+    padding: 10px 20px;
+    border-radius: 8px;
+}
+
+
+/* ===============================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 992px){
+
+    .col-md-5.text-center{
+        margin-top: 30px;
+    }
+
+    .profile-img{
+        width:140px;
+        height:140px;
+    }
+
+}
+
+@media (max-width:768px){
+
+    .profile-img{
+        width:120px;
+        height:120px;
+    }
+
+}

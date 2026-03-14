@@ -1,0 +1,129 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block link %}
+<link rel="stylesheet" href="{% static 'css/dashboard/admin/emp_list.css' %}">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<!-- Bootstrap JS (required for modal) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item">
+        <a href="{% url 'admin' %}">Admin Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Blog Posts</li>
+  </ol>
+</nav>
+
+<h1 class="text-center">Blog Posts</h1>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="text-muted">Blog Posts</h2>
+        <a href="{% url 'addpost' %}" class="post-btn">
+            <i class="fa-solid fa-plus"></i> Post Something
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th>Image</th>
+                    <th>Title</th>
+                    <th>Published Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in blog %}
+                <tr>
+                    <td>
+                        <img src="{{ post.image.url }}" 
+                             alt="{{ post.title }}" 
+                             style="width:32px;height:32px;object-fit:cover;"
+                             class="post-img">
+                    </td>
+                    <td>{{ post.title }}</td>
+                    <td>{{ post.published_date }}</td>
+                    <td>
+                        <!-- View Button -->
+                        <a href="{% url 'viewpost' post.id %}" 
+                           class="btn btn-info rounded-circle d-inline-flex align-items-center justify-content-center"
+                           style="width:40px;height:40px;">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        <!-- Edit Button -->
+                        <a href="{% url 'editpost' post.id %}" 
+                           class="btn btn-warning rounded-circle d-inline-flex align-items-center justify-content-center"
+                           style="width:40px;height:40px;">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+
+                        <!-- Delete Button (Triggers Modal) -->
+                        <button type="button"
+                                class="btn btn-danger rounded-circle d-inline-flex align-items-center justify-content-center"
+                                style="width:40px;height:40px;"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal"
+                                data-post-id="{{ post.id }}"
+                                data-post-title="{{ post.title }}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">No posts yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div> 
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete the post: <strong id="modal-post-title"></strong>?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <a href="#" id="confirm-delete-btn" class="btn btn-danger">Delete</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal JavaScript -->
+<script>
+var deleteModal = document.getElementById('deleteModal');
+deleteModal.addEventListener('show.bs.modal', function (event) {
+  var button = event.relatedTarget; // Button that triggered the modal
+  var postId = button.getAttribute('data-post-id');
+  var postTitle = button.getAttribute('data-post-title');
+
+  // Update modal content
+  var modalTitle = deleteModal.querySelector('#modal-post-title');
+  modalTitle.textContent = postTitle;
+
+  // Update delete button href
+  var confirmBtn = deleteModal.querySelector('#confirm-delete-btn');
+  confirmBtn.href = "{% url 'deletepost' 0 %}".replace('/0/', '/' + postId + '/');
+});
+</script>
+
+{% endblock %}

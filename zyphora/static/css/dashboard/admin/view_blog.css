@@ -1,0 +1,112 @@
+/* =======================
+   Single Blog Post Page
+======================= */
+
+
+.breadcrumb {
+    background: transparent;
+    padding-bottom: 20px;
+    font-size: 14px;
+}
+
+.breadcrumb a {
+    text-decoration: none;
+    color: #0d6efd;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+#blog-detail-page{
+    max-width: 900px;
+    margin: auto;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+
+/* Header */
+.blog-header h1{
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.blog-header .meta{
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+/* Image */
+.blog-image{
+    margin: 20px 0;
+}
+
+.blog-image img{
+    width: 100%;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+/* Summary */
+.blog-summary{
+    padding: 20px;
+    border-left: 4px solid #0d6efd;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.blog-summary h4{
+    margin-bottom: 10px;
+}
+
+/* Content */
+.blog-content{
+    line-height: 1.8;
+    font-size: 16px;
+}
+
+.blog-content p{
+    margin-bottom: 15px;
+}
+
+/* Blog info */
+.blog-info{
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px solid #eaeaea;
+    font-size: 14px;
+}
+
+/* Admin Buttons */
+.admin-buttons{
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.btn-edit{
+    background: #0d6efd;
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+}
+
+.btn-edit:hover{
+    background: #0b5ed7;
+}
+
+.btn-delete{
+    background: #dc3545;
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+}
+
+.btn-delete:hover{
+    background: #bb2d3b;
+}

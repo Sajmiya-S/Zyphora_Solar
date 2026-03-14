@@ -1,0 +1,130 @@
+
+
+.breadcrumb {
+    background: transparent;
+    padding-bottom: 20px;
+    font-size: 14px;
+}
+
+.breadcrumb a {
+    text-decoration: none;
+    color: #0d6efd;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+/* Page container */
+.container {
+    max-width: 950px;
+}
+
+/* Page title */
+h1 {
+    font-size: 26px;
+    font-weight: 600;
+}
+
+/* Card style */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+/* Form layout */
+.card {
+    padding: 25px;
+}
+
+/* Labels */
+label {
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="file"],
+textarea,
+select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    margin-bottom: 18px;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+
+/* Focus style */
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #198754;
+    box-shadow: 0 0 4px rgba(25,135,84,0.25);
+    outline: none;
+}
+
+/* Textarea */
+textarea {
+    min-height: 180px;
+    resize: vertical;
+}
+
+/* Image preview */
+img {
+    border-radius: 8px;
+    margin-top: 10px;
+    max-width: 200px;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 6px;
+    padding: 8px 18px;
+    font-weight: 500;
+}
+
+/* Save button */
+.btn-success {
+    background-color: #198754;
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #157347;
+}
+
+/* Cancel button */
+.btn-secondary {
+    background-color: #6c757d;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background-color: #565e64;
+}
+
+
+/* Button section spacing */
+.d-flex {
+    margin-top: 10px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+
+    .container {
+        padding: 0 12px;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+
+    .card {
+        padding: 18px;
+    }
+}

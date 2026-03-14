@@ -1,0 +1,222 @@
+{% extends 'public_view/base.html' %}
+
+{% block link %}
+    <link rel="stylesheet" href="/static/css/public_view/home.css">
+{% endblock %}
+
+{% block code %}
+<div class="hero">
+    <div class="container text-white">
+        <h1>Powering a Brighter <span>Tomorrow</span></h1>
+        <p>Premium Solar Roof & Leak-Proof Installations by Zyphora Solar</p>
+        <div class="btns">
+            <a href="{% url 'contact' %}">
+                <button>
+                    <i class="bi bi-calendar-check me-2"></i> Book a Free Site Visit
+                </button>
+            </a>
+            <a href="{% url 'save' %}">
+                <button class="btn btn-primary">
+                    <i class="bi bi-cash-stack me-2"></i> Calculate Savings
+                </button>
+            </a>
+            
+        </div>
+    </div>
+</div>
+
+<div class="highlights">
+    <div class="highlight-item">
+        <img src="/static/images/save.jpg" alt="">
+        <p>
+            <strong>Save Money on Energy Bills</strong>
+            <br>
+            Cut your electricity costs with our efficient solar solutions
+        </p>
+    </div>
+    <div class="highlight-item">
+        <img src="/static/images/expert.png" alt="">
+        <p>
+            <strong>Expert Installation Team</strong>
+            <br>
+            Certified professionals ensuring quality installations
+        </p>
+    </div>
+    <div class="highlight-item">
+        <img src="/static/images/energy.avif" alt="">
+        <p>
+            <strong>Sustainable & Green Energy</strong>
+            <br>
+            Join the renewable energy revolution for a better tomorrow
+        </p>
+    </div>
+</div>
+
+<div class="section" id="services">
+    <h1>Our Services</h1>
+    <p class="text-muted">Customized Solar Solutions for Every Need</p>
+    <div class="card-list">
+        <div class="card">
+            <img src="/static/images/home.png" class="card-img-top" >
+            <div class="card-body">
+                <h5 class="card-title">Residential Solar</h5>
+                <p class="card-text text-muted">Solar solutions for your home to reduce energy bills.</p>
+            </div>
+        </div>
+        <div class="card">
+            <img src="/static/images/com.png" class="card-img-top" >
+            <div class="card-body">
+                <h5 class="card-title">Commercial Solar</h5>
+                <p class="card-text text-muted">Efficient Solar power for business and industries.</p>
+            </div>
+        </div>
+        <div class="card">
+            <img src="/static/images/service.jpg" class="card-img-top" >
+            <div class="card-body">
+                <h5 class="card-title">Solar Maintainance</h5>
+                <p class="card-text text-muted">Ongoing support to keep your system running smoothly.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section" id="projects">
+    <h1>Recent Projects</h1>
+    <p class="text-muted">Our successful Solar Installations</p>
+    <div class="card-list">
+        <div class="card">
+            <img src="/static/images/home.png" class="card-img-top" >
+            <div class="card-body">
+                <h5 class="card-title">Residential Solar</h5>
+                <p class="card-text text-muted">Solar solutions for your home to reduce energy bills.</p>
+            </div>
+        </div>
+        <div class="card">
+            <img src="/static/images/com.png" class="card-img-top" >
+            <div class="card-body">
+                <h5 class="card-title">Commercial Solar</h5>
+                <p class="card-text text-muted">Efficient Solar power for business and industries.</p>
+            </div>
+        </div>
+        <div class="card">
+            <img src="/static/images/service.jpg" class="card-img-top" >
+            <div class="card-body">
+                <h5 class="card-title">Solar Maintainance</h5>
+                <p class="card-text text-muted">Ongoing support to keep your system running smoothly.</p>
+            </div>
+        </div>
+    </div>
+    <a href="{% url 'projects' %}">
+        <button>View All Projects</button>
+    </a>
+    
+</div>
+
+<div class="reviews-section">
+
+    <!-- Testimonials / Client Reviews -->
+    <div class="testimonials container">
+        <h2 class="text-center section-title">What Our Clients Say</h2>
+        <p class="text-center text-muted mb-5">
+            Real Customers. Real Savings. Real Satisfaction.
+        </p>
+
+        <div id="reviewCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000" data-bs-pause="false">
+            <div class="carousel-inner">
+
+                {% comment %} Group reviews in pairs for desktop, single for mobile {% endcomment %}
+                {% for review in reviews %}
+                    {% if forloop.first or forloop.counter0|divisibleby:2 %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="row justify-content-center g-4">
+                    {% endif %}
+
+                            <div class="col-lg-5 col-md-8 col-12">
+                                <div class="testimonial-card text-center">
+
+                                    <div class="stars mt-3">
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= review.rating %}
+                                                <i class="bi bi-star-fill"></i>
+                                            {% else %}
+                                                <i class="bi bi-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+
+                                    <p class="review-text mt-3">
+                                        "{{ review.review }}"
+                                    </p>
+
+                                    <h5 class="customer-name mt-4">
+                                        — {{ review.name }}
+                                    </h5>
+
+                                    <hr>
+
+                                    <p class="system-info text-muted">
+                                        {{ review.location }}
+                                    </p>
+
+                                </div>
+                            </div>
+
+                    {% if forloop.counter|divisibleby:2 or forloop.last %}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+
+            </div>
+
+            <!-- arrows -->
+            <button class="carousel-control-prev" type="button"
+                data-bs-target="#reviewCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
+
+            <button class="carousel-control-next" type="button"
+                data-bs-target="#reviewCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </button>
+
+        </div>
+    </div>
+
+    <!-- Post Your Review -->
+    <div class="post-review mt-5">
+        <h2 class="text-center">Share Your Experience</h2>
+        <p class="text-center text-muted mb-3">We’d love to hear your feedback about our services.</p>
+        <form method="POST" action="" class="d-flex flex-column align-items-center">
+            {% csrf_token %}
+
+            {{ form.name }}
+            {{ form.email }}
+            {{ form.location }}
+            {{ form.review }}
+
+            <!-- Star Rating -->
+            <div class="rating mb-3">
+                <input type="radio" name="rating" id="star5" value="5"><label for="star5">★</label>
+                <input type="radio" name="rating" id="star4" value="4"><label for="star4">★</label>
+                <input type="radio" name="rating" id="star3" value="3"><label for="star3">★</label>
+                <input type="radio" name="rating" id="star2" value="2"><label for="star2">★</label>
+                <input type="radio" name="rating" id="star1" value="1"><label for="star1">★</label>
+            </div>
+            
+            <input type="submit" value="Submit Review" class="btn btn-success">
+        </form>
+    </div>
+
+</div>
+
+<!-- CTA -->
+<section class="zyphora-cta text-center py-5">
+    <div class="container">
+        <h2>Ready to Switch to Solar?</h2>
+        <a href="{% url 'contact' %}" class="btn btn-light btn-lg mt-3">
+            Get Free Consultation
+        </a>
+    </div>
+</section>
+{% endblock %}

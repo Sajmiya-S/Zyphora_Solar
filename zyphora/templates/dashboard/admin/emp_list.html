@@ -1,0 +1,118 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block link %}
+<link rel="stylesheet" href="{% static 'css/dashboard/admin/emp_list.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'admin' %}">Admin Dashboard</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Employees</li>
+  </ol>
+</nav>
+
+<div class="container mt-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
+        <div>
+            <h1 class="page-title">Employee List</h1>
+            <p class="text-muted">Manage your team members</p>
+        </div>
+        <a href="{% url 'addemp' %}" class="add-emp-btn"><i class="fa-solid fa-plus"></i> Add Employee</a>
+    </div>
+
+    <!-- Filter Dropdown -->
+    <form method="GET" class="row g-2 align-items-center mb-3">
+
+        <!-- Role Filter -->
+        <div class="col-auto">
+            <label for="roleFilter" class="me-2">Filter by Role:</label>
+        </div>
+
+        <div class="col-auto">
+            <select name="role" id="roleFilter" class="form-select">
+                <option value="">All</option>
+                {% for role_choice in role_choices %}
+                    <option value="{{ role_choice.0 }}" {% if role_choice.0 == role %}selected{% endif %}>
+                        {{ role_choice.1 }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Search -->
+        <div class="col-md-3">
+            <input type="text"
+                name="q"
+                class="form-control"
+                placeholder="Search employee..."
+                value="{{ request.GET.q }}">
+        </div>
+
+        <!-- Buttons -->
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i> Apply
+            </button>
+        </div>
+
+    </form>
+
+    <!-- Employee Table -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Designation</th>
+                    <th>Date Joined</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in employees %}
+                    <tr>
+                        <td>
+                            {% if emp.profile_pic %}
+                                <img src="{{ emp.profile_pic.url }}" 
+                                     alt="{{ emp.name }}" 
+                                     class="emp-img">
+                            {% else %}
+                                <img src="{% static 'images/profile.avif' %}" class="emp-img">
+                            {% endif %}
+                        </td>
+                        <td>{{ emp.name|default:emp.user.username }}</td>
+                        <td>{{ emp.phone }}</td>
+                        <td>{{ emp.email }}</td>
+                        <td>{{ emp.designation|default:emp.user.role|title }}</td>
+                        <td>{{ emp.date_joined }}</td>
+                        <td>
+                            {% if emp.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'viewemp' emp.id %}" class="btn btn-info rounded-circle"><i class="bi bi-eye"></i></a>
+                            <a href="{% url 'editemp' emp.id %}" class="btn btn-warning rounded-circle"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'notify' emp.id %}" class="btn btn-primary rounded-circle"><i class="bi bi-envelope"></i></a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">No employees found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

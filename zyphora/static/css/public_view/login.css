@@ -1,0 +1,17 @@
+body {
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                url("/static/images/bg.png") center/cover no-repeat;
+    font-family: Arial, sans-serif;
+}
+
+.login-card {
+    border-radius: 15px;
+}
+
+.card {
+    backdrop-filter: blur(5px);
+}
+
+.login-card a{
+    text-decoration: none;
+}

@@ -1,0 +1,56 @@
+{% extends 'public_view/base.html' %}
+
+
+{% block link %}
+<link rel="stylesheet" href="/static/css/public_view/savings_calculator.css">
+{% endblock %}
+
+{% block code %}
+
+<!-- Hero Section -->
+<div class="calculator-hero text-center py-5">
+    <div class="container">
+        <h1>Calculate Your Solar Savings</h1>
+        <p>Discover how much you can save with Zyphora Solar in Kerala!</p>
+    </div>
+</div>
+
+<!-- Calculator Form -->
+<div class="calculator-section container py-5">
+    <form method="POST" action="">
+        {% csrf_token %}
+        
+        <!-- Monthly Electricity Bill -->
+        <div class="form-group">
+            <label for="monthly_bill">Current Monthly Electricity Bill (₹)</label>
+            <input type="number" id="monthly_bill" name="monthly_bill" placeholder="e.g. 3000" required>
+        </div>
+
+        <!-- Proposed Solar System Size -->
+        <div class="form-group">
+            <label for="system_size">Proposed Solar System Size (kW)</label>
+            <input type="number" step="0.1" id="system_size" name="system_size" placeholder="e.g. 5" required>
+        </div>
+
+        <!-- Electricity Tariff (Kerala Default) -->
+        <div class="form-group">
+            <label for="tariff">Electricity Tariff (₹/kWh)</label>
+            <input type="number" step="0.01" id="tariff" name="tariff" value="7" required>
+        </div>
+
+        <button type="submit">Calculate Savings</button>
+    </form>
+
+    <!-- Result Section -->
+    {% if savings %}
+    <div class="result text-center mt-4">
+        <h2>Estimated Annual Savings: ₹{{ savings }}</h2>
+        <p>Switching to solar can save you this much every year in Kerala!</p>
+        <a href="{% url 'contact' %}" class="btn btn-primary mt-3">
+            Book a Free Consultation
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

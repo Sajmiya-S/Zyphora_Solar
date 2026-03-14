@@ -1,0 +1,87 @@
+/* ================= MAIN CONTENT FIX ================= */
+
+.main-content {
+    overflow-x: hidden;     /* Prevent horizontal scroll */
+}
+
+
+/* ================= KPI CARD BASE ================= */
+
+.kpi-card {
+    width: 100%;
+    min-height: 180px;
+    border-radius: 14px;
+    padding: 28px 20px;
+    color: #fff;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(8px);
+}
+
+/* Hover Effect */
+.kpi-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+}
+
+
+/* ================= ICON / TEXT ================= */
+
+.kpi-icon {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+    opacity: 0.95;
+}
+
+.kpi-value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin: 6px 0;
+    letter-spacing: 0.5px;
+}
+
+.kpi-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    opacity: 0.95;
+}
+
+
+/* ================= GRADIENTS ================= */
+
+/* Leads - Deep Purple */
+.kpi-card.leads {
+    background: linear-gradient(135deg, #4b0082, #5f3dc4);
+}
+
+/* Projects - Red to Orange */
+.kpi-card.projects {
+    background: linear-gradient(135deg, #c20202, #f76b1c);
+}
+
+/* Revenue - Green */
+.kpi-card.revenue {
+    background: linear-gradient(135deg, #2e7d32, #43a047);
+}
+
+/* Payments - Orange to Gold */
+.kpi-card.payments {
+    background: linear-gradient(135deg, #e65100, #ffb300);
+}
+
+
+/* ================= RESPONSIVE SAFETY ================= */
+
+/* Ensure wrapping always works */
+.row {
+    flex-wrap: wrap;
+}
+
+/* Make sure columns never overflow */
+[class*="col-"] {
+    max-width: 100%;
+}
+

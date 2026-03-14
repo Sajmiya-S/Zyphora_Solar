@@ -1,0 +1,230 @@
+{% extends 'dashboard/dashboard.html' %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="{% url request.user.role %}">
+                    {{request.user.role|title}} Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Recent Project Activity</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <h3 class="mb-0">Recent Project Activities</h3>
+    </div>
+
+    <div class="mt-4">
+
+        {% if activities %}
+
+            <!-- TODAY -->
+            {% if grouped_activities.today %}
+            <h5 class="text-primary mt-3">Today</h5>
+
+            {% for activity in grouped_activities.today %}
+            <div class="card shadow-sm mb-3">
+                <div class="card-body d-flex">
+
+                    <div class="me-3 text-primary fs-5">
+                        <i class="bi bi-activity"></i>
+                    </div>
+
+                    <div class="w-100">
+
+                        <strong>
+                            <a href="{% url 'project_activities' activity.project.id %}" class="text-decoration-none">
+                                {{ activity.project.title }}
+                            </a>
+                        </strong>
+                        — {{ activity.title }}
+
+                        {% if activity.description %}
+                        <p class="text-muted mb-1">{{ activity.description }}</p>
+                        {% endif %}
+
+                        <small class="text-muted">
+                            {{ activity.created_at|timesince }} ago
+                            {% if activity.created_by %}
+                            • {{ activity.created_by.get_full_name }}
+                            {% endif %}
+                        </small>
+
+                        <div>
+                            <a href="{% url 'project_activities' activity.project.id %}"
+                               class="small text-primary">
+                               View Project Timeline →
+                            </a>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+
+
+            <!-- YESTERDAY -->
+            {% if grouped_activities.yesterday %}
+            <h5 class="text-secondary mt-4">Yesterday</h5>
+
+            {% for activity in grouped_activities.yesterday %}
+            <div class="card shadow-sm mb-3">
+                <div class="card-body d-flex">
+
+                    <div class="me-3 text-secondary fs-5">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+
+                    <div class="w-100">
+
+                        <strong>
+                            <a href="{% url 'project_activities' activity.project.id %}" class="text-decoration-none">
+                                {{ activity.project.title }}
+                            </a>
+                        </strong>
+                        — {{ activity.title }}
+
+                        {% if activity.description %}
+                        <p class="text-muted mb-1">{{ activity.description }}</p>
+                        {% endif %}
+
+                        <small class="text-muted">
+                            {{ activity.created_at|date:"H:i" }}
+                            {% if activity.created_by %}
+                            • {{ activity.created_by.get_full_name }}
+                            {% endif %}
+                        </small>
+
+                        <div>
+                            <a href="{% url 'project_activities' activity.project.id %}"
+                               class="small text-primary">
+                               View Project Timeline →
+                            </a>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+
+
+            <!-- OLDER -->
+            {% if grouped_activities.older %}
+            <h5 class="text-muted mt-4">Earlier</h5>
+
+            {% for activity in grouped_activities.older %}
+            <div class="card shadow-sm mb-3">
+                <div class="card-body d-flex">
+
+                    <div class="me-3 text-muted fs-5">
+                        <i class="bi bi-journal-text"></i>
+                    </div>
+
+                    <div class="w-100">
+
+                        <strong>
+                            <a href="{% url 'project_activities' activity.project.id %}" class="text-decoration-none">
+                                {{ activity.project.title }}
+                            </a>
+                        </strong>
+                        — {{ activity.title }}
+
+                        {% if activity.description %}
+                        <p class="text-muted mb-1">{{ activity.description }}</p>
+                        {% endif %}
+
+                        <small class="text-muted">
+                            {{ activity.created_at|date:"M d, Y H:i" }}
+                            {% if activity.created_by %}
+                            • {{ activity.created_by.get_full_name }}
+                            {% endif %}
+                        </small>
+
+                        <div>
+                            <a href="{% url 'project_activities' activity.project.id %}"
+                               class="small text-primary">
+                               View Project Timeline →
+                            </a>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+
+
+            <!-- Pagination -->
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+
+                    {% if activities.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ activities.previous_page_number }}">
+                           Previous
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                    {% endif %}
+
+                    {% for num in activities.paginator.page_range %}
+                        {% if activities.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if activities.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ activities.next_page_number }}">
+                           Next
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                    {% endif %}
+
+                </ul>
+            </nav>
+
+        {% else %}
+
+        <!-- Empty State -->
+        <div class="text-center p-5 border rounded bg-light mt-3">
+            <i class="bi bi-clock-history fs-1 text-muted"></i>
+            <p class="mt-3 text-muted">
+                No project activity recorded yet.
+            </p>
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+{% endblock %}

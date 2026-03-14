@@ -1,0 +1,226 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block link %}
+
+<link rel="stylesheet" href="{% static 'css/dashboard/admin/review_list.css' %}">
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a href="{% url 'admin' %}">Admin Dashboard</a>
+        </li>
+
+        <li class="breadcrumb-item active" aria-current="page">
+            User reviews
+        </li>
+    </ol>
+</nav>
+
+
+<div class="container mt-4 review-page">
+
+    <!-- PAGE HEADER -->
+
+    <div class="page-header">
+
+        <h2>
+            <i class="fa-solid fa-star"></i>
+            Manage User Reviews
+        </h2>
+
+        <p class="text-muted">
+            Approve or remove customer feedback.
+        </p>
+
+    </div>
+
+
+    <!-- PAGINATION TOP -->
+
+    {% if page_obj.has_other_pages %}
+
+        <nav class="mb-3">
+
+            <ul class="pagination justify-content-center flex-wrap">
+
+                {% if page_obj.has_previous %}
+
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ page_obj.previous_page_number }}">
+                            Previous
+                        </a>
+                    </li>
+
+                {% else %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+
+                {% endif %}
+
+
+                {% for num in page_obj.paginator.page_range %}
+
+                    {% if page_obj.number == num %}
+
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+
+                    {% else %}
+
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">
+                                {{ num }}
+                            </a>
+                        </li>
+
+                    {% endif %}
+
+                {% endfor %}
+
+
+                {% if page_obj.has_next %}
+
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ page_obj.next_page_number }}">
+                            Next
+                        </a>
+                    </li>
+
+                {% else %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+
+                {% endif %}
+
+            </ul>
+
+        </nav>
+
+    {% endif %}
+
+
+    <!-- REVIEW CARDS -->
+
+    {% if page_obj %}
+
+        <div class="review-grid">
+
+            {% for review in page_obj %}
+
+                <div class="review-card">
+
+                    <div class="review-content">
+
+                        <div class="review-header">
+
+                            <h5>{{ review.name }} - {{ review.location }}</h5>
+
+                            <small class="text-muted">
+                                {{ review.created_at|date:"F j, Y" }}
+                            </small>
+
+                        </div>
+
+
+                        <!-- STAR RATING -->
+
+                        {% if review.rating %}
+
+                            <div class="star-rating">
+
+                                {% for i in "12345" %}
+
+                                    {% if forloop.counter <= review.rating %}
+
+                                        <i class="fas fa-star"></i>
+
+                                    {% else %}
+
+                                        <i class="far fa-star"></i>
+
+                                    {% endif %}
+
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <p class="review-text">
+                            {{ review.review }}
+                        </p>
+
+                    </div>
+
+
+                    <!-- ACTIONS -->
+
+                    <div class="review-actions">
+
+                        {% if not review.is_approved %}
+
+                            <a href="{% url 'approve_review' review.id %}"
+                               class="btn btn-success btn-sm">
+
+                                <i class="fa-solid fa-check"></i>
+                                Approve
+
+                            </a>
+
+                        {% else %}
+
+                            <span class="badge bg-success">
+                                Approved
+                            </span>
+
+                        {% endif %}
+
+
+                        <a href="{% url 'delete_review' review.id %}"
+                           class="btn btn-danger btn-sm"
+                           onclick="return confirm('Delete this review?');">
+
+                            <i class="fa-solid fa-trash"></i>
+                            Delete
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-state">
+
+            <i class="fa-regular fa-face-smile"></i>
+
+            <p>No reviews found.</p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

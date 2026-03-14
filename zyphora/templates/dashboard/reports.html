@@ -1,0 +1,37 @@
+{% extends "dashboard/dashboard.html" %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <div class="container-fluid">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Financial Reports</li>
+        </ol>
+    </div>
+</nav>
+
+<h4>Financial Reports</h4>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card p-3 mb-3">
+            <h6>Total Invoices</h6>
+            <h3>{{ invoice_count }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3 mb-3">
+            <h6>Total Payments</h6>
+            <h3>{{ payment_count }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3 mb-3">
+            <h6>Total Expenses</h6>
+            <h3>{{ expense_count }}</h3>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,273 @@
+
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block link %}
+
+<link rel="stylesheet" href="{% static 'css/dashboard/admin/emp_reg.css' %}">
+
+<style>
+    .role-field {
+        display: none;
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a href="{% url 'admin' %}">Admin Dashboard</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'emplist' %}">Employees</a>
+        </li>
+        <li class="breadcrumb-item active">
+            New Employee
+        </li>
+    </ol>
+</nav>
+
+<div class="container mt-4">
+
+    <h1 class="mb-4">Register New Employee</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="row g-4">
+
+            <div class="col-lg-12">
+
+                <div class="card shadow-sm p-4">
+
+                    <!-- Username / Email / Role -->
+                    <div class="row g-3 mb-3">
+
+                        <div class="col-md-4">
+                            <label>Username</label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>Email</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>Role</label>
+
+                            <select name="role" id="role-select" class="form-select" required>
+                                <option value="">Select Role</option>
+                                <option value="staff">Staff</option>
+                                <option value="sales">Sales</option>
+                                <option value="engineer">Engineer</option>
+                                <option value="accountant">Accountant</option>
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- LEFT + RIGHT SECTION -->
+                    <div class="row g-3 mb-3 align-items-stretch">
+
+                        <!-- LEFT -->
+                        <div class="col-md-6 d-flex">
+
+                            <div class="w-100 d-flex flex-column">
+
+                                {% for field in form %}
+
+                                    {% if field.name == "name" or field.name == "phone" or field.name == "designation" %}
+
+                                        <div class="mb-3">
+
+                                            {{ field.label_tag }}
+
+                                            {{ field }}
+
+                                            {% if field.help_text %}
+                                                <small class="form-text text-muted">
+                                                    {{ field.help_text }}
+                                                </small>
+                                            {% endif %}
+
+                                            {% for error in field.errors %}
+                                                <div class="text-danger">
+                                                    {{ error }}
+                                                </div>
+                                            {% endfor %}
+
+                                        </div>
+
+                                    {% endif %}
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- RIGHT ADDRESS -->
+                        <div class="col-md-6 d-flex">
+
+                            <div class="w-100 d-flex flex-column">
+
+                                {% if form.address %}
+
+                                    {{ form.address.label_tag }}
+
+                                    <div class="flex-grow-1">
+                                        {{ form.address }}
+                                    </div>
+
+                                    {% for error in form.address.errors %}
+                                        <div class="text-danger">
+                                            {{ error }}
+                                        </div>
+                                    {% endfor %}
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ROLE SPECIFIC FIELDS -->
+                    <div class="row g-3 mb-3">
+
+                        {% for field in form %}
+
+                            {% if field.name == "specialization" %}
+                                <div class="col-md-6 role-field role-engineer">
+                                    {{ field.label_tag }}
+                                    {{ field }}
+                                </div>
+                            {% endif %}
+
+                            {% if field.name == "access_level" %}
+                                <div class="col-md-6 role-field role-accountant">
+                                    {{ field.label_tag }}
+                                    {{ field }}
+                                </div>
+                            {% endif %}
+
+                            {% if field.name == "supervisor" %}
+                                <div class="col-md-6 role-field role-staff role-sales">
+                                    {{ field.label_tag }}
+                                    {{ field }}
+                                </div>
+                            {% endif %}
+
+                            {% if field.name != "address" and field.name != "name" and field.name != "phone" and field.name != "designation" and field.name != "specialization" and field.name != "access_level" and field.name != "supervisor" and field.name != "is_active" %}
+
+                                <div class="col-md-6">
+
+                                    {{ field.label_tag }}
+
+                                    {{ field }}
+
+                                    {% if field.help_text %}
+                                        <small class="form-text text-muted">
+                                            {{ field.help_text }}
+                                        </small>
+                                    {% endif %}
+
+                                    {% for error in field.errors %}
+                                        <div class="text-danger">
+                                            {{ error }}
+                                        </div>
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </div>
+
+
+                    <!-- Active Toggle -->
+                    <div class="col-12 mt-3">
+
+                        <div class="form-check form-switch">
+
+                            {{ form.is_active }}
+
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                Active Employee
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Submit -->
+                    <div class="col-12 mt-4 text-end">
+
+                        <input type="submit"
+                               value="Register"
+                               class="btn btn-primary w-100 fw-semibold">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<!-- Role Toggle Script -->
+<script>
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    const roleSelect = document.getElementById("role-select");
+    const roleFields = document.querySelectorAll(".role-field");
+
+    function toggleFields(){
+
+        let role = roleSelect.value;
+
+        roleFields.forEach(field => {
+            field.style.display = "none";
+        });
+
+        if(role){
+
+            document
+                .querySelectorAll(".role-" + role)
+                .forEach(field => {
+                    field.style.display = "block";
+                });
+
+        }
+
+    }
+
+    roleSelect.addEventListener("change", toggleFields);
+
+    toggleFields();
+
+});
+
+</script>
+
+{% endblock %}
+

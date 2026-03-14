@@ -1,0 +1,114 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block link %}
+
+<link rel="stylesheet" href="{% static 'css/dashboard/notify.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+        <a href="{% url 'admin' %}">Admin Dashboard</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{% url 'emplist' %}">Employees</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{% url 'viewemp' emp.id %}">{{ emp.name }} Profile</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">
+        Send Notification
+    </li>
+  </ol>
+</nav>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+
+                <!-- Header -->
+                <div class="text-center mb-4">
+                    <i class="bi bi-bell-fill text-success" style="font-size:32px;"></i>
+                    <h4 class="mt-2 mb-1">Send Notification</h4>
+                    <p class="text-muted small">
+                        Send a direct message to <strong>{{ emp.name }}</strong>
+                    </p>
+                </div>
+
+                <!-- Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Notification Form -->
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <!-- Title -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Notification Title
+                        </label>
+                        <input 
+                            type="text" 
+                            name="title" 
+                            class="form-control"
+                            placeholder="Example: Meeting Reminder"
+                        >
+                    </div>
+
+                    <!-- Message -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            Message
+                        </label>
+                        <textarea 
+                            name="message"
+                            class="form-control"
+                            rows="5"
+                            placeholder="Write your notification message here..."
+                            required
+                        ></textarea>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-flex justify-content-between">
+
+                        <a href="{% url 'viewemp' emp.id %}" 
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Back
+                        </a>
+
+                        <button type="submit" 
+                                class="btn btn-success px-4">
+                            <i class="bi bi-send"></i> Send Notification
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+</div>
+
+{% endblock %}

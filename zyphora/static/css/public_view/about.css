@@ -1,0 +1,93 @@
+/* Hero Section */
+.zyphora-about-hero {
+    height: 60vh;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                url(/static/images/about-hero.png) center/cover no-repeat;
+    color: #ffffff;
+}
+
+.zyphora-title {
+    font-size: 3rem;
+    font-weight: 700;
+}
+
+.zyphora-subtitle {
+    font-size: 1.3rem;
+    opacity: 0.9;
+}
+
+/* Section Headings */
+.section-heading {
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.section-text {
+    color: #555;
+    line-height: 1.7;
+}
+
+/* Premium About Image Styling */
+.zyphora-about-img {
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s ease;
+}
+
+/* Subtle hover effect */
+.zyphora-about-img:hover {
+    transform: scale(1.03);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12);
+}
+
+/* Optional subtle border glow */
+.zyphora-about-img::selection {
+    background: transparent;
+}
+
+/* Mission Section */
+.zyphora-mission-section {
+    background-color: #f8f9fa;
+}
+
+.mission-card {
+    background: #ffffff;
+    border-radius: 12px;
+    transition: 0.3s ease;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+
+.mission-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+}
+
+/* List Styling */
+.zyphora-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.zyphora-list li {
+    padding: 8px 0;
+    position: relative;
+    padding-left: 25px;
+}
+
+.zyphora-list li::before {
+    content: "✔";
+    position: absolute;
+    left: 0;
+    color: #198754;
+    font-weight: bold;
+}
+
+/* CTA */
+.zyphora-cta {
+    background: #198754;
+    color: white;
+}
+
+.zyphora-cta h2 {
+    font-weight: 600;
+}

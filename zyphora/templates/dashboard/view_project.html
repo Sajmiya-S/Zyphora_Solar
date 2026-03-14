@@ -1,0 +1,250 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block link %}
+<link rel="stylesheet" href="{% static 'css/dashboard/view_project.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item">
+        <a href="{% url request.user.role %}">{{request.user.role|title}} Dashboard</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{% url 'project_list' %}">Projects</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">
+        View Project
+    </li>
+  </ol>
+</nav>
+
+<div class="container mt-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div class="d-flex align-items-center">
+            <h3 class="me-3 mb-0">{{ project.title }}</h3>
+            <span class="badge status-{{ project.status }}">
+                {{ project.get_status_display }}
+            </span>
+        </div>
+
+        <div>
+            <a href="{% url 'edit_project' project.id %}" class="btn btn-warning">
+                Edit Project
+            </a>
+            <a href="{% url 'add_activity' project.id %}" class="btn btn-primary">
+                Add Activity
+            </a>
+            <a href="{% url 'project_list' %}" class="btn btn-secondary">
+                Back
+            </a>
+        </div>
+
+    </div>
+
+    <div class="row g-4">
+
+        <!-- LEFT SIDE -->
+        <div class="col-lg-5">
+
+            <div class="card shadow-sm p-4">
+
+                <h5 class="mb-3">Project Information</h5>
+
+                <div class="lead-info mb-3">
+                    <strong>Project Type</strong>
+                    <p>{{ project.get_project_type_display }}</p>
+                </div>
+
+                <div class="lead-info mb-3">
+                    <strong>Lead</strong>
+                    <p>
+                        {% if project.lead %}
+                            {{ project.lead.name }}
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="lead-info mb-3">
+                    <strong>Location</strong>
+                    <p>{{ project.location|default:"N/A" }}</p>
+                </div>
+
+                <div class="lead-info mb-3">
+                    <strong>Start Date</strong>
+                    <p>{{ project.start_date|default:"N/A" }}</p>
+                </div>
+
+                <div class="lead-info mb-3">
+                    <strong>End Date</strong>
+                    <p>{{ project.end_date|default:"N/A" }}</p>
+                </div>
+
+                {% if request.user.role == 'admin' %}
+                <div class="lead-info mb-3">
+                    <strong>Engineer</strong>
+                    <p>
+                        {% if project.engineer %}
+                            {{ project.engineer.username }}
+                        {% else %}
+                            <span class="text-muted">Unassigned</span>
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="lead-info">
+                    <strong>Revenue</strong>
+                    <p>{{ project.revenue|default:"N/A" }}</p>
+                </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        
+        <!-- RIGHT SIDE -->
+        <div class="col-lg-7">
+
+            <div class="card shadow-sm p-4">
+
+                <h5 class="mb-3">Gallery</h5>
+
+                {% with images=project.gallery.all %}
+                {% with total=images|length %}
+
+                <div class="row g-2">
+
+                    {% for image in images|slice:":4" %}
+
+                    <div class="col-6 position-relative gallery-item">
+
+                        <a href="{% url 'project_gallery' project.id %}?next=project">
+
+                            <img src="{{ image.image.url }}"
+                                class="img-fluid rounded gallery-preview">
+
+                            {% if forloop.counter == 4 and total > 4 %}
+
+                            <div class="gallery-overlay">
+                                +{{ total|add:"-4" }} more
+                            </div>
+
+                            {% endif %}
+
+                        </a>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+                {% if total == 0 %}
+                <p class="text-muted">No images uploaded.</p>
+                {% endif %}
+
+                {% endwith %}
+                {% endwith %}
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Project Stage Tracker -->
+    <div class="card shadow-sm p-4 mt-3">
+
+        <h5 class="mb-4">Project Stage</h5>
+
+        <div class="stage-tracker">
+
+            {% for key, label in project.STATUS_CHOICES %}
+
+            <div class="stage
+                {% if key == project.status %}
+                    active
+                {% elif key in completed_stages %}
+                    completed
+                {% endif %}">
+
+                <div class="stage-circle"></div>
+
+                <div class="stage-label">
+                    {{ label }}
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+    <!-- Project Progress -->
+    <div class="card shadow-sm p-3 mt-3">
+
+        <strong>Project Progress</strong>
+
+        <div class="progress mt-2">
+
+            <div class="progress-bar
+            {% if progress < 30 %}
+                bg-danger
+            {% elif progress < 70 %}
+                bg-warning
+            {% else %}
+                bg-success
+            {% endif %}"
+            style="width: {{ progress }}%">
+
+            {{ progress }}%
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- Activity Timeline -->
+    <div class="card shadow-sm p-4 mt-4">
+
+        <h5 class="mb-4">Project Timeline</h5>
+
+        <div class="timeline">
+
+            {% for activity in activities %}
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="timeline-header">
+                        <strong>{{ activity.title }}</strong>
+                        <small class="text-muted float-end">
+                            {{ activity.created_at|date:"M d Y H:i" }}
+                            {% if activity.created_by %}
+                                by {{ activity.created_by.get_full_name }}
+                            {% endif %}
+                        </small>
+                    </div>
+                    <p class="mb-0 text-muted">{{ activity.description }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted">No activity yet.</p>
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

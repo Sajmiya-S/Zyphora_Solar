@@ -1,0 +1,30 @@
+{% extends 'public_view/base.html' %}
+
+{% block link %}
+<link rel="stylesheet" href="/static/css/public_view/blog_detail.css">
+{% endblock %}
+
+{% block code %}
+<div id="blog-detail-page">
+    <!-- Blog Header -->
+    <div class="blog-header">
+        <h1>{{ post.title }}</h1>
+        <p class="meta">Published on {{ post.published_date|date:"F j, Y" }}</p>
+    </div>
+
+    <!-- Blog Image -->
+    <div class="blog-image">
+        <img src="{{ post.image.url }}" alt="{{ post.title }}">
+    </div>
+
+    <!-- Blog Content -->
+    <div class="blog-content">
+        {{ post.content|safe }}
+    </div>
+
+    <!-- Back Button -->
+    <div class="blog-navigation">
+        <a href="{% url 'blog' %}" class="blog-back">← Back to Blogs</a>
+    </div>
+</div>
+{% endblock %}

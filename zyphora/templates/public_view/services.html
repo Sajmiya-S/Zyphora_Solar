@@ -1,0 +1,109 @@
+{% extends "public_view/base.html" %}
+{% load static %}
+{% block link %}
+<link rel="stylesheet" href="{% static 'css/public_view/services.css' %}">
+{% endblock %}
+
+{% block code %}
+
+<!-- Hero Section -->
+<section class="services-hero">
+    <div class="hero-overlay">
+        <div class="hero-content text-center">
+            <h1>Our Solar Services</h1>
+            <p>Smart Solar Energy with Advanced Waterproof Roofing Systems Across Kerala</p>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="services-section container">
+
+    <!-- Service Item -->
+    <div class="service-item">
+        <div class="service-image">
+            <img src="{% static 'images/on-grid.jpg' %}" alt="On Grid Solar">
+        </div>
+        <div class="service-content">
+            <h2>On-Grid Solar System Installation</h2>
+            <p>Reduce electricity bills with grid-connected solar systems. Export excess power through net metering and enjoy faster ROI.</p>
+            <ul>
+                <li>Save up to 90% on electricity bills</li>
+                <li>Government subsidy support</li>
+                <li>Low maintenance</li>
+                <li>Ideal for homes & offices</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="service-item reverse">
+        <div class="service-image">
+            <img src="{% static 'images/off-grid.jpg' %}" alt="Off Grid Solar">
+        </div>
+        <div class="service-content">
+            <h2>Off-Grid Solar System</h2>
+            <p>Perfect for areas with frequent power cuts. Store solar energy in batteries for uninterrupted power supply.</p>
+            <ul>
+                <li>24/7 power backup</li>
+                <li>Independent from grid</li>
+                <li>Ideal for rural & remote areas</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="service-item">
+        <div class="service-image">
+            <img src="{% static 'images/hybrid.webp' %}" alt="Hybrid Solar">
+        </div>
+        <div class="service-content">
+            <h2>Hybrid Solar System</h2>
+            <p>Combine grid connection with battery backup for maximum savings and reliability.</p>
+            <ul>
+                <li>Smart energy management</li>
+                <li>Power during outages</li>
+                <li>Future-ready technology</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="service-item reverse">
+        <div class="service-image">
+            <img src="/static/images/com.png" alt="Commercial Solar">
+        </div>
+        <div class="service-content">
+            <h2>Commercial & Industrial Solar Projects</h2>
+            <p>Reduce operational costs with large-scale solar installations for businesses and industries.</p>
+            <ul>
+                <li>Energy audit & load analysis</li>
+                <li>Custom system design</li>
+                <li>End-to-end project execution</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="service-item">
+        <div class="service-image">
+            <img src="/static/images/service.jpg" alt="Solar Maintenance">
+        </div>
+        <div class="service-content">
+            <h2>Solar Maintenance & AMC Services</h2>
+            <p>Ensure maximum efficiency and longer lifespan with professional maintenance services.</p>
+            <ul>
+                <li>Panel cleaning</li>
+                <li>Inverter inspection</li>
+                <li>Performance monitoring</li>
+                <li>Safety checks</li>
+            </ul>
+        </div>
+    </div>
+
+</section>
+
+<!-- CTA Section -->
+<section class="services-cta">
+    <h2>Ready to Switch to Solar?</h2>
+    <p>Get a free site inspection today.</p>
+    <a href="{% url 'contact' %}" class="cta-btn">Contact Us</a>
+</section>
+
+{% endblock %}

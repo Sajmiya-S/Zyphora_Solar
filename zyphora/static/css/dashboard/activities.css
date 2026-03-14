@@ -1,0 +1,37 @@
+/* Timeline */
+
+.timeline{
+    position:relative;
+    margin-left:10px;
+}
+
+.timeline:before{
+    content:"";
+    position:absolute;
+    left:9px;
+    top:0;
+    width:2px;
+    height:100%;
+    background:#dee2e6;
+}
+
+.timeline-item{
+    position:relative;
+    padding-left:30px;
+    margin-bottom:25px;
+}
+
+.timeline-dot{
+    width:16px;
+    height:16px;
+    background:#0d6efd;
+    border-radius:50%;
+    position:absolute;
+    left:2px;
+    top:3px;
+}
+
+.timeline-content{
+    padding:12px 15px;
+    border-radius:6px;
+}

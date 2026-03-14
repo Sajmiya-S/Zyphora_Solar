@@ -1,0 +1,126 @@
+/* ===== Hero Section ===== */
+/* ===== Hero Section ===== */
+.calculator-hero {
+    position: relative; /* keep background under navbar */
+    padding-top: 100px; /* internal padding for text */
+    padding-bottom: 4rem;
+    text-align: center;
+    background: linear-gradient(90deg, #f2b705, #f9d976);
+    color: #fff;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+/* Hero text wrapper inside hero */
+.calculator-hero .container {
+    padding-top: 70px; /* height of navbar to push text down */
+}
+.calculator-hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.calculator-hero p {
+    font-size: 1.2rem;
+}
+
+/* ===== Calculator Section ===== */
+.calculator-section {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input {
+    padding: 0.8rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    transition: border 0.3s, box-shadow 0.3s;
+}
+
+.form-group input:focus {
+    border-color: #f2b705;
+    box-shadow: 0 0 5px rgba(242, 183, 5, 0.4);
+    outline: none;
+}
+
+/* Submit Button */
+button[type="submit"] {
+    width: 100%;
+    background: #f2b705;
+    color: #fff;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+
+button[type="submit"]:hover {
+    background: #d19c05;
+    transform: translateY(-2px);
+}
+
+/* ===== Result Section ===== */
+.result {
+    background: #e6f4ea;
+    border-left: 6px solid #2ecc71;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.result h2 {
+    font-size: 1.8rem;
+    color: #27ae60;
+    margin-bottom: 0.5rem;
+}
+
+.result p {
+    font-size: 1.1rem;
+    color: #555;
+}
+
+/* Result Button */
+.result .btn-primary {
+    background: #27ae60;
+    border-color: #27ae60;
+    padding: 0.7rem 1.5rem;
+    font-weight: 600;
+    margin-top: 1rem;
+    transition: background 0.3s;
+}
+
+.result .btn-primary:hover {
+    background: #1e8449;
+    border-color: #1e8449;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .calculator-hero h1 {
+        font-size: 2rem;
+    }
+    .calculator-section {
+        padding: 1.5rem;
+    }
+}

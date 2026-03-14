@@ -1,0 +1,74 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'allocation_list' %}">Material Allocation</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Allocate Material</li>
+    </ol>
+</nav>
+
+<div class="main-content">
+    <div class="container-fluid">
+
+        <h4 class="mb-3">
+            <i class="bi bi-box-arrow-up-right"></i>
+            Allocate Material
+        </h4>
+
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">Project</label>
+                            {{ form.project }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Material</label>
+                            {{ form.material }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Quantity</label>
+                            {{ form.quantity }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Allocated By</label>
+                            {{ form.allocated_by }}
+                        </div>
+
+                    </div>
+
+                    <div class="mt-4">
+
+                        <button class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i>
+                            Allocate Material
+                        </button>
+
+                        <a href="{% url 'allocation_list' %}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

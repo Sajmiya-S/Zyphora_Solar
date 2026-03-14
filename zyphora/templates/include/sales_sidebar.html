@@ -1,0 +1,129 @@
+<!-- ================= SALES SIDEBAR ================= -->
+
+<!-- CRM SECTION -->
+<li class="sidebar-heading mt-3 text-muted small text-uppercase">CRM MANAGEMENT</li>
+
+<li class="nav-item">
+    <a class="nav-link d-flex align-items-center justify-content-between" 
+       data-bs-toggle="collapse" href="#crmMenu">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-person-lines-fill nav-icon text-primary"></i>
+            <span class="link-text ms-2">Leads
+                {% if lead_count %}
+                    <span class="badge bg-primary rounded-pill">{{ lead_count }}</span>
+                {% endif %}
+            </span>
+        </div>
+        <i class="bi bi-chevron-down submenu-arrow"></i>
+    </a>
+    <div class="collapse submenu" id="crmMenu" data-bs-parent="#sidebarMenu">
+        <ul class="nav flex-column ms-4">
+            <li><a href="{% url 'lead_list' %}" class="nav-link">All Leads</a></li>
+            <li><a href="{% url 'add_lead' %}" class="nav-link">Add Lead</a></li>
+            <li><a href="" class="nav-link">Follow-ups</a></li>
+            <li><a href="{% url 'review' %}" class="nav-link">User Reviews</a></li>
+        </ul>
+    </div>
+</li>
+
+<!-- CLIENTS SECTION -->
+<li class="sidebar-heading mt-3 text-muted small text-uppercase">CLIENT MANAGEMENT</li>
+
+<li class="nav-item">
+    <a class="nav-link d-flex align-items-center justify-content-between" 
+       data-bs-toggle="collapse" href="#clientMenu">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-people nav-icon text-success"></i>
+            <span class="link-text ms-2">Clients</span>
+        </div>
+        <i class="bi bi-chevron-down submenu-arrow"></i>
+    </a>
+    <div class="collapse submenu" id="clientMenu" data-bs-parent="#sidebarMenu">
+        <ul class="nav flex-column ms-4">
+            <li><a href="" class="nav-link">All Clients</a></li>
+            <li><a href="" class="nav-link">Add Client</a></li>
+            <li><a href="" class="nav-link">Client Feedback</a></li>
+        </ul>
+    </div>
+</li>
+
+<!-- SALES / ORDERS -->
+<li class="sidebar-heading mt-3 text-muted small text-uppercase">SALES OPERATIONS</li>
+
+<li class="nav-item">
+    <a class="nav-link d-flex align-items-center justify-content-between" 
+       data-bs-toggle="collapse" href="#orderMenu">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-cart-check nav-icon text-info"></i>
+            <span class="link-text ms-2">Orders</span>
+        </div>
+        <i class="bi bi-chevron-down submenu-arrow"></i>
+    </a>
+    <div class="collapse submenu" id="orderMenu" data-bs-parent="#sidebarMenu">
+        <ul class="nav flex-column ms-4">
+            <li><a href="" class="nav-link">All Orders</a></li>
+            <li><a href="" class="nav-link">New Order</a></li>
+            <li><a href="" class="nav-link">Pending Orders</a></li>
+        </ul>
+    </div>
+</li>
+
+<!-- FINANCE SECTION -->
+<li class="sidebar-heading mt-3 text-muted small text-uppercase">FINANCE</li>
+
+<li class="nav-item">
+    <a class="nav-link d-flex align-items-center justify-content-between" 
+       data-bs-toggle="collapse" href="#financeMenu">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-cash-coin nav-icon text-danger"></i>
+            <span class="link-text ms-2">Payments & Invoices</span>
+        </div>
+        <i class="bi bi-chevron-down submenu-arrow"></i>
+    </a>
+    <div class="collapse submenu" id="financeMenu" data-bs-parent="#sidebarMenu">
+        <ul class="nav flex-column ms-4">
+            <li><a href="" class="nav-link">Invoices</a></li>
+            <li><a href="" class="nav-link">Payments</a></li>
+            <li><a href="" class="nav-link">Pending Receivables</a></li>
+            <li><a href="" class="nav-link">Reports</a></li>
+        </ul>
+    </div>
+</li>
+
+<!-- SYSTEM / NOTIFICATIONS -->
+<li class="sidebar-heading mt-3 text-muted small text-uppercase">SYSTEM</li>
+
+<li class="nav-item">
+    <a class="nav-link d-flex align-items-center justify-content-between" 
+       data-bs-toggle="collapse" href="#notificationMenu">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-bell nav-icon text-warning"></i>
+            <span class="link-text ms-2">
+                Notifications
+                {% if unread_count != 0 %}
+                    <span class="badge bg-danger rounded-pill">{{ unread_count }}</span>
+                {% endif %}
+            </span>
+        </div>
+        <i class="bi bi-chevron-down submenu-arrow"></i>
+    </a>
+    <div class="collapse submenu" id="notificationMenu" data-bs-parent="#sidebarMenu">
+        <ul class="nav flex-column ms-4">
+            <li><a href="{% url 'notifications' 'all' %}" class="nav-link">All Notifications</a></li>
+            <li><a href="{% url 'notifications' 'unread' %}" class="nav-link d-flex justify-content-between">
+                Unread <span class="badge bg-danger rounded-pill">{{ unread_count }}</span>
+            </a></li>
+            <li><a href="{% url 'notifications' 'admin' %}" class="nav-link">Admin Alerts</a></li>
+            <li><a href="{% url 'notifications' 'crm' %}" class="nav-link">Lead Alerts</a></li>
+            <li><a href="{% url 'notifications' 'finance' %}" class="nav-link">Payment Alerts</a></li>
+        </ul>
+    </div>
+</li>
+
+<!-- PROFILE -->
+<li class="nav-item mt-3">
+    <a href="{% url 'profile' %}" class="nav-link d-flex align-items-center">
+        <i class="bi bi-person-circle nav-icon text-dark"></i>
+        <span class="link-text ms-2">My Profile</span>
+    </a>
+</li>

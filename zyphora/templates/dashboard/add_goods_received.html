@@ -1,0 +1,67 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- Breadcrumbs above the container -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <div class="container-fluid">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Receive Goods</li>
+        </ol>
+    </div>
+</nav>
+
+<div class="main-content">
+    <div class="container-fluid">
+
+        <h4 class="mb-3">
+            <i class="bi bi-box-arrow-in-down"></i>
+            Receive Goods
+        </h4>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">Purchase Order</label>
+                            {{ form.purchase_order }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Received Date</label>
+                            {{ form.received_date }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Received By</label>
+                            {{ form.received_by }}
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label">Notes</label>
+                            {{ form.notes }}
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <button class="btn btn-success mt-3">
+                <i class="bi bi-check-circle"></i>
+                Confirm Goods Received
+            </button>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

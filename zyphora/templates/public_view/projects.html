@@ -1,0 +1,98 @@
+{% extends 'public_view/base.html' %}
+{% load static %}
+
+{% block link %}
+<link rel="stylesheet" href="/static/css/public_view/projects.css">
+{% endblock %}
+
+{% block code %}
+
+<section class="projects-hero text-white text-center d-flex align-items-center justify-content-center">
+    <div class="hero-overlay"></div>
+    <div class="container position-relative">
+        <h1 class="display-4 fw-bold">Our Solar Projects</h1>
+        <p class="lead">Powering Homes & Businesses Across Kerala</p>
+    </div>
+</section>
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Recent Installations</h2>
+            <p class="text-muted">Delivering Quality, Efficiency & Long-Term Savings</p>
+        </div>
+
+        <div class="row g-4">
+            
+            <!-- Project Card -->
+            <div class="col-md-4">
+                <div class="card project-card shadow-sm border-0">
+                    <img src="{% static 'images/project1.jpg' %}" class="card-img-top" alt="Residential Solar Project">
+                    <div class="card-body">
+                        <h5 class="card-title">5kW Residential Rooftop</h5>
+                        <p class="card-text text-muted">
+                            Location: Trivandrum<br>
+                            Type: On-grid Solar System<br>
+                            Annual Savings: ₹65,000+
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Repeat Cards -->
+            
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Before & After Installation</h2>
+            <p class="text-muted">See the Transformation</p>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <img src="{% static 'images/before.jpg' %}" class="img-fluid rounded shadow">
+            </div>
+            <div class="col-md-6">
+                <img src="{% static 'images/after.jpg' %}" class="img-fluid rounded shadow">
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="py-5 text-white text-center" style="background: linear-gradient(135deg, #0f5132, #198754);">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <h2 class="fw-bold">150+</h2>
+                <p>Projects Completed</p>
+            </div>
+            <div class="col-md-3">
+                <h2 class="fw-bold">1.2MW+</h2>
+                <p>Installed Capacity</p>
+            </div>
+            <div class="col-md-3">
+                <h2 class="fw-bold">98%</h2>
+                <p>Customer Satisfaction</p>
+            </div>
+            <div class="col-md-3">
+                <h2 class="fw-bold">25 Years</h2>
+                <p>Performance Warranty</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 text-center bg-dark text-white">
+    <div class="container">
+        <h2 class="fw-bold">Ready to Start Your Solar Project?</h2>
+        <p class="mb-4">Get a free site inspection today.</p>
+        <a href="{% url 'contact' %}" class="btn btn-success btn-lg px-4">Book Free Inspection</a>
+    </div>
+</section>
+
+
+{% endblock %}

@@ -1,0 +1,220 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block link %}
+<link rel="stylesheet" href="{% static 'css/dashboard/admin/admin.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="container-fluid">
+        <!-- KPI CARDS -->
+        <div class="row g-4">
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="kpi-card leads text-center">
+                    <div class="kpi-icon"><i class="bi bi-person-lines-fill"></i></div>
+                    <div class="kpi-value">{{ total_leads }}</div>
+                    <div class="kpi-label">Total Leads</div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="kpi-card projects text-center">
+                    <div class="kpi-icon"><i class="bi bi-folder-check"></i></div>
+                    <div class="kpi-value">{{ active_projects }}</div>
+                    <div class="kpi-label">Active Projects</div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="kpi-card revenue text-center">
+                    <div class="kpi-icon"><i class="bi bi-currency-rupee"></i></div>
+                    <div class="kpi-value">₹8,50,000</div>
+                    <div class="kpi-label">Revenue</div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="kpi-card payments text-center">
+                    <div class="kpi-icon"><i class="bi bi-credit-card"></i></div>
+                    <div class="kpi-value">₹2,30,000</div>
+                    <div class="kpi-label">Pending Payments</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHART ROW 1 -->
+        <div class="row">
+            <div class="col-md-6 mb-4 mt-4">
+                <div class="card shadow-sm p-3">
+                    <h6>Monthly Leads Growth</h6>
+                    <canvas id="growthChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4 mt-4">
+                <div class="card shadow-sm p-3">
+                    <h6>Project Type Distribution</h6>
+                    <canvas id="projectTypeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHART ROW 2 -->
+        <div class="row">
+            <div class="col-md-6 mb-4 ">
+                <div class="card shadow-sm p-3">
+                    <h6>Lead to Project Conversion</h6>
+                    <canvas id="conversionChart" width="300" height="300"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm p-3">
+                    <h6>Project Status Distribution</h6>
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- RECENT LEADS -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="mb-3">Recent Leads</h5>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Service</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lead in recent_leads %}
+                        <tr>
+                            <td>{{ lead.name }}</td>
+                            <td>{{ lead.phone }}</td>
+                            <td>{{ lead.get_service_display }}</td>
+                            <td>
+                                <span class="badge bg-primary">
+                                    {{ lead.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script>
+// Precompute totals
+const converted = {{ converted }};
+const notConverted = {{ not_converted }};
+const total = converted + notConverted || 1;
+
+
+// =======================
+// Conversion Doughnut Chart
+// =======================
+new Chart(document.getElementById('conversionChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Converted', 'Not Converted'],
+        datasets: [{
+            data: [converted, notConverted],
+            backgroundColor: ['#28a745', '#dc3545'],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const value = context.parsed;
+                        const percent = ((value / total) * 100).toFixed(1);
+                        return `${context.label}: ${value} (${percent}%)`;
+                    }
+                }
+            },
+            datalabels: {
+                color: '#fff',
+                formatter: (value) => ((value / total) * 100).toFixed(1) + '%',
+                font: { weight: 'bold', size: 14 }
+            }
+        },
+    },
+    plugins: [
+        ChartDataLabels,
+        {
+            id: 'centerText',
+            beforeDraw(chart) {
+                const { ctx, chartArea: { width, height } } = chart;
+                ctx.save();
+                ctx.font = 'bold 16px sans-serif';
+                ctx.fillStyle = '#000';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('Total Leads', width / 2, height / 2 - 10);
+                ctx.fillText(total, width / 2, height / 2 + 15);
+                ctx.restore();
+            }
+        }
+    ]
+});
+
+// =======================
+// Monthly Leads Growth
+// =======================
+new Chart(document.getElementById('growthChart'), {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Leads',
+            data: [10, 18, 25, 20, 30, 35],
+            borderColor: '#0d6efd',
+            tension: 0.4
+        }]
+    }
+});
+
+// =======================
+// Project Status Pie
+// =======================
+new Chart(document.getElementById('statusChart'), {
+    type: 'pie',
+    data: {
+        labels: ['Site Visit', 'Design', 'Installation', 'Electrical', 'Energisation'],
+        datasets: [{
+            data: [10, 8, 12, 9, 9],
+            backgroundColor: ['#ffc107','#17a2b8','#007bff','#6f42c1','#28a745']
+        }]
+    }
+});
+
+// =======================
+// Project Type Bar
+// =======================
+new Chart(document.getElementById('projectTypeChart'), {
+    type: 'bar',
+    data: {
+        labels: ['On-grid','Off-grid','Hybrid','Leakproof','Commercial'],
+        datasets: [{
+            label: 'Number of Projects',
+            data: [15,8,12,10,5],
+            backgroundColor: ['#0d6efd','#198754','#ffc107','#6f42c1','#dc3545']
+        }]
+    },
+    options: {
+        plugins: { legend: { display: false } }
+    }
+});
+</script>
+
+{% endblock %}

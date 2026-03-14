@@ -1,0 +1,134 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+
+{% block link %}
+
+    <link rel="stylesheet" href="{% static 'css/dashboard/accountant/accountant.css' %}">
+
+{% endblock %}
+
+
+{% block content %}
+<div class="main-content">
+
+    <div class="container-fluid mt-4">
+        <div class="row g-4">
+
+            <!-- Total Revenue -->
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="kpi-card revenue text-center">
+                    <div class="kpi-icon">
+                        <i class="bi bi-currency-rupee"></i>
+                    </div>
+                    <div class="kpi-value">₹12,50,000</div>
+                    <div class="kpi-label">Total Revenue</div>
+                </div>
+            </div>
+
+            <!-- Total Expenses -->
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="kpi-card expenses text-center">
+                    <div class="kpi-icon">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div class="kpi-value">₹7,20,000</div>
+                    <div class="kpi-label">Total Expenses</div>
+                </div>
+            </div>
+
+            <!-- Net Profit -->
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="kpi-card profit text-center">
+                    <div class="kpi-icon">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <div class="kpi-value">₹5,30,000</div>
+                    <div class="kpi-label">Net Profit</div>
+                </div>
+            </div>
+
+            <!-- Pending Payments -->
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="kpi-card pending text-center">
+                    <div class="kpi-icon">
+                        <i class="bi bi-credit-card-2-front-fill"></i>
+                    </div>
+                    <div class="kpi-value">₹3,10,000</div>
+                    <div class="kpi-label">Pending Payments</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+<div class="row mt-4">
+
+    <!-- Revenue vs Expenses -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm p-3">
+            <h6>Revenue vs Expenses</h6>
+            <canvas id="financeChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Expense Breakdown -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm p-3">
+            <h6>Expense Breakdown</h6>
+            <canvas id="expenseChart"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+/* Revenue vs Expenses */
+new Chart(document.getElementById('financeChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [
+            {
+                label: 'Revenue',
+                data: [200000, 180000, 220000, 250000, 210000, 300000],
+                backgroundColor: '#198754'
+            },
+            {
+                label: 'Expenses',
+                data: [120000, 100000, 150000, 160000, 140000, 170000],
+                backgroundColor: '#dc3545'
+            }
+        ]
+    }
+});
+
+
+/* Expense Breakdown */
+new Chart(document.getElementById('expenseChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Materials', 'Labour', 'Transport', 'Misc'],
+        datasets: [{
+            data: [300000, 200000, 100000, 120000],
+            backgroundColor: [
+                '#0d6efd',
+                '#ffc107',
+                '#6f42c1',
+                '#dc3545'
+            ]
+        }]
+    }
+});
+
+</script>
+
+
+
+{% endblock %}

@@ -1,0 +1,30 @@
+.card{
+    border-radius:10px;
+}
+
+.card input,
+.card textarea,
+.card select{
+    width:100%;
+    margin-bottom:15px;
+}
+
+textarea{
+    min-height:200px;
+}
+
+
+.breadcrumb {
+    background: transparent;
+    padding-bottom: 20px;
+    font-size: 14px;
+}
+
+.breadcrumb a {
+    text-decoration: none;
+    color: #0d6efd;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}

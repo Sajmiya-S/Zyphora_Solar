@@ -1,0 +1,186 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block link %}
+<link rel="stylesheet" href="{% static 'css/dashboard/admin/update_lead.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'admin' %}">Admin Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'lead_list' %}">Leads</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'view_lead' lead.id %}">View Lead</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Update Lead</li>
+  </ol>
+</nav>
+
+<div class="container mt-4">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center">
+            <h3 class="me-3 mb-0">{{ lead.name }}</h3>
+            <span class="badge status-{{ lead.status }}">{{ lead.get_status_display }}</span>
+        </div>
+    </div>
+
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        Please correct the errors below.
+        {{ form.errors }}
+    </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="row g-4">
+
+            <!-- Customer Info -->
+            <div class="col-lg-5">
+                <div class="card shadow-sm p-4 h-100">
+                    <h5 class="mb-3">Customer Information</h5>
+                    <div class="lead-info mb-3"><strong>Name:</strong> {{ lead.name }}</div>
+                    <div class="lead-info mb-3"><strong>Phone:</strong> <a href="tel:{{ lead.phone }}">{{ lead.phone }}</a></div>
+                    <div class="lead-info mb-3"><strong>Email:</strong> <a href="mailto:{{ lead.email }}">{{ lead.email|default:"Not provided" }}</a></div>
+                    <div class="lead-info mb-3"><strong>Service:</strong> {{ lead.get_service_display }}</div>
+                    <div class="lead-info mb-3"><strong>Message:</strong> {{ lead.message|default:"No message provided." }}</div>
+                    <div class="lead-info"><strong>Created:</strong> {{ lead.created_at|date:"M d, Y" }}</div>
+                </div>
+            </div>
+
+            <!-- Lead Management -->
+            <div class="col-lg-7">
+                <div class="card shadow-sm p-4">
+                    <h5 class="mb-4">Lead Management</h5>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Status</label>
+                            {{ form.status }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Priority</label>
+                            {{ form.priority }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Assigned To</label>
+                            {{ form.assigned_to }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Site Visit Date</label>
+                            {% if not lead.site_visit_done %}
+                                {{ form.site_visit_date }}
+                            {% else %}
+                                <p class="text-success">Completed on {{ lead.site_visit_completed_at|date:"M d, Y" }}</p>
+                            {% endif %}
+                        </div>
+
+
+                        <div class="col-md-6">
+                            
+                            {% if not lead.follow_up_done %}
+                                <label class="form-label">Follow-up Date</label>
+                                    {{ form.follow_up_date }}
+                            {% else %}
+                                
+                                <label class="form-label mt-2">Next Follow-up Date</label>
+                                    {{ form.follow_up_date }}
+                                <p class="text-success">Follow-up completed on {{ lead.follow_up_completed_at|date:"M d, Y" }}</p>
+                            {% endif %}
+                        </div>
+
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Internal Notes</label>
+                        {{ form.notes }}
+                    </div>
+
+                    <div class="text-end">
+                        <button class="btn btn-primary px-4">Update Lead</button>
+                    </div>
+
+                </div>
+
+                <!-- ALERTS UNDER LEAD MANAGEMENT -->
+                <div class="mt-3">
+
+                    <!-- Follow-up Alert -->
+                    {% if lead.follow_up_date %}
+                        {% if lead.followup_status == 'done' and lead.follow_up_date > lead.follow_up_completed_at %}
+                            <!-- Upcoming follow-up alert -->
+                            <div class="d-flex justify-content-between align-items-center alert alert-secondary">
+                                <div>Follow-up Upcoming: {{ lead.follow_up_date|date:"M d, Y" }}</div>
+                                <div>
+                                    <form method="post" action="{% url 'mark_followup_done' lead.id %}">{% csrf_token %}
+                                        <button class="btn btn-success btn-sm">Mark Done</button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% elif lead.followup_status != 'done' %}
+                            <!-- Pending follow-up alert -->
+                            <div class="d-flex justify-content-between align-items-center alert
+                                {% if lead.followup_status == 'today' %}alert-warning
+                                {% elif lead.followup_status == 'overdue' %}alert-danger
+                                {% else %}alert-secondary{% endif %}">
+                                <div>
+                                    {% if lead.followup_status == 'today' %}Follow-up Today: {{ lead.follow_up_date|date:"M d, Y" }}
+                                    {% elif lead.followup_status == 'overdue' %}Follow-up Overdue: {{ lead.follow_up_date|date:"M d, Y" }}
+                                    {% else %}Follow-up Upcoming: {{ lead.follow_up_date|date:"M d, Y" }}{% endif %}
+                                </div>
+                                <div>
+                                    <form method="post" action="{% url 'mark_followup_done' lead.id %}">{% csrf_token %}
+                                        <button class="btn btn-success btn-sm">Mark Done</button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+
+
+                    <!-- Site Visit Alert -->
+                    {% if lead.site_visit_date and not lead.site_visit_done %}
+                        <div class="d-flex justify-content-between align-items-center alert alert-info mt-2">
+                            <div>
+                                {% if lead.site_visit_status == 'today' %}Site Visit Today: {{ lead.site_visit_date|date:"M d, Y" }}
+                                {% elif lead.site_visit_status == 'overdue' %}Site Visit Overdue: {{ lead.site_visit_date|date:"M d, Y" }}
+                                {% else %}Site Visit Scheduled: {{ lead.site_visit_date|date:"M d, Y" }}{% endif %}
+                            </div>
+                            <div>
+                                <form method="post" action="{% url 'mark_site_visit_done' lead.id %}">{% csrf_token %}
+                                    <button class="btn btn-primary btn-sm">Mark Done</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                </div>
+
+                <!-- Lead Score -->
+                <div class="card shadow-sm p-3 mt-3">
+                    <strong>Lead Score</strong>
+                    <div class="progress mt-2">
+                        <div class="progress-bar
+                            {% if lead.score < 40 %}bg-danger
+                            {% elif lead.score < 70 %}bg-warning
+                            {% else %}bg-success{% endif %}" style="width: {{ lead.score }}%">
+                            {{ lead.score }}%
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

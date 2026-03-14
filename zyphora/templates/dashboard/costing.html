@@ -1,0 +1,39 @@
+{% extends "dashboard/dashboard.html" %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <div class="container-fluid">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Project Costing</li>
+        </ol>
+    </div>
+</nav>
+
+<h4>Project Costing</h4>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Project</th>
+            <th>Estimated Cost</th>
+            <th>Actual Cost</th>
+            <th>Profit</th>
+            <th>Last Updated</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for project in projects %}
+        <tr>
+            <td>{{ project.name }}</td>
+            <td>{{ project.costing.estimated_cost }}</td>
+            <td>{{ project.costing.actual_cost }}</td>
+            <td>{{ project.costing.profit }}</td>
+            <td>{{ project.costing.last_updated }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

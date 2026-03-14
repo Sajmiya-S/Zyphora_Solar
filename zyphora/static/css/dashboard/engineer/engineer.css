@@ -1,0 +1,85 @@
+/* ================= MAIN CONTENT FIX ================= */
+
+.main-content {
+    overflow-x: hidden;     /* Prevent horizontal scroll */
+}
+
+
+/* ================= KPI CARD BASE ================= */
+
+.kpi-card {
+    width: 100%;
+    min-height: 180px;
+    border-radius: 14px;
+    padding: 28px 20px;
+    color: #fff;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(8px);
+}
+
+/* Hover Effect */
+.kpi-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+}
+
+
+/* ================= ICON / TEXT ================= */
+
+.kpi-icon {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+    opacity: 0.95;
+}
+
+.kpi-value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin: 6px 0;
+    letter-spacing: 0.5px;
+}
+
+.kpi-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    opacity: 0.95;
+}
+
+
+
+
+/* ENGINEER KPI COLORS */
+
+.kpi-card.assigned {
+    background: linear-gradient(135deg, #0d6efd, #3b8dff);
+}
+
+.kpi-card.ongoing {
+    background: linear-gradient(135deg, #ffc107, #ffda6a);
+    color: #000;
+}
+
+.kpi-card.completed {
+    background: linear-gradient(135deg, #198754, #42b883);
+}
+
+.kpi-card.pending {
+    background: linear-gradient(135deg, #dc3545, #ff6b6b);
+}
+
+
+/* ================= RESPONSIVE SAFETY ================= */
+
+/* Ensure wrapping always works */
+.row {
+    flex-wrap: wrap;
+}
+
+/* Make sure columns never overflow */
+[class*="col-"] {
+    max-width: 100%;
+}

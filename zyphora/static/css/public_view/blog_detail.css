@@ -1,0 +1,83 @@
+/* =======================
+   Single Blog Post Page
+======================= */
+#blog-detail-page {
+    max-width: 900px;
+    margin: 5rem auto 3rem auto; /* top margin to avoid navbar overlap */
+    padding: 0 1rem;
+    text-align: left;
+}
+
+.blog-header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.blog-header .meta {
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.blog-image img {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    object-fit: cover;
+}
+
+.blog-content {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: #333;
+}
+
+.blog-content h2, 
+.blog-content h3 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.blog-content p {
+    margin-bottom: 1.2rem;
+}
+
+.blog-content ul, 
+.blog-content ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1.2rem;
+}
+
+.blog-navigation {
+    margin-top: 3rem;
+}
+
+.blog-back {
+    background-color: orange;
+    color: black;
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.blog-back:hover {
+    background-color: rgb(217, 142, 5);
+    color: black;
+    transform: translateY(-2px);
+}
+
+/* =======================
+   Responsive
+======================= */
+@media (max-width: 768px) {
+    .blog-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .blog-content {
+        font-size: 0.95rem;
+    }
+}

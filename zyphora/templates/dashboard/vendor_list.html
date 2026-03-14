@@ -1,0 +1,202 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block link %}
+<link rel="stylesheet" href="{% static 'css/dashboard/vendor_list.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item">
+        <a href="{% url 'admin' %}">Admin Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active">
+        Vendors
+    </li>
+  </ol>
+</nav>
+
+<div class="container mt-4">
+
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+
+        <div>
+            <h1 class="page-title">
+                <i class="bi bi-truck"></i>
+                Vendor Management
+            </h1>
+
+            <p class="text-muted">
+                Manage suppliers for materials and equipment
+            </p>
+        </div>
+
+        <a href="{% url 'add_vendor' %}" class="btn btn-success">
+            <i class="bi bi-plus"></i> Add Vendor
+        </a>
+
+    </div>
+
+
+    <!-- Search -->
+    <form method="GET" class="row g-2 mb-3">
+
+        <div class="col-md-4">
+
+            <input type="text"
+                   name="q"
+                   class="form-control"
+                   placeholder="Search vendor..."
+                   value="{{ request.GET.q }}">
+
+        </div>
+
+        <div class="col-md-auto">
+
+            <button class="btn btn-primary">
+                <i class="bi bi-search"></i> Search
+            </button>
+
+        </div>
+
+    </form>
+
+
+    <!-- Vendor Table -->
+    <div class="card shadow-sm">
+
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>Vendor Name</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>GST</th>
+                            <th>Address</th>
+                            <th>Created</th>
+                            <th class="text-center">Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for vendor in vendors %}
+
+                        <tr>
+
+                            <td>
+                                <strong>{{ vendor.name }}</strong>
+                            </td>
+
+                            <td>
+                                <a href="tel:{{ vendor.phone }}">
+                                    {{ vendor.phone }}
+                                </a>
+                            </td>
+
+                            <td>
+
+                                {% if vendor.email %}
+
+                                <a href="mailto:{{ vendor.email }}">
+                                    {{ vendor.email }}
+                                </a>
+
+                                {% else %}
+
+                                <span class="text-muted">-</span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ vendor.gst_number|default:"-" }}
+                            </td>
+
+                            <td>
+
+                                {% if vendor.address %}
+
+                                    {{ vendor.address|truncatechars:40 }}
+
+                                {% else %}
+
+                                    <span class="text-muted">-</span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ vendor.created_at|date:"d M Y" }}
+                            </td>
+
+                            <td class="text-center">
+
+                                <div class="d-flex justify-content-center gap-1">
+
+                                    <a href="{% url 'view_vendor' vendor.id %}"
+                                       class="btn btn-sm btn-info">
+
+                                       <i class="bi bi-eye"></i>
+                                    </a>
+
+                                    <a href="{% url 'edit_vendor' vendor.id %}"
+                                       class="btn btn-sm btn-warning">
+
+                                       <i class="bi bi-pencil"></i>
+                                    </a>
+
+                                    <form action="{% url 'delete_vendor' vendor.id %}" method="post" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger"
+                                                onclick="return confirm('Are you sure you want to delete this vendor details?');">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="7" class="text-center p-4">
+
+                                No vendors found
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

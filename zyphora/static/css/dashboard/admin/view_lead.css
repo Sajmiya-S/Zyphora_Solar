@@ -1,0 +1,146 @@
+.card {
+    border: none;
+    border-radius: 8px;
+}
+
+p {
+    margin-bottom: 15px;
+}
+
+a {
+    text-decoration: none;
+}
+
+
+
+/* Status badges */
+
+.status-new{
+    background:#0d6efd;
+    color:white;
+}
+
+.status-contacted{
+    background:#ffc107;
+    color:#000;
+    color:white;
+}
+
+.status-site_visit_scheduled{
+    background:#6f42c1;
+    color:white;
+}
+
+.status-converted{
+    background:#198754;
+    color:white;
+}
+
+.status-rejected{
+    background:#dc3545;
+    color:white;
+}
+
+
+
+/* Priority */
+
+.priority-low {
+    background: #6c757d;
+}
+
+.priority-medium {
+    background: #0dcaf0;
+}
+
+.priority-high {
+    background: #dc3545;
+}
+
+.lead-info strong{
+    font-size:14px;
+    color:#6c757d;
+}
+
+.lead-info p{
+    margin:0;
+    font-size:15px;
+}
+
+
+/* Status */
+
+.status-new{background:#0d6efd;}
+.status-contacted{background:#ffc107;color:#000;}
+.status-site_visit_scheduled{background:#6f42c1;}
+.status-converted{background:#198754;}
+.status-rejected{background:#dc3545;}
+
+
+/* Priority */
+
+.priority-low{background:#6c757d;}
+.priority-medium{background:#0dcaf0;}
+.priority-high{background:#dc3545;}
+
+
+/* Message box */
+
+.message-box{
+    padding:15px;
+    border-radius:6px;
+}
+
+
+/* Timeline */
+
+.timeline{
+    position:relative;
+    margin-left:10px;
+}
+
+.timeline:before{
+    content:"";
+    position:absolute;
+    left:9px;
+    top:0;
+    width:2px;
+    height:100%;
+    background:#dee2e6;
+}
+
+.timeline-item{
+    position:relative;
+    padding-left:30px;
+    margin-bottom:25px;
+}
+
+.timeline-dot{
+    width:16px;
+    height:16px;
+    background:#0d6efd;
+    border-radius:50%;
+    position:absolute;
+    left:2px;
+    top:3px;
+}
+
+.timeline-content{
+    padding:12px 15px;
+    border-radius:6px;
+}
+
+.breadcrumb {
+    background: transparent;
+    padding-bottom: 20px;
+    font-size: 14px;
+}
+
+.breadcrumb a {
+    text-decoration: none;
+    color: #0d6efd;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}

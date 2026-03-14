@@ -1,0 +1,96 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- Breadcrumbs above the container -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <div class="container-fluid">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Material Allocations</li>
+        </ol>
+    </div>
+</nav>
+
+<div class="main-content">
+    <div class="container-fluid">
+
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>
+                <i class="bi bi-diagram-3"></i>
+                Material Allocations
+            </h4>
+
+            <a href="{% url 'allocate_material' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i>
+                New Allocation
+            </a>
+        </div>
+
+        <!-- Search -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <form method="get" class="row g-2">
+
+                    <div class="col-md-4">
+                        <input type="text"
+                               name="q"
+                               class="form-control"
+                               placeholder="Search project or material..."
+                               value="{{ request.GET.q }}">
+                    </div>
+
+                    <div class="col-md-auto">
+                        <button class="btn btn-outline-primary">
+                            <i class="bi bi-search"></i>
+                            Search
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Project</th>
+                                <th>Material</th>
+                                <th>Quantity</th>
+                                <th>Allocated By</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for a in allocations %}
+                                <tr>
+                                    <td><strong>{{ a.project }}</strong></td>
+                                    <td>{{ a.material.name }}</td>
+                                    <td><span class="fw-bold">{{ a.quantity }}</span></td>
+                                    <td>{{ a.allocated_by }}</td>
+                                    <td>{{ a.allocated_date }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        No allocations yet
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,179 @@
+<!-- CRM -->
+        <li class="sidebar-heading mt-3 text-muted small">CRM MANAGEMENT</li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center justify-content-between {% if request.resolver_match.url_name in 'lead_list add_lead review' %}active{% endif %}" 
+               data-bs-toggle="collapse" href="#crmMenu" aria-expanded="false">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-person-lines-fill nav-icon text-primary"></i>
+                    <span class="link-text ms-2">CRM</span>
+                </div>
+                <i class="bi bi-chevron-down submenu-arrow"></i>
+            </a>
+            <div class="collapse submenu" id="crmMenu" data-bs-parent="#sidebarMenu">
+                <ul class="nav flex-column ms-4">
+                    <li><a href="{% url 'lead_list' %}" class="nav-link">All Leads</a></li>
+                    <li><a href="{% url 'add_lead' %}" class="nav-link">Add Lead</a></li>
+                    <li><a href="{% url 'review' %}" class="nav-link">User Reviews</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- PROJECTS -->
+        <li class="sidebar-heading mt-3 text-muted small">PROJECT MANAGEMENT</li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center justify-content-between {% if request.resolver_match.url_name in 'project_list recent_activity' %}active{% endif %}" 
+               data-bs-toggle="collapse" href="#projectMenu">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-briefcase nav-icon text-warning"></i>
+                    <span class="link-text ms-2">Projects</span>
+                </div>
+                <i class="bi bi-chevron-down submenu-arrow"></i>
+            </a>
+            <div class="collapse submenu" id="projectMenu" data-bs-parent="#sidebarMenu">
+                <ul class="nav flex-column ms-4">
+                    <li><a href="{% url 'project_list' %}" class="nav-link">All Projects</a></li>
+                    <li><a href="{% url 'recent_activity' %}" class="nav-link">Recent Activity</a></li>
+                    <li><a class="nav-link" href="{% url 'gallery_projects' %}">Project Gallery</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- EMPLOYEES -->
+        <li class="sidebar-heading mt-3 text-muted small">EMPLOYEE MANAGEMENT</li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center justify-content-between {% if request.resolver_match.url_name in 'emplist addemp' %}active{% endif %}" 
+               data-bs-toggle="collapse" href="#employeeMenu">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-people nav-icon text-success"></i>
+                    <span class="link-text ms-2">Employees</span>
+                </div>
+                <i class="bi bi-chevron-down submenu-arrow"></i>
+            </a>
+            <div class="collapse submenu" id="employeeMenu" data-bs-parent="#sidebarMenu">
+                <ul class="nav flex-column ms-4">
+                    <li><a href="{% url 'emplist' %}" class="nav-link">Employee List</a></li>
+                    <li><a href="{% url 'addemp' %}" class="nav-link">New Employee</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- PROCUREMENT -->
+        <li class="sidebar-heading mt-3 text-muted small">PROCUREMENT</li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center justify-content-between" 
+               data-bs-toggle="collapse" href="#procurementMenu">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-box-seam nav-icon text-purple"></i>
+                    <span class="link-text ms-2">Procurement</span>
+                </div>
+                <i class="bi bi-chevron-down submenu-arrow"></i>
+            </a>
+            <div class="collapse submenu" id="procurementMenu" data-bs-parent="#sidebarMenu">
+                <ul class="nav flex-column ms-4">
+                    <li><a href="{% url 'material_list' %}" class="nav-link">Materials</a></li>
+                    <li><a href="{% url 'vendor_list' %}" class="nav-link">Vendors</a></li>
+                    <li><a href="{% url 'purchase_order_list' %}" class="nav-link">Purchase Orders</a></li>
+                    <li><a href="{% url 'goods_received_list' %}" class="nav-link">Goods Received</a></li>
+                    <li><a href="{% url 'stock_list' %}" class="nav-link">Stock Levels</a></li>
+                    <li><a href="{% url 'allocation_list' %}" class="nav-link">Allocation</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- FINANCE -->
+        <li class="sidebar-heading mt-3 text-muted small">FINANCE</li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center justify-content-between" 
+               data-bs-toggle="collapse" href="#financeMenu">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-cash-coin nav-icon text-info"></i>
+                    <span class="link-text ms-2">Finance</span>
+                </div>
+                <i class="bi bi-chevron-down submenu-arrow"></i>
+            </a>
+            <div class="collapse submenu" id="financeMenu" data-bs-parent="#sidebarMenu">
+                <ul class="nav flex-column ms-4">
+                    <ul class="nav flex-column ms-4">
+            <li>
+                <a href="{% url 'invoice_list' %}" class="nav-link">
+                    Manage Invoices
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'payment_list' %}" class="nav-link">
+                    Manage Payments
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'expense_list' %}" class="nav-link">
+                    Manage Expenses
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'project_costing' %}" class="nav-link">
+                    Project Costing
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'finance_reports' %}" class="nav-link">
+                    Financial Reports
+                </a>
+            </li>
+
+                    </ul>
+            </div>
+        </li>
+
+        <!-- CONTENT / BLOG -->
+        <li class="sidebar-heading mt-3 text-muted small">CONTENT</li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center justify-content-between" 
+               data-bs-toggle="collapse" href="#blogMenu">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-journal-text nav-icon text-danger"></i>
+                    <span class="link-text ms-2">Blog</span>
+                </div>
+                <i class="bi bi-chevron-down submenu-arrow"></i>
+            </a>
+            <div class="collapse submenu" id="blogMenu" data-bs-parent="#sidebarMenu">
+                <ul class="nav flex-column ms-4">
+                    <li><a href="{% url 'blogposts' %}" class="nav-link">All Posts</a></li>
+                    <li><a href="{% url 'addpost' %}" class="nav-link">Add Post</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- SYSTEM / NOTIFICATIONS -->
+        <li class="sidebar-heading mt-3 text-muted small">SYSTEM</li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center justify-content-between" 
+               data-bs-toggle="collapse" href="#notificationMenu">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-bell nav-icon text-warning"></i>
+                    <span class="link-text ms-2">
+                        Notifications
+                        {% if unread_count != 0 %}
+                            <span class="badge bg-danger rounded-pill">{{unread_count}}</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <i class="bi bi-chevron-down submenu-arrow"></i>
+            </a>
+            <div class="collapse submenu" id="notificationMenu" data-bs-parent="#sidebarMenu">
+                <ul class="nav flex-column ms-4">
+                    <li><a href="{% url 'notifications' 'all' %}" class="nav-link">All Notifications</a></li>
+                    <li><a href="{% url 'notifications' 'unread' %}" class="nav-link d-flex justify-content-between">
+                        Unread <span class="badge bg-danger rounded-pill">{{unread_count}}</span>
+                    </a></li>
+                    <li><a href="{% url 'notifications' 'crm' %}" class="nav-link">Client Updates</a></li>
+                    <li><a href="{% url 'notifications' 'project' %}" class="nav-link">Project Alerts</a></li>
+                    <li><a href="{% url 'notifications' 'finance' %}" class="nav-link">Finance Alerts</a></li>
+                    <li><a href="{% url 'notifications' 'employee' %}" class="nav-link">Employee Alerts</a></li>
+                    <li><a href="{% url 'notifications' 'system' %}" class="nav-link">System Alerts</a></li>
+                </ul>
+            </div>
+        </li>

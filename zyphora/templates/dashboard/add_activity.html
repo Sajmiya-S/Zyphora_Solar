@@ -1,0 +1,73 @@
+{% extends "dashboard/dashboard.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- BREADCRUMB -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-3">
+
+            <li class="breadcrumb-item">
+                <a href="{% url request.user.role %}">{{request.user.role|title}} Dashboard</a>
+            </li>
+
+            <li class="breadcrumb-item">
+                <a href="{% url 'project_list' %}">Projects</a>
+            </li>
+
+            <li class="breadcrumb-item">
+                <a href="{% url 'project_detail' project.id %}">
+                    {{ project.title }}
+                </a>
+            </li>
+
+            <li class="breadcrumb-item active">
+                Add Activity
+            </li>
+
+        </ol>
+    </nav>
+
+
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <h5 class="mb-4">Add Project Activity</h5>
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Activity Title</label>
+                    {{ form.title }}
+                </div>
+
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    {{ form.description }}
+                </div>
+
+
+                <button class="btn btn-success">
+                    Save Activity
+                </button>
+
+
+                <a href="{% url 'project_detail' project.id %}" class="btn btn-secondary">
+                    Cancel
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

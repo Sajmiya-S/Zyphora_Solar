@@ -1,0 +1,62 @@
+.role-field {
+    display: none;
+}
+
+.breadcrumb {
+    background: transparent;
+    padding-bottom: 20px;
+    font-size: 14px;
+}
+
+.breadcrumb a {
+    text-decoration: none;
+    color: #0d6efd;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.page-title{
+    font-size:28px;
+    font-weight:600;
+}
+
+.emp-card {
+    border-radius: 16px;
+    transition: 0.3s ease;
+}
+
+.emp-card:hover {
+    transform: translateY(-4px);
+}
+
+input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: 0.2s ease;
+    margin-top: 20px;
+}
+
+input[type="submit"]:hover {
+    transform: translateY(-2px);
+}
+textarea{
+height:100%;
+min-height:180px;
+resize:none;
+}
+
+@media (max-width: 768px) {
+    .reg-form p {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+
+    .reg-form label {
+        min-width: 100%;
+    }
+}

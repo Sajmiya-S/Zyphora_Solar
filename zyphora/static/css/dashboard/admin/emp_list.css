@@ -1,0 +1,48 @@
+.breadcrumb {
+    background: transparent;
+    padding-bottom: 20px;
+    font-size: 14px;
+}
+
+.breadcrumb a {
+    text-decoration: none;
+    color: #0d6efd;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.add-emp-btn {
+    display: inline-block;
+    margin-top: 25px;
+    padding: 12px 22px;
+    background: linear-gradient(135deg, #1b16a3, #224ec5);
+    color: #fff;
+    font-weight: 600;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 18px rgba(34, 135, 197, 0.3);
+}
+
+.add-emp-btn:hover {
+    background: linear-gradient(135deg, #3832eb, #527cee);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(34, 159, 197, 0.4);
+    color: #fff;
+}
+
+
+.add-emp-btn-wrapper {
+    text-align: right;
+}
+
+
+.emp-img{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e6e6e6;
+}

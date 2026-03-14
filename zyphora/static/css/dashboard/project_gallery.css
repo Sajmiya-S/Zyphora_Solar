@@ -1,0 +1,10 @@
+.gallery-preview{
+height:160px;
+object-fit:cover;
+width:100%;
+transition:0.2s;
+}
+
+.gallery-preview:hover{
+transform:scale(1.03);
+}

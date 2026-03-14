@@ -1,0 +1,16 @@
+{% extends "dashboard/dashboard.html" %}
+
+{% block content %}
+
+{% include "dashboard/breadcrumb.html" with section="Finance" page=title %}
+
+<h4>{{ title }}</h4>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-success">Save</button>
+    <a href="{% url 'payment_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+
+{% endblock %}

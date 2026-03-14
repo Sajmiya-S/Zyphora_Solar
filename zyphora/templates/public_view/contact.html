@@ -1,0 +1,63 @@
+{% extends 'public_view/base.html' %}
+{% load static %}
+
+{% block link %}
+<link rel="stylesheet" href="/static/css/public_view/contact.css">
+{% endblock %}
+
+{% block code %}
+
+<!-- Hero Section -->
+<section class="zyphora-contact-hero text-center d-flex align-items-center justify-content-center">
+    <div>
+        <h1 class="zyphora-title">Contact Zyphora Solar</h1>
+        <p class="zyphora-subtitle">
+            Let’s Build Your Smart Solar Future
+        </p>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="container py-5">
+    <div class="row">
+
+        <!-- Contact Info -->
+        <div class="col-lg-5 mb-4">
+            <div class="contact-info-card p-4">
+                <h3 class="mb-3">Get in Touch</h3>
+                <p><strong>Company:</strong> Zyphora Solar</p>
+                <p><strong>Location:</strong> Kerala, India</p>
+                <p><strong>Phone:</strong> +91 98765 43210</p>
+                <p><strong>Email:</strong> info@zyphorasolar.com</p>
+
+                <hr>
+
+                <p>
+                    We provide solar installation, leakproof solar roofing,
+                    subsidy assistance, and AMC services across Kerala.
+                </p>
+            </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="col-lg-7">
+            <div class="contact-form-card p-4">
+                <h3 class="mb-4">Request a Free Consultation</h3>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    {{form}}
+                    
+                    <input type="submit"
+                            class="btn zyphora-btn w-100"
+                            value="Send Request">
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

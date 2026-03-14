@@ -1,0 +1,106 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block link %}
+<link rel="stylesheet" href="{% static 'css/dashboard/admin/add_lead.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-2">
+    <li class="breadcrumb-item">
+        <a href="{% url 'admin' %}">Admin Dashboard</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{% url 'lead_list' %}">Leads</a>
+    </li>
+    <li class="breadcrumb-item active">
+        Add Lead
+    </li>
+  </ol>
+</nav>
+
+<!-- Page Header -->
+<div class="page-header mb-4">
+
+    <h1 class="page-title">
+        <i class="bi bi-person-plus-fill"></i>
+        Add New Lead
+    </h1>
+
+    <p class="page-subtitle">
+        Capture a new potential customer and track them through your sales pipeline.
+    </p>
+
+</div>
+
+
+<div class="main container py-4">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-9 col-lg-6">
+
+            <div class="card emp-card shadow-sm border-0">
+
+                <div class="card-body p-4">
+
+                    <h4 class="form-title text-center mb-3">
+                        Lead Information
+                    </h4>
+
+                    <p class="form-subtitle text-center mb-4">
+                        Fill in the details below to register a new lead.
+                    </p>
+
+                    <form method="post" class="reg-form">
+
+                        {% csrf_token %}
+                        {% for field in form %}
+                            {% if field.name != 'message' %}
+                                <p>
+                                    {{ field.label_tag }}<br>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <span class="error">{{ field.errors }}</span>
+                                    {% endif %}
+                                </p>
+                            {% endif %}
+                        {% endfor %}
+                        <textarea name="notes" 
+                                  class="form-control" 
+                                  placeholder="Add follow-up notes or internal remarks..." 
+                                  rows="3"></textarea>
+                        
+                        <div class="form-actions mt-4">
+
+                            <button type="submit"
+                                    class="btn btn-primary w-100 fw-semibold">
+
+                                <i class="bi bi-check-circle"></i>
+                                Add Lead
+
+                            </button>
+
+                            <a href="{% url 'lead_list' %}"
+                               class="btn btn-outline-secondary w-100 mt-2">
+
+                               Cancel
+                            </a>
+
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
