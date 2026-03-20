@@ -263,24 +263,34 @@ class MaterialAllocation(models.Model):
 
     allocated_date = models.DateField(auto_now_add=True)
 
-    class Meta:
-        unique_together = ("project", "material")
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    )
 
-    def save(self, *args, **kwargs):
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
 
-        is_new = self.pk is None
 
-        if is_new:
-
+    def approve(self):
+        """Call this method to approve request and update stock"""
+        if self.status != 'approved':
             stock = Stock.objects.get(material=self.material)
-
             if stock.quantity < self.quantity:
-                raise ValueError("Not enough stock available")
-
+                raise ValueError(f"Not enough stock for {self.material.name}")
             stock.quantity -= self.quantity
             stock.save()
+            self.status = 'approved'
+            self.save(update_fields=['status'])
 
-        super().save(*args, **kwargs)
+    def reject(self):
+        """Call this method to reject request"""
+        self.status = 'rejected'
+        self.save(update_fields=['status'])
 
     def __str__(self):
         return f"{self.project} - {self.material} ({self.quantity})"

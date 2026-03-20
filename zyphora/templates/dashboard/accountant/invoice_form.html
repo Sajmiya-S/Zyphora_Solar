@@ -1,0 +1,53 @@
+{% extends "dashboard/dashboard.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm p-4">
+        <h4 class="mb-3">{{ title }}</h4>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="id_project" class="form-label">Project</label>
+                    {{ form.project|as_widget(attrs={'class':'form-select'}) }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_invoice_number" class="form-label">Invoice Number</label>
+                    {{ form.invoice_number|as_widget(attrs={'class':'form-control'}) }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_issue_date" class="form-label">Issue Date</label>
+                    {{ form.issue_date|as_widget(attrs={'class':'form-control','type':'date'}) }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_due_date" class="form-label">Due Date</label>
+                    {{ form.due_date|as_widget(attrs={'class':'form-control','type':'date'}) }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_total_amount" class="form-label">Total Amount</label>
+                    {{ form.total_amount|as_widget(attrs={'class':'form-control','step':'0.01'}) }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_status" class="form-label">Status</label>
+                    {{ form.status|as_widget(attrs={'class':'form-select'}) }}
+                </div>
+                <div class="col-12">
+                    <label for="id_notes" class="form-label">Notes</label>
+                    {{ form.notes|as_widget(attrs={'class':'form-control','rows':'3'}) }}
+                </div>
+            </div>
+            <div class="mt-4 text-end">
+                <button type="submit" class="btn btn-success">Save</button>
+                <a href="{% url 'invoice_list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

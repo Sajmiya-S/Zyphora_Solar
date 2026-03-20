@@ -1,0 +1,22 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<h3>Assign Service Request: {{ sr.title }}</h3>
+
+<p><strong>Project:</strong> {{ sr.project.title }}</p>
+<p><strong>Requested By:</strong> {{ sr.requested_by }}</p>
+<p><strong>Description:</strong> {{ sr.description }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="engineer" class="form-label">Assign to Engineer</label>
+        <select name="engineer" id="engineer" class="form-select" required>
+            {% for eng in engineers %}
+            <option value="{{ eng.id }}">{{ eng.user.get_full_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">Assign</button>
+    <a href="{% url 'service_requests' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'dashboard/dashboard.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h4 class="mb-4">Expense Report Detail</h4>
+
+    <!-- ================= MAIN INFO ================= -->
+    <div class="card shadow-sm mb-4 p-3">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <strong>Project:</strong> {{ expense.project }}
+            </div>
+            <div class="col-md-4">
+                <strong>Expense Date:</strong> {{ expense.expense_date }}
+            </div>
+            <div class="col-md-4">
+                <strong>Category:</strong> {{ expense.category }}
+            </div>
+            <div class="col-12">
+                <strong>Notes:</strong> {{ expense.notes|default:"-" }}
+            </div>
+            <div class="col-12">
+                <strong>Status:</strong> {{ expense.status|title }}
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= EXPENSE ITEMS ================= -->
+    <div class="card shadow-sm mb-4 p-3">
+        <h5>Expense Items</h5>
+        <table class="table table-bordered mt-2">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Description</th>
+                    <th class="text-end">Amount (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.description }}</td>
+                    <td class="text-end">{{ item.amount|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="text-center">No items added</td></tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="2" class="text-end">Total</th>
+                    <th class="text-end">{{ total_amount|floatformat:2 }}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- ================= RECEIPTS ================= -->
+    <div class="card shadow-sm mb-4 p-3">
+        <h5>Receipts</h5>
+        <div class="row mt-2">
+            {% for receipt in receipts %}
+            <div class="col-md-3 mb-2">
+                <a href="{{ receipt.file.url }}" target="_blank">
+                    <div class="card p-2 text-center">
+                        <i class="bi bi-file-earmark-arrow-down fs-1"></i>
+                        <div class="small mt-1">{{ receipt.file.name|slice:"10:" }}</div>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">No receipts uploaded</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="text-end">
+        {% if request.user.role == 'admin' %}
+            <a href="{% url 'expense_list' %}" class="btn btn-secondary">Back to Expenses</a>
+        {% else %}
+            <a href="{% url 'my_expenses' %}" class="btn btn-secondary">Back to My Expenses</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

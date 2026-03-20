@@ -1,0 +1,85 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h3>Request Materials</h3>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        <table class="table table-bordered mt-3" id="material-table">
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th>Material</th>
+                    <th>Quantity</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in formset %}
+                <tr class="material-row">
+                    <td>
+                        {{ form.project }}
+                        {{ form.project.errors }}
+                    </td>
+                    <td>
+                        {{ form.material }}
+                        {{ form.material.errors }}
+                    </td>
+                    <td>
+                        {{ form.quantity }}
+                        {{ form.quantity.errors }}
+                    </td>
+                    <td>{{ form.DELETE }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="button" id="add-material-btn" class="btn btn-secondary">
+            Add Another Material
+        </button>
+
+        <button type="submit" class="btn btn-primary">
+            Submit All Requests
+        </button>
+    </form>
+</div>
+
+<script>
+const addBtn = document.getElementById("add-material-btn");
+const table = document.querySelector("#material-table tbody");
+const totalForms = document.getElementById("id_form-TOTAL_FORMS");
+
+addBtn.addEventListener("click", function () {
+    let formIndex = parseInt(totalForms.value);
+
+    let firstRow = document.querySelector(".material-row");
+    let newRow = firstRow.cloneNode(true);
+
+    newRow.querySelectorAll("input, select").forEach(input => {
+        let name = input.name;
+        let id = input.id;
+
+        if (name) {
+            input.name = name.replace(/form-\d+/, `form-${formIndex}`);
+        }
+
+        if (id) {
+            input.id = id.replace(/form-\d+/, `form-${formIndex}`);
+        }
+
+        if (input.type === "checkbox") {
+            input.checked = false;
+        } else {
+            input.value = "";
+        }
+    });
+
+    table.appendChild(newRow);
+    totalForms.value = formIndex + 1;
+});
+</script>
+
+{% endblock %}

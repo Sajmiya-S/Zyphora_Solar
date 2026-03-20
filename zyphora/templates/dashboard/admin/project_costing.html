@@ -1,0 +1,41 @@
+{% extends "dashboard/dashboard.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <h3 class="mb-4">Project Costing</h3>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Project</th>
+                <th>Estimated</th>
+                <th>Actual</th>
+                <th>Revenue</th>
+                <th>Profit</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in costing_data %}
+            <tr>
+                <td>{{ item.project.title }}</td>
+                <td>₹ {{ item.estimated_cost }}</td>
+                <td>₹ {{ item.actual_cost }}</td>
+                <td>₹ {{ item.revenue }}</td>
+                <td>₹ {{ item.profit }}</td>
+                <td>
+                    {% if item.profit > 0 %}
+                        <span class="text-success">Profit</span>
+                    {% elif item.profit < 0 %}
+                        <span class="text-danger">Loss</span>
+                    {% else %}
+                        <span class="text-warning">Break-even</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

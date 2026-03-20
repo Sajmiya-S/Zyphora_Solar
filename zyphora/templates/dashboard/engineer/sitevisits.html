@@ -1,0 +1,154 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'engineer' %}">Engineer Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Site Visits</li>
+      </ol>
+    </nav>
+
+    <!-- Title & Subtitle -->
+    <div class="mb-4">
+        <h2>Site Visits</h2>
+        <p class="text-muted">Check your scheduled visits for today, upcoming, and completed visits.</p>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-3" id="visitTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link {% if show_today %}active{% endif %}" id="today-tab" data-bs-toggle="tab" data-bs-target="#today" type="button" role="tab">
+                Today's Visits
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link {% if show_upcoming %}active{% endif %}" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab">
+                Upcoming Visits
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link {% if show_completed %}active{% endif %}" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">
+                Completed Visits
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="visitTabsContent">
+        <!-- Today's Visits -->
+        <div class="tab-pane fade {% if show_today %}show active{% endif %}" id="today" role="tabpanel">
+            {% if todays %}
+                <div class="list-group">
+                    {% for visit in todays %}
+                        <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start mb-2 p-3 shadow-sm rounded">
+                            <div class="me-3 flex-fill">
+                                <h5>{{ visit.lead.name }} {% if visit.project %}({{ visit.project.title }}){% endif %}</h5>
+                                <p><strong>Date:</strong> {{ visit.scheduled_date }}</p>
+                                <p><strong>Scheduled by:</strong> {{ visit.lead.added_by|title|default:"Admin" }}</p>
+                                <p><strong>Location:</strong> {{ visit.lead.location|default:"N/A" }}</p>
+                                {% if visit.notes %}
+                                    <p><strong>Notes:</strong> {{ visit.notes }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="text-end ms-md-3 d-flex flex-column align-items-end gap-2">
+                                <!-- Status Badge -->
+                                <span class="badge {% if visit.status == 'done' %}bg-success{% elif visit.status == 'pending' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                    {{ visit.status|title }}
+                                </span>
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex flex-wrap gap-1 mt-1">
+                                    {% if visit.status != 'done' %}
+                                    <form method="post" action="{% url 'mark_site_visit_done' visit.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-success">Mark Done</button>
+                                    </form>
+                                    {% endif %}
+                                    <a href="{% url 'edit_visit' visit.id %}" class="btn btn-sm btn-primary">Edit</a>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">No site visits scheduled for today.</p>
+            {% endif %}
+        </div>
+
+        <!-- Upcoming Visits -->
+        <div class="tab-pane fade {% if show_upcoming %}show active{% endif %}" id="upcoming" role="tabpanel">
+            {% if upcoming %}
+                <div class="list-group">
+                    {% for visit in upcoming %}
+                        <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start mb-2 p-3 shadow-sm rounded">
+                            <div class="me-3 flex-fill">
+                                <h5>{{ visit.lead.name }} {% if visit.project %}({{ visit.project.title }}){% endif %}</h5>
+                                <p><strong>Scheduled by:</strong> {{ visit.lead.added_by|title|default:"Admin" }}</p>
+                                <p><strong>Date:</strong> {{ visit.scheduled_date }}</p>
+                                <p><strong>Location:</strong> {{ visit.lead.location|default:"N/A" }}</p>
+
+                                {% if visit.notes %}
+                                    <p><strong>Notes:</strong> {{ visit.notes }}</p>
+                                {% endif %}
+                            </div>
+                                <!-- Status Badge -->
+                                <span class="badge {% if visit.status == 'done' %}bg-success{% elif visit.status == 'pending' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                    {{ visit.status|title }}
+                                </span>
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex flex-wrap gap-1 mt-1">
+                                    {% if visit.status != 'done' %}
+                                    <form method="post" action="{% url 'mark_site_visit_done' visit.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-success">Mark Done</button>
+                                    </form>
+                                    {% endif %}
+                                    <a href="{% url 'edit_site_visit' visit.id %}" class="btn btn-sm btn-primary">Edit</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">No upcoming site visits.</p>
+            {% endif %}
+        </div>
+
+        <!-- Completed Visits -->
+        <div class="tab-pane fade {% if show_completed %}show active{% endif %}" id="completed" role="tabpanel">
+            {% if completed %}
+                <div class="list-group">
+                    {% for visit in completed %}
+                        <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start mb-2 p-3 shadow-sm rounded">
+                            <div class="me-3 flex-fill">
+                                <h5>{{ visit.lead.name }} {% if visit.project %}({{ visit.project.title }}){% endif %}</h5>
+                                <p><strong>Completed Date:</strong> {{ visit.completed_date }}</p>
+                                <p><strong>Location:</strong> {{ visit.lead.location|default:"N/A" }}</p>
+                                {% if visit.notes %}
+                                    <p><strong>Notes:</strong> {{ visit.notes }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="text-end ms-md-3">
+                                <span class="badge bg-success">{{ visit.status|title }}</span>
+                            </div>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                <a href="{% url 'edit_visit' visit.id %}" class="btn btn-sm btn-primary">Edit</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">No completed site visits.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'engineer' %}">Engineer Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'site_visits' 'today' %}">Site Visits</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Visit</li>
+      </ol>
+    </nav>
+
+    <!-- Title -->
+    <div class="mb-4">
+        <h2>Edit Site Visit</h2>
+        <p class="text-muted">Update the details of the site visit below.</p>
+    </div>
+
+    <div class="row g-4 d-flex align-items-stretch"> <!-- flex + align-stretch for equal height -->
+
+        <!-- LEFT COLUMN -->
+        <div class="col-lg-5 d-flex"> <!-- make the column flex -->
+            <div class="card shadow-sm p-4 w-100">
+                <h5 class="mb-4">Site Visit Information</h5>
+                <div class="visit-info mb-2"><strong>Lead:</strong> {{ visit.lead }}</div>
+                {% if visit.project %}
+                <div class="visit-info mb-2"><strong>Project:</strong> {{ visit.project }}</div>
+                {% endif %}
+                <div class="visit-info mb-2"><strong>Engineer:</strong> {{ visit.engineer|title }}</div>
+                <div class="visit-info mb-2"><strong>Scheduled Date:</strong> {{ visit.scheduled_date }}</div>
+                <div class="visit-info mb-2"><strong>Scheduled By:</strong> {{ visit.added_by|title }}</div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="col-lg-5 d-flex"> <!-- make the column flex -->
+            <div class="card shadow-sm p-4 w-100">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+
+                    <div class="mb-3">
+                        <label class="form-label">Completed Date</label>
+                        {{ form.completed_date }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        {{ form.notes }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        {{ form.status }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="{% url 'site_visits' 'today' %}" class="btn btn-secondary ms-2">Cancel</a>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

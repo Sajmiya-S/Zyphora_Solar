@@ -11,7 +11,12 @@ urlpatterns = [
     path('update-lead/<int:lid>/',update_lead, name='update_lead'),
     path('delete-lead/<int:lid>/', delete_lead, name='delete_lead'),
     path('add-lead/',add_lead,name='add_lead'),
-    path('followup/<int:lid>/',mark_followup_done,name='mark_followup_done'),
-    path('sitevisit/<int:lid>/',mark_site_visit_done,name='mark_site_visit_done'),
+    path('mark-followup/<int:fid>/',mark_followup_done,name='mark_followup_done'),
+    path('mark-sitevisit/<int:vid>/',mark_site_visit_done,name='mark_site_visit_done'),
+    path('sitevisits/<str:filter>/',site_visits,name='site_visits'),
+    path('edit-visit/<int:vid>/',edit_site_visit,name='edit_visit'),
+    path('site-photo/',upload_site_photos_page,name='upload_site_photos'),
+    path('followups/',follow_ups,name='followups'),
+    path('edit-followup/<int:fid>/',edit_followup,name='edit_followup'),
 
 ]

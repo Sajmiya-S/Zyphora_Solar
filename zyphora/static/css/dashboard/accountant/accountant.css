@@ -1,12 +1,7 @@
 /* ================= MAIN CONTENT FIX ================= */
-
-.main-content {
-    overflow-x: hidden;     /* Prevent horizontal scroll */
-}
-
+.main-content { overflow-x: hidden; }
 
 /* ================= KPI CARD BASE ================= */
-
 .kpi-card {
     width: 100%;
     min-height: 180px;
@@ -20,65 +15,28 @@
     align-items: center;
     backdrop-filter: blur(8px);
 }
+.kpi-card:hover { transform: translateY(-6px); box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
 
-/* Hover Effect */
-.kpi-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
-}
-
-
-/* ================= ICON / TEXT ================= */
-
-.kpi-icon {
-    font-size: 2.2rem;
-    margin-bottom: 10px;
-    opacity: 0.95;
-}
-
-.kpi-value {
-    font-size: 1.9rem;
-    font-weight: 700;
-    margin: 6px 0;
-    letter-spacing: 0.5px;
-}
-
-.kpi-label {
-    font-size: 0.95rem;
-    font-weight: 500;
-    opacity: 0.95;
-}
-
+.kpi-icon { font-size: 2.2rem; margin-bottom:10px; opacity:0.95; }
+.kpi-value { font-size: 1.9rem; font-weight:700; margin:6px 0; letter-spacing:0.5px; }
+.kpi-label { font-size:0.95rem; font-weight:500; opacity:0.95; }
 
 /* ================= GRADIENTS ================= */
+.kpi-card.revenue { background: linear-gradient(135deg, #0d6efd, #3b8dff); }
+.kpi-card.expenses { background: linear-gradient(135deg, #dc3545, #ff6b6b); }
+.kpi-card.profit { background: linear-gradient(135deg, #198754, #42b883); }
+.kpi-card.pending { background: linear-gradient(135deg, #ffc107, #ffda6a); color:#000; }
 
-
-.kpi-card.revenue {
-    background: linear-gradient(135deg, #0d6efd, #3b8dff);
-}
-
-.kpi-card.expenses {
-    background: linear-gradient(135deg, #dc3545, #ff6b6b);
-}
-
-.kpi-card.profit {
-    background: linear-gradient(135deg, #198754, #42b883);
-}
-
-.kpi-card.pending {
-    background: linear-gradient(135deg, #ffc107, #ffda6a);
-    color: #000;
-}
+/* ================= CHART CARD ================= */
+.card.shadow-sm { padding:20px; border-radius:14px; }
 
 /* ================= RESPONSIVE SAFETY ================= */
+.row { flex-wrap: wrap; }
+[class*="col-"] { max-width:100%; }
 
-/* Ensure wrapping always works */
-.row {
-    flex-wrap: wrap;
+
+
+.card canvas {
+    width: 100% !important;       /* responsive width */
+    height: 300px !important;     /* fixed height */
 }
-
-/* Make sure columns never overflow */
-[class*="col-"] {
-    max-width: 100%;
-}
-

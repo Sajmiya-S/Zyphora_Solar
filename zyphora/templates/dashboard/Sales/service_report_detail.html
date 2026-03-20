@@ -1,0 +1,28 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h3>Service Report Detail</h3>
+
+    <div class="card mb-3">
+        <div class="card-header">
+            <strong>Service Request:</strong> {{ report.service_request.title }}<br>
+            <strong>Project:</strong> {{ report.service_request.project.title }}<br>
+            <strong>Reported By:</strong> {{ report.report_by.user.name }}
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Report Text</h5>
+            <p class="card-text">{{ report.report_text }}</p>
+
+            {% if report.images %}
+            <h5>Images</h5>
+            <img src="{{ report.images.url }}" class="img-fluid mb-2" style="max-width:400px;">
+            {% else %}
+            <p><em>No images attached.</em></p>
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <a href="{% url 'service_reports' %}" class="btn btn-secondary">Back to Service Reports</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

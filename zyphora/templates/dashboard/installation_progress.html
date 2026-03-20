@@ -1,0 +1,63 @@
+{% extends "dashboard/dashboard.html" %}
+
+{% block content %}
+
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+        <a href="{% url request.user.role %}">{{request.user.role|title}} Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Installation Progress</li>
+  </ol>
+</nav>
+
+<h3>Installation Progress</h3>
+
+{% if projects %}
+    <div class="row">
+        {% for project in projects %}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ project.title }}</h5>
+
+                        <!-- Progress Bar -->
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" style="width: {{ project.progress_percent }}%;">
+                                {{ project.progress_percent }}%
+                            </div>
+                        </div>
+
+                        <!-- Checklist Form -->
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="project_id" value="{{ project.id }}">
+
+                            {% for status_value, status_label in project.STATUS_CHOICES %}
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio"
+                                           name="status"
+                                           value="{{ status_value }}"
+                                           id="{{ project.id }}_{{ status_value }}"
+                                           {% if status_value == project.status %}checked{% endif %}
+                                           {% if status_value == 'new' %}disabled{% endif %}>
+                                    <label class="form-check-label" for="{{ project.id }}_{{ status_value }}">
+                                        {{ status_label }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+
+                            <button type="submit" class="btn btn-primary w-100 mt-2">Update Progress</button>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>No projects assigned.</p>
+{% endif %}
+
+{% endblock %}

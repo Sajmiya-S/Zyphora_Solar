@@ -3,9 +3,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from django.utils import timezone
+from django.forms import modelformset_factory
+from django.core.paginator import Paginator
 
 from .models import *
 from .forms import *
+
+from users.utils import create_notification
+
+
 
 
 @login_required(login_url='/users/login')
@@ -345,4 +351,128 @@ def allocate_material(request):
     return render(request, "dashboard/allocate_material.html", {"form": form})
 
 
+
+def request_material(request):
+    MaterialFormSet = modelformset_factory(
+        MaterialAllocation,
+        form=MaterialAllocationRequestForm,
+        extra=1,
+        can_delete=True
+    )
+
+    if request.method == "POST":
+        formset = MaterialFormSet(
+            request.POST,
+            queryset=MaterialAllocation.objects.none()
+        )
+
+        if formset.is_valid():
+            for form in formset:
+                if not form.cleaned_data:
+                    continue
+                if form.cleaned_data.get('DELETE'):
+                    continue
+
+                project = form.cleaned_data['project']
+                material = form.cleaned_data['material']
+                quantity = form.cleaned_data['quantity']
+
+                existing = MaterialAllocation.objects.filter(
+                    project=project,
+                    material=material,
+                    allocated_by=request.user.employee,
+                    status='pending'
+                ).first()
+
+                if existing:
+                    # ✅ Merge duplicate requests
+                    existing.quantity += quantity
+                    existing.save()
+                else:
+                    allocation = form.save(commit=False)
+                    allocation.allocated_by = request.user.employee
+                    allocation.save()
+
+            return redirect('my_requests')
+
+    else:
+        formset = MaterialFormSet(queryset=MaterialAllocation.objects.none())
+
+    return render(request, "dashboard/request_material.html", {"formset": formset})
+
+
+def my_requests(request):
+    requests = MaterialAllocation.objects.filter(
+        allocated_by=request.user.employee
+    ).order_by('-id')
+
+    return render(request, "dashboard/my_requests.html", {"requests": requests})
+
+
+
+def admin_material_requests(request):
+    pending_requests = MaterialAllocation.objects.filter(status='pending').order_by('-id')
+
+    history_list = MaterialAllocation.objects.exclude(status='pending').order_by('-id')
+
+    paginator = Paginator(history_list, 10)  # 10 per page
+    page_number = request.GET.get('page')
+    history = paginator.get_page(page_number)
+
+    if request.method == "POST":
+        req_id = request.POST.get("request_id")
+        action = request.POST.get("action")
+
+        req = get_object_or_404(MaterialAllocation, id=req_id)
+
+        admin_user = request.user
+        requester = req.allocated_by.user
+
+        if action == "approve":
+            try:
+                req.approve()
+
+                create_notification(
+                    recipient=requester,
+                    sender=admin_user,
+                    title="Material Request Approved",
+                    message=f"{req.material.name} ({req.quantity}) approved for {req.project.title}.",
+                    category="material"
+                )
+
+                return redirect('admin_material_requests')
+
+            except ValueError as e:
+                create_notification(
+                    recipient=admin_user,
+                    sender=admin_user,
+                    title="Approval Failed",
+                    message=str(e),
+                    category="error"
+                )
+
+                # 🔥 stay on same page
+                return render(request, "dashboard/admin/material_requests.html", {
+                    "pending_requests": pending_requests,
+                    "history": history,
+                    "error": str(e)
+                })
+
+        elif action == "reject":
+            req.reject()
+
+            create_notification(
+                recipient=requester,
+                sender=admin_user,
+                title="Material Request Rejected",
+                message=f"{req.material.name} ({req.quantity}) rejected for {req.project.title}.",
+                category="material"
+            )
+
+            return redirect('admin_material_requests')
+
+    return render(request, "dashboard/admin/material_requests.html", {
+        "pending_requests": pending_requests,
+        "history": history
+    })
 

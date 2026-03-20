@@ -1,0 +1,13 @@
+{% extends "dashboard/dashboard.html" %}
+{% block content %}
+<h3>Assigned Projects</h3>
+<div class="list-group">
+    {% for project in projects %}
+    <a href="{% url 'project_detail' project.id %}" class="list-group-item list-group-item-action">
+        {{ project.title }} - {{ project.status }}
+    </a>
+    {% empty %}
+    <div class="alert alert-info">No projects assigned.</div>
+    {% endfor %}
+</div>
+{% endblock %}

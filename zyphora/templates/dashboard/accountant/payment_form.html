@@ -1,0 +1,49 @@
+{% extends "dashboard/dashboard.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm p-4">
+        <h4 class="mb-3">{{ title }}</h4>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="id_invoice" class="form-label">Invoice</label>
+                    {{ form.invoice|as_widget(attrs={'class':'form-select'}) }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_payment_date" class="form-label">Payment Date</label>
+                    {{ form.payment_date|as_widget(attrs={'class':'form-control','type':'date'}) }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_amount" class="form-label">Amount</label>
+                    {{ form.amount|as_widget(attrs={'class':'form-control','step':'0.01'}) }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_method" class="form-label">Payment Method</label>
+                    {{ form.method|as_widget(attrs={'class':'form-select'}) }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_received_by" class="form-label">Received By</label>
+                    {{ form.received_by|as_widget(attrs={'class':'form-select'}) }}
+                </div>
+                <div class="col-12">
+                    <label for="id_notes" class="form-label">Notes</label>
+                    {{ form.notes|as_widget(attrs={'class':'form-control','rows':'3'}) }}
+                </div>
+            </div>
+            <div class="mt-4 text-end">
+                <button type="submit" class="btn btn-success">Save</button>
+                <a href="{% url 'client_payments' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -6,7 +6,7 @@ from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Q
-
+from datetime import date
 
 from .models import *
 from .forms import *
@@ -15,10 +15,10 @@ from .forms import *
 from users.views import notify_admins_and_assigned
 
 
+from finance.models import ProjectCosting
 
 
-
-
+from crm.models import Lead
 
 
 
@@ -39,14 +39,17 @@ def all_projects(request):
     query = request.GET.get("q")
     projects = Project.objects.all()
 
+    # If engineer, filter projects assigned to them
     if request.user.role == "engineer":
         employee = Employee.objects.filter(user=request.user).first()
         if employee:
             projects = projects.filter(engineer=employee)
 
+    # Filter by status
     if status:
         projects = projects.filter(status=status)
 
+    # Search
     if query:
         projects = projects.filter(
             Q(title__icontains=query) |
@@ -54,14 +57,20 @@ def all_projects(request):
             Q(engineer__user__username__icontains=query)
         )
 
-
     projects = projects.order_by('-created_at')
 
+    # PAGINATION
+    paginator = Paginator(projects, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'projects': projects,
+        'projects': page_obj.object_list,  
+        'page_obj': page_obj,              
         'status_choices': Project.STATUS_CHOICES,
         'status': status
     }
+
     return render(request, 'dashboard/all_projects.html', context)
 
 
@@ -69,11 +78,8 @@ def all_projects(request):
 def update_project(request, pid):
     project = get_object_or_404(Project, id=pid)
     link = reverse('project_detail', kwargs={'pid': project.id})
-    
-    # Calculate progress
+
     status_order = [status[0] for status in Project.STATUS_CHOICES]
-    progress_map = {status: 5 + i*9 for i, status in enumerate(status_order)}
-    progress_percent = progress_map.get(project.status, 0)
 
     # Fields to track updates (excluding status, which is handled in model)
     track_fields = ["engineer", "description", "revenue", "location"]
@@ -169,7 +175,7 @@ def update_project(request, pid):
         "form": form,
         "images": project.gallery.all(),
         "status_order": status_order,
-        "progress_percent": progress_percent,
+        "progress_percent": project.progress_percent,
     }
 
     return render(request, "dashboard/edit_project.html", context)
@@ -180,22 +186,11 @@ def view_project(request,pid):
     project = Project.objects.get(id=pid)
     activities = project.activities.order_by('-created_at') 
 
-    status_order = [status[0] for status in project.STATUS_CHOICES]
-    current_index = status_order.index(project.status)
-    completed_stages = status_order[:current_index]
-
-    progress_map = {}
-    progress = 5
-    for status in status_order:
-        progress_map[status] = progress
-        progress += 10
-    progress = progress_map.get(project.status,0)
-
     context = {
         'project':project,
         'activities':activities,
-        'progress':progress,
-        'completed_stages':completed_stages
+        'progress': project.progress_percent,
+        'completed_stages': project.completed_stages,
     }
 
     return render(request, 'dashboard/view_project.html', context)
@@ -377,6 +372,433 @@ def project_gallery(request, pid):
         }
 
     return render(request,'dashboard/project_gallery.html',context)
+
+
+
+@login_required(login_url='/users/login')
+def assigned_tasks(request):
+    # Only supervisors allowed
+    if request.user.role not in ['admin', 'engineer']:
+        return redirect('my_tasks')
+
+    tasks = Task.objects.filter(assigned_by=request.user).order_by('-created_at')
+
+    return render(request, "dashboard/assigned_tasks.html", {'tasks':tasks})
+
+@login_required(login_url='/users/login')
+def my_tasks(request):
+    user = request.user
+    today = timezone.now().date()
+
+    # Get tasks assigned to logged-in user
+    tasks = Task.objects.filter(assigned_to=user)
+
+    # Count tasks for badge display
+    task_count = tasks.filter(status__in=['new', 'in_progress']).count()
+
+    # Optional: Filter by GET param (today, pending, completed, overdue)
+    filter_type = request.GET.get('filter')
+    if filter_type == 'today':
+        tasks = tasks.filter(due_date=today)
+    elif filter_type == 'pending':
+        tasks = tasks.exclude(status='completed')
+    elif filter_type == 'overdue':
+        tasks = tasks.exclude(status='completed').filter(due_date__lt=today)
+    elif filter_type == 'completed':
+        tasks = tasks.filter(status='completed')
+
+    context = {
+        "tasks": tasks,
+        "task_count": task_count,
+        "today": today,
+        "filter_type": filter_type or "all",
+    }
+    return render(request, "dashboard/tasks.html", context)
+
+@login_required(login_url='/users/login')
+def create_task(request):
+
+    if request.method == "POST":
+
+        form = TaskForm(request.POST, user=request.user)
+
+        # Hide assignment fields for normal users
+        if request.user.role not in ['admin', 'engineer']:
+            form.fields.pop('assigned_to', None)
+
+        if form.is_valid():
+            task = form.save(commit=False)
+
+            # assign automatically to self
+            if request.user.role not in ['admin', 'engineer']:
+                task.assigned_to = request.user
+
+            task.assigned_by = request.user
+
+            task.save()
+
+            if request.user.role in ['admin', 'engineer']:
+                return redirect('assigned_tasks')
+            else:
+                return redirect('my_tasks')
+
+    else:
+        form = TaskForm(user=request.user)
+
+        if request.user.role not in ['admin', 'engineer']:
+            form.fields.pop('assigned_to', None)
+
+    return render(request, "dashboard/create_task.html", {"form": form})
+
+
+@login_required(login_url='/users/login')
+def complete_task(request, id):
+    task = get_object_or_404(Task, id=id)
+    task.status = 'completed'
+    task.save()
+    return redirect(my_tasks)
+
+
+@login_required(login_url='/users/login')
+def delete_task(request, id):
+    task = get_object_or_404(Task, id=id)
+    task.delete()
+    if request.user.role in ['admin', 'engineer']:
+        return redirect(assigned_tasks)
+    else:
+        return redirect(my_tasks)
+
+
+
+@login_required(login_url='/users/login')
+def edit_task(request, id):
+
+    task = get_object_or_404(Task, id=id)
+
+    # Permission check
+    if not (
+        request.user == task.assigned_to
+        or request.user.role in ['admin', 'engineer']
+    ):
+        return redirect('my_tasks')
+
+    if request.method == "POST":
+        form = TaskForm(request.POST, instance=task, user=request.user)
+
+        if form.is_valid():
+            task = form.save(commit=False)
+
+            # Ensure assigned_to if hidden
+            if not task.assigned_to:
+                task.assigned_to = request.user
+
+            task.assigned_by = request.user
+
+            task.save()
+
+            if request.user.role in ['admin', 'engineer']:
+                return redirect(assigned_tasks)
+            else:
+                return redirect(my_tasks)
+
+    else:
+        form = TaskForm(instance=task, user=request.user)
+
+    return render(request, "dashboard/edit_task.html", {
+        "form": form,
+        "task": task
+    })
+
+
+@login_required(login_url='/users/login')
+def installation_progress(request):
+
+    engineer = Employee.objects.get(user=request.user)
+    projects = Project.objects.filter(engineer=engineer)
+    if request.method == "POST":
+        # Update status for the project submitted
+        project_id = request.POST.get("project_id")
+        new_status = request.POST.get("status")
+        project = Project.objects.get(id=project_id,engineer=engineer)
+
+        if new_status in [s[0] for s in project.STATUS_CHOICES]:
+            project.status = new_status
+            project.save()
+
+        return redirect(installation_progress)
+    return render(request, "dashboard/installation_progress.html",{'projects':projects})
+
+
+@login_required(login_url='/users/login')
+def design_list(request):
+    # Admin sees all projects, engineer only sees assigned ones
+    if request.user.role == "admin":
+        projects = Project.objects.all()
+    else:
+        engineer = Employee.objects.get(user=request.user)
+        projects = Project.objects.filter(engineer=engineer)
+    # Determine phase dynamically for each project
+    projects_with_phase = []
+    for project in projects:
+        docs = project.design_documents.all()
+        if not docs.exists():
+            current_phase = "preparation"
+        elif docs.filter(approved=False).exists():
+            current_phase = "preparation"
+        elif not hasattr(project, 'costing'):
+            current_phase = "approval"
+        else:
+            current_phase = "costing"
+
+        projects_with_phase.append({
+            "project": project,
+            "current_phase": current_phase
+        })
+
+    context = {
+        "projects_with_phase": projects_with_phase
+    }
+    return render(request, "dashboard/design_list.html", context)
+
+
+
+@login_required(login_url='/users/login')
+def design_detail(request, pid):
+    project = get_object_or_404(Project, id=pid)
+
+    docs = project.design_documents.all()
+    if not docs.exists():
+        current_phase = "preparation"
+    elif docs.filter(approved=False).exists():
+        current_phase = "preparation"
+    elif not hasattr(project, 'costing'):
+        current_phase = "approval"
+    else:
+        current_phase = "costing"
+
+    if request.method == "POST":
+        # Engineer uploads designs
+        if request.user.role == "engineer" and current_phase == "preparation":
+            files = request.FILES.getlist("design_files")
+            captions = request.POST.getlist("captions") or []
+            for i, f in enumerate(files):
+                caption = captions[i] if i < len(captions) else ""
+                ProjectDesignDocument.objects.create(
+                    project=project,
+                    file=f,
+                    caption=caption,
+                    uploaded_by=request.user
+                )
+
+        # Admin approves designs
+        if request.user.role == "admin" and current_phase == "preparation":
+            approve_ids = request.POST.getlist("approve_docs")
+            ProjectDesignDocument.objects.filter(id__in=approve_ids).update(approved=True)
+
+        # Admin enters costing
+        if request.user.role == "admin" and current_phase == "approval":
+            cost = request.POST.get("cost")
+            if cost:
+                ProjectCosting.objects.create(project=project, cost=cost, entered_by=request.user)
+
+        return redirect(design_detail, pid=pid)
+
+    context = {
+        "project": project,
+        "design_documents": docs,
+        "current_phase": current_phase
+    }
+    return render(request, "dashboard/design_detail.html", context)
+
+
+
+
+
+# List of service requests assigned to the logged-in engineer
+
+@login_required(login_url='/users/login')
+def assigned_service_requests(request):
+    employee = get_object_or_404(Employee, user=request.user)
+    service_requests = ServiceRequest.objects.filter(assigned_to=employee).order_by('-created_at')
+    return render(request, 'dashboard/service_requests.html', {'service_requests': service_requests})
+
+
+
+
+
+@login_required(login_url='/users/login')
+def service_history(request):
+
+    employee = get_object_or_404(Employee, user=request.user)
+    
+    service_requests = ServiceRequest.objects.filter(
+        assigned_to=employee
+    ).order_by('-created_at')  # newest first
+
+    return render(request, 'dashboard/service_history.html', {
+        'service_requests': service_requests
+    })
+
+
+@login_required(login_url='/users/login')
+def add_service_report(request,rid):
+    service_request = get_object_or_404(
+        ServiceRequest, id=rid, assigned_to__user=request.user
+    )
+
+    # Prevent adding a report if one already exists
+    if hasattr(service_request, 'report'):
+        return redirect('service_report_detail', service_request_id=service_request.id)
+
+    if request.method == "POST":
+        form = ServiceReportForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Save the report
+            report = form.save(commit=False)
+            report.service_request = service_request
+            report.report_by = request.user.employee
+            report.save()
+
+            # Mark the service request as completed
+            service_request.status = 'completed'
+            service_request.save()
+
+            return redirect('assigned_service_requests')  # back to list
+    else:
+        form = ServiceReportForm()
+
+    return render(request, 'dashboard/add_service_report.html', {
+        'form': form,
+        'service_request': service_request
+    })
+
+
+@login_required(login_url='/users/login')
+def service_requests(request):
+    """View for salesperson to see all service requests related to their leads/projects."""
+
+    # Get all service requests for projects where the salesperson is handling the lead
+    all_requests = ServiceRequest.objects.filter(
+        project__lead__assigned_to=request.user
+    ).select_related('project', 'requested_by', 'assigned_to')
+
+    context = {
+        'pending_requests': all_requests.filter(status='pending'),
+        'in_progress_requests': all_requests.filter(status='in_progress'),
+        'completed_requests': all_requests.filter(status='completed'),
+        'cancelled_requests': all_requests.filter(status='cancelled'),
+        'unassigned_count': all_requests.filter(status='pending', assigned_to__isnull=True).count(),
+        'in_progress_count': all_requests.filter(status='in_progress').count(),
+        'completed_count': all_requests.filter(status='completed').count(),
+        'cancelled_count': all_requests.filter(status='cancelled').count(),
+    }
+
+    return render(request, 'dashboard/sales/service_requests.html', context)
+
+
+@login_required(login_url='/users/login')
+def redirect_service_request(request, pk):
+    """Assign a service request to an engineer."""
+    
+    sr = get_object_or_404(ServiceRequest, pk=pk)
+
+    # Get all engineers in the project (you could filter by role)
+    engineers = Employee.objects.filter(project=sr.project)
+    
+    if request.method == 'POST':
+        engineer_id = request.POST.get('engineer')
+        assigned_engineer = get_object_or_404(Employee, pk=engineer_id)
+        sr.assigned_to = assigned_engineer
+        sr.status = 'in_progress'
+        sr.save()
+        return redirect('service_requests')
+    
+    return render(request, 'dashboard/sales/redirect_service_request.html', {
+        'sr': sr,
+        'engineers': engineers
+    })
+
+@login_required(login_url='/users/login')
+def add_service_request(request):
+    # Only show projects assigned to this salesperson
+    form = ServiceRequestForm()
+    form.fields['project'].queryset = Lead.objects.filter(assigned_to=request.user,status='converted')
+    form.fields['assigned_to'].queryset = Employee.objects.filter(user__role='engineer')  
+
+    if request.method == 'POST':
+        form = ServiceRequestForm(request.POST)
+        form.fields['project'].queryset = Project.objects.filter(lead__assigned_to=request.user)
+        form.fields['assigned_to'].queryset = Employee.objects.filter(user__role='engineer')
+        if form.is_valid():
+            sr = form.save(commit=False)
+            sr.status = 'pending' if not sr.assigned_to else 'in_progress'
+            sr.save()
+            
+            # Create notifications
+            # 1️⃣ Admin notification
+            admins = CustomUser.objects.filter(is_superuser=True)
+            for admin in admins:
+                create_notification(
+                    recipient=admin,
+                    title=f"New Service Request: {sr.title}",
+                    message=f"{request.user.get_full_name()} created a new service request for project '{sr.project.title}'.",
+                    sender=request.user,
+                    link=f"/service-requests/{sr.pk}/"
+                )
+
+            # 2️⃣ Notify the salesperson (request.user)
+            create_notification(
+                recipient=request.user,
+                title=f"Service Request Created: {sr.title}",
+                message=f"You created a service request for project '{sr.project.title}'.",
+                sender=request.user,
+                link=f"/service-requests/{sr.pk}/"
+            )
+
+            # 3️⃣ Notify the engineer, if assigned
+            if sr.assigned_to:
+                create_notification(
+                    recipient=sr.assigned_to.user,
+                    title=f"New Service Request Assigned: {sr.title}",
+                    message=f"A service request has been assigned to you for project '{sr.project.title}'.",
+                    sender=request.user,
+                    link=f"/service-requests/{sr.pk}/"
+                )
+
+            return redirect(service_requests)
+
+    return render(request, 'dashboard/sales/add_request.html', {'form': form})
+
+
+
+@login_required(login_url='/users/login')
+def service_reports(request):
+    reports = ServiceReport.objects.filter(
+        service_request__project__lead__assigned_to=request.user
+    ).select_related('service_request', 'service_request__project', 'report_by')
+
+    return render(request,'dashboard/sales/service_reports.html',{'reports':reports})
+
+@login_required(login_url='/users/login')
+def service_report_detail(request,rid):
+    report = ServiceReport.objects.get(id=rid,service_request__project__lead__assigned_to=request.user)
+
+    return render(request, 'dashboard/sales/service_report_detail.html', {'report': report})
+
+
+
+
+@login_required(login_url='/users/login')
+def installation_tasks(request):
+    tasks = InstallationTask.objects.filter(assigned_to=request.user)
+    return render(request, "dashboard/staff/installation_tasks.html", {"tasks": tasks})
+
+
+@login_required(login_url='/users/login')
+def staff_projects(request):
+    projects = Project.objects.filter(installation_tasks__assigned_to=request.user).distinct()
+    return render(request, "dashboard/staff/projects.html", {"projects": projects})
+
 
 
 

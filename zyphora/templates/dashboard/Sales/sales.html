@@ -2,150 +2,205 @@
 {% load static %}
 
 {% block link %}
-    <link rel="stylesheet" href="{% static 'css/dashboard/sales/sales.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard/sales/sales.css' %}">
 {% endblock %}
 
 {% block content %}
 
 <div class="main-content">
+<div class="container-fluid">
 
-    <div class="container-fluid">
-        <div class="row g-4">
+<!-- ================= KPI CARDS ================= -->
 
-            <!-- Total Leads -->
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="kpi-card leads text-center">
-                    <div class="kpi-icon">
-                        <i class="bi bi-person-lines-fill"></i>
-                    </div>
-                    <div class="kpi-value">{{ total_leads }}</div>
-                    <div class="kpi-label">Total Leads</div>
-                </div>
-            </div>
+<div class="row g-4 align-items-stretch">
 
-            <!-- Open Leads -->
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="kpi-card open text-center">
-                    <div class="kpi-icon">
-                        <i class="bi bi-exclamation-circle-fill"></i>
-                    </div>
-                    <div class="kpi-value">{{ open_leads }}</div>
-                    <div class="kpi-label">Open Leads</div>
-                </div>
-            </div>
-
-            <!-- Deals Closed -->
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="kpi-card closed text-center">
-                    <div class="kpi-icon">
-                        <i class="bi bi-check-circle-fill"></i>
-                    </div>
-                    <div class="kpi-value">{{ closed_deals }}</div>
-                    <div class="kpi-label">Deals Closed</div>
-                </div>
-            </div>
-
-            <!-- Revenue Generated -->
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="kpi-card revenue text-center">
-                    <div class="kpi-icon">
-                        <i class="bi bi-currency-dollar"></i>
-                    </div>
-                    <div class="kpi-value">${{ revenue_generated }}</div>
-                    <div class="kpi-label">Revenue</div>
-                </div>
-            </div>
-
-        </div>
+<div class="col-12 col-sm-6 col-lg-3 d-flex">
+    <div class="kpi-card leads w-100 text-center">
+        <div class="kpi-icon"><i class="bi bi-person-lines-fill"></i></div>
+        <div class="kpi-value">{{ total_leads|default:0 }}</div>
+        <div class="kpi-label">Total Leads</div>
     </div>
+</div>
+
+<div class="col-12 col-sm-6 col-lg-3 d-flex">
+    <div class="kpi-card open w-100 text-center">
+        <div class="kpi-icon"><i class="bi bi-exclamation-circle-fill"></i></div>
+        <div class="kpi-value">{{ open_leads|default:0 }}</div>
+        <div class="kpi-label">Open Leads</div>
+    </div>
+</div>
+
+<div class="col-12 col-sm-6 col-lg-3 d-flex">
+    <div class="kpi-card closed w-100 text-center">
+        <div class="kpi-icon"><i class="bi bi-check-circle-fill"></i></div>
+        <div class="kpi-value">{{ closed_deals|default:0 }}</div>
+        <div class="kpi-label">Deals Closed</div>
+    </div>
+</div>
+
+<div class="col-12 col-sm-6 col-lg-3 d-flex">
+    <div class="kpi-card revenue w-100 text-center">
+        <div class="kpi-icon"><i class="bi bi-graph-up"></i></div>
+        <div class="kpi-value">{{ conversion_rate|default:0 }}%</div>
+        <div class="kpi-label">Conversion</div>
+    </div>
+</div>
 
 </div>
 
-<div class="row">
 
-    <!-- Lead Status Funnel -->
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm p-3">
-            <h6>Lead Funnel / Status</h6>
+<!-- ================= CHART + RECENT ================= -->
+
+<div class="row mt-4 g-4 align-items-stretch">
+
+<!-- Lead Funnel -->
+<div class="col-lg-6 d-flex">
+    <div class="dashboard-card w-100">
+        <h6 class="mb-3">Lead Funnel</h6>
+
+        <div class="chart-container">
             <canvas id="leadFunnelChart"></canvas>
+            <div class="empty-state" id="funnelEmpty">No funnel data available</div>
         </div>
     </div>
+</div>
 
-    <!-- Monthly Revenue vs Target -->
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm p-3">
-            <h6>Revenue vs Target</h6>
-            <canvas id="revenueChart"></canvas>
-        </div>
+<!-- Recent Leads -->
+<div class="col-lg-6 d-flex">
+    <div class="dashboard-card w-100">
+        <h6 class="mb-3">Recent Leads</h6>
+
+        <ul class="list-group custom-list">
+            {% for lead in recent_leads %}
+            <li class="list-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ lead.name }}</strong><br>
+                    <small class="text-muted">{{ lead.get_status_display }}</small>
+                </div>
+                <span class="badge bg-primary">{{ lead.score }}</span>
+            </li>
+            {% empty %}
+            <div class="empty-list">No recent leads</div>
+            {% endfor %}
+        </ul>
+
     </div>
+</div>
 
 </div>
 
-<div class="row">
 
-    <!-- Top Clients -->
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm p-3">
-            <h6>Top Clients</h6>
-            <ul class="list-group">
-                {% for client in top_clients %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ client.name }}
-                    <span>${{ client.revenue }}</span>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
+<!-- ================= LIST SECTIONS ================= -->
 
-    <!-- Recent Activities -->
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm p-3">
-            <h6>Recent Activities</h6>
-            <ul class="list-group">
-                {% for activity in recent_activities %}
-                <li class="list-group-item">
-                    {{ activity.date }} – {{ activity.note }}
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
+<div class="row mt-4 g-4 align-items-stretch">
+
+<!-- Top Leads -->
+<div class="col-lg-6 d-flex">
+    <div class="dashboard-card w-100">
+        <h6 class="mb-3">Top Leads</h6>
+
+        <ul class="list-group custom-list">
+            {% for lead in top_leads %}
+            <li class="list-item d-flex justify-content-between align-items-center">
+                {{ lead.name }}
+                <span class="badge bg-primary">{{ lead.score }}</span>
+            </li>
+            {% empty %}
+            <div class="empty-list">No leads available</div>
+            {% endfor %}
+        </ul>
+
     </div>
+</div>
+
+
+<!-- Drop-off -->
+<div class="col-lg-6 d-flex">
+    <div class="dashboard-card w-100">
+        <h6 class="mb-3">Drop-off Analysis</h6>
+
+        <div class="drop-item">
+            <span>After Contact</span>
+            <span class="badge bg-danger">{{ drop_contact|default:0 }}</span>
+        </div>
+
+        <div class="drop-item">
+            <span>After Site Visit</span>
+            <span class="badge bg-warning text-dark">{{ drop_visit|default:0 }}</span>
+        </div>
+
+        <div class="drop-item">
+            <span>Before Conversion</span>
+            <span class="badge bg-secondary">{{ drop_conversion|default:0 }}</span>
+        </div>
+
+    </div>
+</div>
 
 </div>
+
+</div>
+</div>
+
+
+<!-- ================= CHART JS ================= -->
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
 
-/* 🔹 Lead Funnel Chart */
-new Chart(document.getElementById('leadFunnelChart'), {
-    type: 'doughnut',
-    data: {
-        labels: ['New', 'Contacted', 'Proposal Sent', 'Negotiation', 'Closed Won', 'Closed Lost'],
-        datasets: [{
-            data: {{ lead_status_counts|safe }},
-            backgroundColor: [
-                '#0d6efd','#ffc107','#17a2b8','#6f42c1','#28a745','#dc3545'
-            ]
-        }]
-    }
-});
+let charts = {};
 
-/* 🔹 Monthly Revenue vs Target */
-new Chart(document.getElementById('revenueChart'), {
-    type: 'bar',
-    data: {
-        labels: {{ months|safe }},
-        datasets: [{
-            label: 'Revenue',
-            data: {{ monthly_revenue|safe }},
-            backgroundColor: '#198754'
-        }, {
-            label: 'Target',
-            data: {{ monthly_target|safe }},
-            backgroundColor: '#0d6efd'
-        }]
+function hasData(data){
+    return data && data.length > 0;
+}
+
+function mapData(data){
+    return {
+        labels: data.map(d => d.status || d.project_type || 'Unknown'),
+        values: data.map(d => d.count)
+    };
+}
+
+function renderCharts(){
+
+    const isDark = document.documentElement.getAttribute("data-bs-theme") === "dark";
+
+    const textColor = isDark ? "#e5e7eb" : "#212529";
+    const gridColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
+
+    const funnelData = {{ funnel_data|safe }};
+
+    Object.values(charts).forEach(c => c.destroy());
+    charts = {};
+
+    /* ===== Lead Funnel ===== */
+    if(hasData(funnelData)){
+        document.getElementById("funnelEmpty").style.display = "none";
+
+        charts.funnel = new Chart(leadFunnelChart, {
+            type: 'bar',
+            data: {
+                labels: mapData(funnelData).labels,
+                datasets: [{
+                    data: mapData(funnelData).values,
+                    backgroundColor: '#0d6efd',
+                    borderRadius: 10
+                }]
+            },
+            options: {
+                plugins: { legend: { display:false } },
+                scales: {
+                    y: { beginAtZero:true, ticks:{ color:textColor }, grid:{ color:gridColor }},
+                    x: { ticks:{ color:textColor }, grid:{ display:false }}
+                }
+            }
+        });
     }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(renderCharts, 50);
 });
 
 </script>

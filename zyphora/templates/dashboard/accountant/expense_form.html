@@ -1,0 +1,147 @@
+{% extends 'dashboard/dashboard.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h4>{{ title }}</h4>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- ================= MAIN INFO ================= -->
+        <div class="card shadow-sm mb-4 p-3">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="id_project" class="form-label">Project</label>
+                    {{ form.project }}
+                </div>
+                <div class="col-md-4">
+                    <label for="id_expense_date" class="form-label">Expense Date</label>
+                    {{ form.expense_date }}
+                </div>
+                <div class="col-md-4">
+                    <label for="id_category" class="form-label">Category</label>
+                    {{ form.category }}
+                </div>
+                <div class="col-12">
+                    <label for="id_notes" class="form-label">Notes</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= EXPENSE ITEMS ================= -->
+        <div class="card shadow-sm mb-4 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5>Expense Items</h5>
+                <button type="button" class="btn btn-sm btn-primary" onclick="addItem()">+ Add Item</button>
+            </div>
+
+            {{ item_formset.management_form }}
+            <div id="items-container">
+                {% for form in item_formset %}
+                <div class="row g-2 align-items-center item-form mb-2">
+                    <div class="col-md-6">
+                        <input type="text" name="{{ form.description.html_name }}" value="{{ form.description.value|default_if_none:'' }}" class="form-control" placeholder="Item description">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" name="{{ form.amount.html_name }}" value="{{ form.amount.value|default_if_none:'' }}" class="form-control" placeholder="Amount" step="0.01">
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">Remove</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="text-end mt-2">
+                <strong>Total: ₹ <span id="totalAmount">0.00</span></strong>
+            </div>
+        </div>
+
+        <!-- ================= RECEIPTS ================= -->
+        <div class="card shadow-sm mb-4 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5>Receipts</h5>
+                <button type="button" class="btn btn-sm btn-primary" onclick="addReceipt()">+ Add Receipt</button>
+            </div>
+
+            {{ receipt_formset.management_form }}
+            <div id="receipts-container">
+                {% for form in receipt_formset %}
+                <div class="row receipt-form mb-2">
+                    <div class="col-md-10">
+                        {{ form.file }}
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeReceipt(this)">Remove</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-success btn-lg">Submit Expense</button>
+        </div>
+    </form>
+</div>
+
+<!-- ================= JS ================= -->
+<script>
+function updateTotal() {
+    let total = 0;
+    document.querySelectorAll("input[name$='amount']").forEach(input => {
+        let val = parseFloat(input.value) || 0;
+        total += val;
+    });
+    document.getElementById("totalAmount").innerText = total.toFixed(2);
+}
+document.addEventListener("input", updateTotal);
+
+function addItem() {
+    let container = document.getElementById("items-container");
+    let totalForms = document.getElementById("id_items-TOTAL_FORMS");
+    let index = totalForms.value;
+    let newForm = `
+    <div class="row g-2 align-items-center item-form mb-2">
+        <div class="col-md-6">
+            <input type="text" name="items-${index}-description" class="form-control" placeholder="Item description">
+        </div>
+        <div class="col-md-4">
+            <input type="number" name="items-${index}-amount" class="form-control" placeholder="Amount" step="0.01">
+        </div>
+        <div class="col-md-2 text-end">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">Remove</button>
+        </div>
+    </div>`;
+    container.insertAdjacentHTML('beforeend', newForm);
+    totalForms.value = parseInt(index) + 1;
+}
+
+function removeItem(button) {
+    button.closest('.item-form').remove();
+    updateTotal();
+}
+
+function addReceipt() {
+    let container = document.getElementById("receipts-container");
+    let totalForms = document.getElementById("id_receipts-TOTAL_FORMS");
+    let index = totalForms.value;
+    let newForm = `
+    <div class="row receipt-form mb-2">
+        <div class="col-md-10">
+            <input type="file" name="receipts-${index}-file" class="form-control">
+        </div>
+        <div class="col-md-2 text-end">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeReceipt(this)">Remove</button>
+        </div>
+    </div>`;
+    container.insertAdjacentHTML('beforeend', newForm);
+    totalForms.value = parseInt(index) + 1;
+}
+
+function removeReceipt(button) {
+    button.closest('.receipt-form').remove();
+}
+</script>
+{% endblock %}

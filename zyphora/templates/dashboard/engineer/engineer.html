@@ -1,189 +1,349 @@
 {% extends 'dashboard/dashboard.html' %}
 {% load static %}
 
-
 {% block link %}
-
-    <link rel="stylesheet" href="{% static 'css/dashboard/engineer/engineer.css' %}">
-
+<link rel="stylesheet" href="{% static 'css/dashboard/engineer/engineer.css' %}">
 {% endblock %}
-
 
 {% block content %}
 
-<div class="main-content">
+<div class="container-fluid">
 
-    <div class="container-fluid ">
-        <div class="row g-4">
+    <!-- KPI SECTION -->
+    <div class="row g-4">
 
-            <!-- Assigned Projects -->
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="kpi-card assigned text-center">
-                    <div class="kpi-icon">
-                        <i class="bi bi-briefcase-fill"></i>
-                    </div>
-                    <div class="kpi-value">{{ assigned }}</div>
-                    <div class="kpi-label">Assigned Projects</div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card assigned text-center">
+                <div class="kpi-icon">
+                    <i class="bi bi-briefcase-fill"></i>
                 </div>
+                <div class="kpi-value">{{ assigned }}</div>
+                <div class="kpi-label">Assigned Projects</div>
             </div>
-
-            <!-- Ongoing Projects -->
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="kpi-card ongoing text-center">
-                    <div class="kpi-icon">
-                        <i class="bi bi-gear-fill"></i>
-                    </div>
-                    <div class="kpi-value">{{ active }}</div>
-                    <div class="kpi-label">Ongoing Projects</div>
-                </div>
-            </div>
-
-            <!-- Completed Projects -->
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="kpi-card completed text-center">
-                    <div class="kpi-icon">
-                        <i class="bi bi-check-circle-fill"></i>
-                    </div>
-                    <div class="kpi-value">{{ completed }}</div>
-                    <div class="kpi-label">Completed Projects</div>
-                </div>
-            </div>
-
-            <!-- Pending Tasks -->
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="kpi-card pending text-center">
-                    <div class="kpi-icon">
-                        <i class="bi bi-clock-history"></i>
-                    </div>
-                    <div class="kpi-value">6</div>
-                    <div class="kpi-label">Pending Tasks</div>
-                </div>
-            </div>
-
         </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card ongoing text-center">
+                <div class="kpi-icon">
+                    <i class="bi bi-gear-fill"></i>
+                </div>
+                <div class="kpi-value">{{ active }}</div>
+                <div class="kpi-label">Ongoing Projects</div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card completed text-center">
+                <div class="kpi-icon">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div class="kpi-value">{{ completed }}</div>
+                <div class="kpi-label">Completed Projects</div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card pending text-center">
+                <div class="kpi-icon">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="kpi-value">{{ tasks }}</div>
+                <div class="kpi-label">Pending Tasks</div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- CHARTS -->
+    <div class="row mt-4 g-4">
+
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h6>Project Stage Distribution</h6>
+
+                <div class="chart-container">
+                    <canvas id="stageChart"></canvas>
+                    <div class="empty-state" id="stageEmpty">
+                        No project data
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h6>Project Type Distribution</h6>
+
+                <div class="chart-container">
+                    <canvas id="typeChart"></canvas>
+                    <div class="empty-state" id="typeEmpty">
+                        No project types
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="row mt-4 g-4">
+
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h6>Task Status Overview</h6>
+
+                <div class="chart-container">
+                    <canvas id="taskChart"></canvas>
+                    <div class="empty-state" id="taskEmpty">
+                        No task data
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h6>Service Request Status</h6>
+
+                <div class="chart-container">
+                    <canvas id="serviceChart"></canvas>
+                    <div class="empty-state" id="serviceEmpty">
+                        No service requests
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- TASKS + VISITS -->
+    <div class="row mt-4 g-4">
+
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h6>Today's Tasks</h6>
+
+                {% for task in todays_tasks %}
+                <div class="list-item d-flex justify-content-between align-items-center mb-2">
+
+                    <div>
+                        <strong>{{ task.title }}</strong><br>
+                        <small class="text-muted">
+                            {{ task.get_status_display }}
+                        </small>
+                    </div>
+
+                    <span class="badge
+                        {% if task.status == 'new' %} bg-primary
+                        {% elif task.status == 'in_progress' %} bg-warning text-dark
+                        {% elif task.status == 'completed' %} bg-success
+                        {% elif task.status == 'overdue' %} bg-danger
+                        {% endif %}
+                    ">
+                        {{ task.status|title }}
+                    </span>
+
+                </div>
+                {% empty %}
+                <div class="empty-list">
+                    No tasks today
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+
+
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h6>Upcoming Site Visits</h6>
+
+                {% for visit in site_visits %}
+                <div class="list-item d-flex justify-content-between align-items-center mb-2">
+
+                    <div>
+                        <strong>
+                            {{ visit.project.title|default:"No Project" }}
+                        </strong><br>
+                        <small class="text-muted">
+                            {{ visit.scheduled_date }}
+                        </small>
+                    </div>
+
+                    <span class="badge
+                        {% if visit.status == 'pending' %} bg-warning text-dark
+                        {% elif visit.status == 'done' %} bg-success
+                        {% elif visit.status == 'cancelled' %} bg-danger
+                        {% endif %}
+                    ">
+                        {{ visit.status|title }}
+                    </span>
+
+                </div>
+                {% empty %}
+                <div class="empty-list">
+                    No visits scheduled
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+
     </div>
 
 </div>
 
-    <div class="row">
-
-        <!-- Monthly Project Progress -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm p-3">
-                <h6>Monthly Completion Trend</h6>
-                <canvas id="completionChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Deadline Tracking -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm p-3">
-                <h6>Upcoming Deadlines</h6>
-                <canvas id="deadlineChart"></canvas>
-            </div>
-        </div>
-
-    </div>
-
-
-    <div class="row">
-
-        <!-- Workload Distribution -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm p-3">
-                <h6>Work Type Distribution</h6>
-                <canvas id="workTypeChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Project Stage Distribution -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm p-3">
-                <h6>Project Stage Distribution</h6>
-                <canvas id="stageChart"></canvas>
-            </div>
-        </div>
-
-    </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
 
-/* 🔹 Project Stage Distribution */
-new Chart(document.getElementById('stageChart'), {
-    type: 'pie',
-    data: {
-        labels: [
-            'Site Visit',
-            'Design',
-            'Structure',
-            'Electrical',
-            'Energisation'
-        ],
-        datasets: [{
-            data: [2, 3, 2, 3, 2],
-            backgroundColor: [
-                '#ffc107',
-                '#0d6efd',
-                '#6f42c1',
-                '#17a2b8',
-                '#28a745'
-            ]
-        }]
+let charts = {};
+
+function mapData(data) {
+    return {
+        labels: data.map(d => d.status || d.project_type || d.stage || 'Unknown'),
+        values: data.map(d => d.count)
+    };
+}
+
+function hasData(data) {
+    return data && data.length > 0;
+}
+
+function renderCharts() {
+
+    const psData = {{ project_status|safe }};
+    const ptData = {{ project_type|safe }};
+    const tsData = {{ task_status|safe }};
+    const ssData = {{ service_status|safe }};
+
+    const colors = [
+        "#0d6efd",
+        "#ffc107",
+        "#198754",
+        "#dc3545",
+        "#6f42c1",
+        "#0dcaf0"
+    ];
+
+    Object.values(charts).forEach(c => c.destroy());
+    charts = {};
+
+    if (hasData(psData)) {
+
+        document.getElementById("stageEmpty").style.display = "none";
+
+        charts.stage = new Chart(stageChart, {
+            type: 'doughnut',
+            data: {
+                labels: mapData(psData).labels,
+                datasets: [{
+                    data: mapData(psData).values,
+                    backgroundColor: colors
+                }]
+            },
+            options: {
+                cutout: '65%',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                },
+                layout: {
+                    padding: 0
+                }
+            }
+        });
     }
-});
 
+    if (hasData(ptData)) {
 
-/* 🔹 Monthly Completion Trend */
-new Chart(document.getElementById('completionChart'), {
-    type: 'line',
-    data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        datasets: [{
-            label: 'Completed Projects',
-            data: [1, 2, 1, 3, 2, 4],
-            borderColor: '#198754',
-            tension: 0.4
-        }]
+        document.getElementById("typeEmpty").style.display = "none";
+
+        charts.type = new Chart(typeChart, {
+            type: 'pie',
+            data: {
+                labels: mapData(ptData).labels,
+                datasets: [{
+                    data: mapData(ptData).values,
+                    backgroundColor: colors
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                },
+                layout: {
+                    padding: 0
+                }
+            }
+        });
     }
-});
 
+    if (hasData(tsData)) {
 
-/* 🔹 Work Type Distribution */
-new Chart(document.getElementById('workTypeChart'), {
-    type: 'doughnut',
-    data: {
-        labels: [
-            'On-grid',
-            'Off-grid',
-            'Hybrid',
-            'Commercial'
-        ],
-        datasets: [{
-            data: [5, 3, 2, 2],
-            backgroundColor: [
-                '#0d6efd',
-                '#198754',
-                '#ffc107',
-                '#dc3545'
-            ]
-        }]
+        document.getElementById("taskEmpty").style.display = "none";
+
+        charts.task = new Chart(taskChart, {
+            type: 'bar',
+            data: {
+                labels: mapData(tsData).labels,
+                datasets: [{
+                    data: mapData(tsData).values,
+                    backgroundColor: "#0d6efd"
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                },
+                layout: {
+                    padding: 0
+                }
+            }
+        });
     }
-});
 
+    if (hasData(ssData)) {
 
-/* 🔹 Upcoming Deadlines */
-new Chart(document.getElementById('deadlineChart'), {
-    type: 'bar',
-    data: {
-        labels: ['This Week', 'Next Week', 'This Month'],
-        datasets: [{
-            label: 'Projects Due',
-            data: [2, 3, 5],
-            backgroundColor: '#dc3545'
-        }]
+        document.getElementById("serviceEmpty").style.display = "none";
+
+        charts.service = new Chart(serviceChart, {
+            type: 'bar',
+            data: {
+                labels: mapData(ssData).labels,
+                datasets: [{
+                    data: mapData(ssData).values,
+                    backgroundColor: "#198754"
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                },
+                layout: {
+                    padding: 0
+                }
+            }
+        });
     }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(renderCharts, 50);
 });
 
 </script>

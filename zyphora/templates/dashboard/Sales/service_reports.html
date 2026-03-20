@@ -1,0 +1,41 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<h3>Service Reports</h3>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Service Request</th>
+            <th>Project</th>
+            <th>Reported By</th>
+            <th>Report Preview</th>
+            <th>Images</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for report in reports %}
+        <tr>
+            <td>{{ report.service_request.title }}</td>
+            <td>{{ report.service_request.project.title }}</td>
+            <td>{{ report.report_by.user.get_full_name }}</td>
+            <td>{{ report.report_text|truncatewords:15 }}</td>
+            <td>
+                {% if report.images %}
+                    <a href="{{ report.images.url }}" target="_blank">View</a>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'service_report_detail' report.id %}" class="btn btn-sm btn-outline-primary">View Full</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="text-center">No service reports found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

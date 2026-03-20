@@ -1,0 +1,50 @@
+{% extends 'dashboard/dashboard.html' %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h4>My Expense Reports</h4>
+
+    {% for exp in expenses %}
+        <div class="card mb-3 p-3">
+
+            <h5>{{ exp.project }} | {{ exp.expense_date }}</h5>
+
+            <p><strong>Status:</strong>
+                <span class="badge 
+                    {% if exp.status == 'approved' %}bg-success
+                    {% elif exp.status == 'rejected' %}bg-danger
+                    {% else %}bg-warning{% endif %}">
+                    {{ exp.status }}
+                </span>
+            </p>
+
+            <!-- ITEMS -->
+            <h6>Items</h6>
+            <ul>
+                {% for item in exp.items.all %}
+                    <li>{{ item.description }} - ₹{{ item.amount }}</li>
+                {% endfor %}
+            </ul>
+
+            <!-- RECEIPTS -->
+            <h6>Receipts</h6>
+            <ul>
+                {% for r in exp.receipts.all %}
+                    <li>
+                        <a href="{{ r.file.url }}" target="_blank">
+                            View Receipt
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <strong>Total: ₹{{ exp.total_amount }}</strong>
+
+        </div>
+    {% empty %}
+        <p>No expense reports found</p>
+    {% endfor %}
+
+</div>
+{% endblock %}

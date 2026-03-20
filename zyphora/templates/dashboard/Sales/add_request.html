@@ -1,0 +1,42 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h3 class="mb-4">Add Service Request</h3>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        <!-- Project Selection -->
+        <div class="mb-3">
+            <label for="id_project" class="form-label">Project</label>
+            {{ form.project }}
+        </div>
+
+        <!-- Title -->
+        <div class="mb-3">
+            <label for="id_title" class="form-label">Title</label>
+            {{ form.title }}
+        </div>
+
+        <!-- Description -->
+        <div class="mb-3">
+            <label for="id_description" class="form-label">Description</label>
+            {{ form.description }}
+        </div>
+
+        <!-- Assign Engineer -->
+        <div class="mb-3">
+            <label for="id_assigned_to" class="form-label">Assign to Engineer (Optional)</label>
+            {{ form.assigned_to }}
+        </div>
+
+        <!-- Buttons -->
+        <button type="submit" class="btn btn-primary">Create Service Request</button>
+        <a href="{% url 'service_requests' %}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div>
+{% endblock %}

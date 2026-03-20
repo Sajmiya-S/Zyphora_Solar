@@ -7,11 +7,16 @@ from django.conf import settings
 from django.contrib.auth.views import PasswordChangeView
 from django.urls import reverse_lazy
 from django.utils.html import strip_tags
+from django.utils.timezone import now
 from django.http import JsonResponse
 from django.urls import reverse
 from django.db import transaction
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q,Sum,Count, Avg
+from django.views.decorators.http import require_POST
+from datetime import date
+
+
 
 from .utils import generate_temp_password, create_notification
 from .models import *
@@ -21,6 +26,7 @@ from .forms import *
 from public.models import *
 from public.forms import BlogPostForm
 
+from projects.models import *
 
 from crm.models import *
 
@@ -28,9 +34,12 @@ from crm.models import *
 from users.utils import create_notification
 
 
+from finance.models import *
+
+
 from ollama import chat
-
-
+import calendar
+import json
 
 # ======================================================
 #           AUTHENTICATION & AUTHORIZATION
@@ -74,54 +83,152 @@ def dashboard(request):
         return redirect(accountant_dashboard)
     elif request.user.role == 'sales':
         return redirect(sales_dashboard)
-    elif request.user.role == 'sales':
+    elif request.user.role == 'staff':
         return redirect(staff_dashboard)
 
 
 @login_required(login_url='/users/login')    
 def admin_dashboard(request):
     if request.user.role is None:
-        return redirect(dashboard)
+        return redirect('dashboard')
+
+    # ---- Leads ----
     total_leads = Lead.objects.count()
     converted = Lead.objects.filter(status='converted').count()
+    not_converted = total_leads - converted
+    recent_leads = Lead.objects.order_by('-created_at')[:5]
+
+    # ---- Projects ----
     active_projects = Project.objects.exclude(status='completed').count()
+
+    # ---- Revenue & Pending Payments ----
+    revenue = sum([pc.revenue() for pc in ProjectCosting.objects.all()])
+
+    pending_payments = Invoice.objects.annotate(
+        paid_amount=Sum('payments__amount')
+    ).aggregate(
+        total_pending=Sum('total_amount') - Sum('paid_amount')
+    )['total_pending'] or 0
+
+    # ---- Project Type Distribution ----
+    project_types = ['on-grid','off-grid','hybrid','leakproof','commercial']
+    project_counts = [Project.objects.filter(project_type=ptype).count() for ptype in project_types]
+
+    # ---- Project Status Distribution ----
+    statuses = ['site_visit', 'design', 'installation', 'electrical', 'energisation']
+    status_counts = [Project.objects.filter(status=status).count() for status in statuses]
+
+    # ---- Context ----
     context = {
         "total_leads": total_leads,
-        "converted":converted,
-        "not_converted":total_leads - converted,
-        "recent_leads": Lead.objects.order_by('-created_at')[:5],
-        "active_projects": active_projects
+        "converted": converted,
+        "not_converted": not_converted,
+        "recent_leads": recent_leads,
+        "active_projects": active_projects,
+        "revenue": revenue,
+        "pending_payments": pending_payments,
+        "project_types": project_types,
+        "project_counts": project_counts,
+        "statuses": statuses,
+        "status_counts": status_counts
     }
 
-    return render(request,'dashboard/admin/admin.html',context)
+    return render(request, 'dashboard/admin/admin.html', context)
 
+import json
+from django.db.models import Count
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 
 @login_required(login_url='/users/login')
 def engineer_dashboard(request):
+
     if request.user.role != 'engineer':
-        return redirect(dashboard)
+        return redirect('dashboard')
 
     if request.user.must_change_password:
         create_notification(
-                            recipient=request.user,
-                            title='Change Password',
-                            message='Please update your temperory password',
-                            link='password'
-                            )
+            recipient=request.user,
+            title='Change Password',
+            message='Please update your temporary password',
+            link='password'
+        )
         return redirect('password')
 
     profile = get_object_or_404(Employee, user=request.user)
+
+    # ================= KPI =================
     p_assigned = Project.objects.filter(engineer=profile).count()
     p_active = Project.objects.filter(engineer=profile).exclude(status='completed').count()
-    p_completed = Project.objects.filter(engineer=profile,status='completed').count()
+    p_completed = Project.objects.filter(engineer=profile, status='completed').count()
+
+    tasks = Task.objects.filter(
+        assigned_to=request.user,
+        status__in=['new', 'in_progress']
+    ).count()
+
+    # ================= CHART DATA =================
+    project_status = list(
+        Project.objects.filter(engineer=profile)
+        .values('status')
+        .annotate(count=Count('id'))
+    )
+
+    project_type = list(
+        Project.objects.filter(engineer=profile)
+        .values('project_type')
+        .annotate(count=Count('id'))
+    )
+
+    task_status = list(
+        Task.objects.filter(assigned_to=request.user)
+        .values('status')
+        .annotate(count=Count('id'))
+    )
+
+    service_status = list(
+        ServiceRequest.objects.filter(assigned_to=profile)
+        .values('status')
+        .annotate(count=Count('id'))
+    )
+
+    # ================= TODAY FILTER =================
+    today = timezone.localdate()
+
+    # 🔹 Today's Tasks
+    todays_tasks = Task.objects.filter(
+        assigned_to=request.user,
+        due_date=today
+    ).order_by('-created_at')[:5]
+
+    # 🔹 Upcoming Site Visits
+    site_visits = SiteVisit.objects.filter(
+        engineer=request.user,
+        scheduled_date__gte=today
+    ).order_by('scheduled_date')[:5]
+
 
     context = {
         'profile': profile,
-        'assigned':p_assigned,
-        'active':p_active,
-        'completed':p_completed,
+
+        # KPI
+        'assigned': p_assigned,
+        'active': p_active,
+        'completed': p_completed,
+        'tasks': tasks,
+
+        # ✅ SAFE JSON
+        'project_status': json.dumps(project_status),
+        'project_type': json.dumps(project_type),
+        'task_status': json.dumps(task_status),
+        'service_status': json.dumps(service_status),
+
+        'todays_tasks': todays_tasks,
+        'site_visits': site_visits,
     }
-    return render(request,'dashboard/engineer/engineer.html', context)
+
+    return render(request, 'dashboard/engineer/engineer.html', context)
+
 
 @login_required(login_url='/users/login')
 def accountant_dashboard(request):
@@ -140,53 +247,229 @@ def accountant_dashboard(request):
         return redirect('password')
 
     profile = get_object_or_404(Employee, user=request.user)
-    return render(request,'dashboard/accountant/accountant.html',{'profile':profile})
 
+    # KPIs
+    total_revenue = Invoice.objects.filter(status='paid').aggregate(total=Sum('total_amount'))['total'] or 0
+    total_expenses = ExpenseItem.objects.aggregate(total=Sum('amount'))['total'] or 0
+    net_profit = total_revenue - total_expenses
+    pending_payments = Invoice.objects.filter(status='sent').aggregate(total=Sum('total_amount'))['total'] or 0
+
+    # Revenue vs Expenses Chart (last 6 months)
+    months = [(now().month-i) % 12 or 12 for i in reversed(range(6))]
+    month_labels = [calendar.month_abbr[m] for m in months]
+    revenue_data = []
+    expense_data = []
+
+    for m in months:
+        rev = Invoice.objects.filter(status='paid', issue_date__month=m).aggregate(total=Sum('total_amount'))['total'] or 0
+        exp = ExpenseItem.objects.filter(report__expense_date__month=m).aggregate(total=Sum('amount'))['total'] or 0
+        revenue_data.append(float(rev))
+        expense_data.append(float(exp))
+
+    finance_chart_data = {
+        "labels": month_labels,
+        "datasets": [
+            {"label":"Revenue", "data":revenue_data, "backgroundColor":"#198754"},
+            {"label":"Expenses", "data":expense_data, "backgroundColor":"#dc3545"}
+        ]
+    }
+
+    # Expense Breakdown Chart
+    breakdown = ExpenseItem.objects.values('report__category').annotate(total=Sum('amount'))
+    expense_labels = [x['report__category'].title() for x in breakdown]
+    expense_values = [float(x['total']) for x in breakdown]
+    expense_colors = ['#0d6efd','#ffc107','#6f42c1','#dc3545','#198754']
+
+    expense_breakdown_data = {
+        "labels": expense_labels,
+        "datasets": [{"data": expense_values, "backgroundColor": expense_colors[:len(expense_values)]}]
+    }
+
+    # Recent records
+    recent_invoices = Invoice.objects.order_by('-created_at')[:5]
+    recent_expense_reports = ExpenseReport.objects.order_by('-created_at')[:5]
+
+    context = {
+        'total_revenue': total_revenue,
+        'total_expenses': total_expenses,
+        'net_profit': net_profit,
+        'pending_payments': pending_payments,
+        'finance_chart_data': finance_chart_data,
+        'expense_breakdown_data': expense_breakdown_data,
+        'recent_invoices': recent_invoices,
+        'recent_expense_reports': recent_expense_reports,
+        'profile':profile,
+    }
+
+    return render(request, 'dashboard/accountant/accountant.html', context)
 
 @login_required(login_url='/users/login')
 def sales_dashboard(request):
 
-    request.user.role == 'sales'
     if request.user.role != 'sales':
-        return redirect(dashboard)
+        return redirect('dashboard')
 
+    # Force password change
     if request.user.must_change_password:
         create_notification(
-                            recipient=request.user,
-                            title='Change Password',
-                            message='Please update your temperory password',
-                            link='password'
-                            )
+            recipient=request.user,
+            title='Change Password',
+            message='Please update your temporary password',
+            link='password'
+        )
         return redirect('password')
 
     profile = get_object_or_404(Employee, user=request.user)
-    total_leads = Lead.objects.count()
+
+    leads = Lead.objects.filter(assigned_to=request.user)
+
+    # ================= KPIs =================
+
+    total_leads = leads.count()
+    open_leads = leads.exclude(status__in=['converted', 'rejected']).count()
+    closed_deals = leads.filter(status='converted').count()
+
+    # ================= FUNNEL =================
+
+    new_count = leads.filter(status='new').count()
+    contacted_count = leads.filter(status='contacted').count()
+    visit_count = leads.filter(status='site_visit_scheduled').count()
+    converted_count = leads.filter(status='converted').count()
+
+    funnel_data = [
+        {"status": "New", "count": new_count},
+        {"status": "Contacted", "count": contacted_count},
+        {"status": "Site Visit", "count": visit_count},
+        {"status": "Converted", "count": converted_count},
+    ]
+
+    # ================= CONVERSION =================
+
+    conversion_rate = (converted_count / total_leads * 100) if total_leads else 0
+
+    # ================= DROP OFF =================
+
+    drop_contact = new_count - contacted_count
+    drop_visit = contacted_count - visit_count
+    drop_conversion = visit_count - converted_count
+
+    # ================= CONTEXT =================
 
     context = {
         "total_leads": total_leads,
-        "recent_leads": Lead.objects.order_by('-created_at')[:5],
-        'profile':profile
+        "open_leads": open_leads,
+        "closed_deals": closed_deals,
+
+        "recent_leads": leads.order_by('-created_at')[:5],
+        "top_leads": leads.order_by('-score')[:5],
+        "profile": profile,
+
+        "funnel_data": funnel_data,
+        "conversion_rate": round(conversion_rate, 1),
+
+        "drop_contact": drop_contact,
+        "drop_visit": drop_visit,
+        "drop_conversion": drop_conversion,
     }
-    return render(request,'dashboard/sales/sales.html',)
+
+    return render(request, 'dashboard/sales/sales.html', context)
+
 
 @login_required(login_url='/users/login')
 def staff_dashboard(request):
-
+    # Only staff can access
     if request.user.role != 'staff':
-        return redirect(dashboard)
+        return redirect('dashboard')  # redirect non-staff
 
+    # Must change password
     if request.user.must_change_password:
-        create_notification(
-                            recipient=request.user,
-                            title='Change Password',
-                            message='Please update your temperory password',
-                            link='password'
-                            )
+        Notification.objects.create(
+            recipient=request.user,
+            title='Change Password',
+            message='Please update your temporary password',
+            link='/users/password/'
+        )
         return redirect('password')
 
+    # Staff profile
     profile = get_object_or_404(Employee, user=request.user)
-    return render(request,'dashboard/staff/staff.html',{'profile':profile})
+
+    # Tasks assigned to this staff user
+    tasks = Task.objects.filter(assigned_to=request.user).order_by('due_date')
+
+    # Task KPIs
+    total_tasks = tasks.count()
+    completed_tasks = tasks.filter(status='completed').count()
+    pending_tasks = tasks.filter(status__in=['new','in_progress']).count()
+    overdue_tasks = tasks.filter(status='overdue').count()
+
+    task_counts = {
+        'new': tasks.filter(status='new').count(),
+        'in_progress': tasks.filter(status='in_progress').count(),
+        'completed': completed_tasks,
+        'overdue': overdue_tasks
+    }
+
+    # Assigned Projects for staff (technicians)
+    projects = Project.objects.filter(installation_tasks__assigned_to=request.user).distinct()  # assigned projects
+    assigned_projects = projects.count()
+
+    # Installation checklist progress for all projects
+    checklist_progress = {}
+    for project in projects:
+        total_items = project.installation_tasks.count()
+        completed_items = project.installation_tasks.filter(status='completed').count()
+        percent = int((completed_items / total_items) * 100) if total_items else 0
+        checklist_progress[project.id] = percent
+
+    today = timezone.localdate()
+    context = {
+        "task_count": Task.objects.filter(assigned_to=request.user).count(),
+        "todays_tasks": Task.objects.filter(assigned_to=request.user, due_date=date.today()).count(),
+        "pending_tasks": Task.objects.filter(assigned_to=request.user, status='pending').count(),
+        "overdue_tasks": Task.objects.filter(assigned_to=request.user, status='pending', due_date__lt=date.today()).count(),
+        "installation_count": InstallationTask.objects.filter(assigned_to=request.user).count(),
+        "project_count": Project.objects.filter(installation_tasks__assigned_to=request.user).distinct().count(),
+        'profile': profile,
+        'tasks': tasks,
+        'projects': projects,
+        'total_tasks': total_tasks,
+        'completed_tasks': completed_tasks,
+        'pending_tasks': pending_tasks,
+        'assigned_projects': assigned_projects,
+        'task_counts': task_counts,
+        'today': today,
+        'checklist_progress': checklist_progress,
+    }
+
+    return render(request, 'dashboard/staff/staff.html', context)
+
+@login_required(login_url='/users/login')
+@require_POST
+def save_installation_checklist(request):
+    """
+    Save checklist progress for an InstallationTask.
+    Expects JSON: { "task_id": int, "completed_stages": [str, str, ...] }
+    """
+    try:
+        data = json.loads(request.body)
+        task_id = data.get('task_id')
+        completed_stages = data.get('completed_stages', [])
+
+        task = InstallationTask.objects.get(id=task_id)
+
+        # Save the completed stages
+        task.completed_stages = completed_stages  # Make sure your model field allows storing list (JSONField or TextField)
+        task.save(update_fields=['completed_stages'])
+
+        return JsonResponse({'success': True, 'message': 'Checklist saved', 'completed_count': len(completed_stages)})
+
+    except InstallationTask.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Task not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)
     
+
 
 class ChangePassword(PasswordChangeView):
     template_name = 'dashboard/change_password.html'
@@ -357,6 +640,34 @@ def view_profile(request):
 
 
 
+
+@login_required(login_url='/users/login')
+def view_employee(request, emp_id):
+    emp = get_object_or_404(Employee, id=emp_id)
+    return render(request,'dashboard/admin/view_emp.html',{'employee': emp})
+
+@login_required(login_url='/users/login')
+def edit_profile(request):
+    emp = Employee.objects.get(user=request.user)
+
+    if request.method == "POST":
+        form = EmployeeForm(request.POST, request.FILES, instance=emp)
+        if form.is_valid():
+            employee = form.save(commit=False)
+            if 'profile_pic' in request.FILES:
+                employee.profile_pic = request.FILES['profile_pic']
+
+            employee.save()
+            return redirect(view_profile)
+    else:
+        form = EmployeeForm(instance=emp)
+
+    context = {
+        'form': form,
+        'employee': emp
+    }
+    return render(request,'dashboard/edit_profile.html', context)
+
 # ======================================================
 #               BLOG MANAGEMENT
 # ======================================================
@@ -526,24 +837,45 @@ def add_post(request):
 # Handles fetching, viewing, marking as read, deleting,
 # and sending notifications to admins and assigned users.
 
-
-
-
 @login_required(login_url='/users/login')
 def mark_as_read(request, nid):
-    notification = get_object_or_404(Notification, id=nid, recipient=request.user)
-    notification.is_read = True
-    notification.save()
+    notification = get_object_or_404(
+        Notification,
+        id=nid,
+        recipient=request.user
+    )
+
+    # mark as read
+    if not notification.is_read:
+        notification.is_read = True
+        notification.save()
+
+    # ✅ FIRST: check ?next= (used in dropdown)
+    next_url = request.GET.get("next")
+    if next_url:
+        return redirect(next_url)
+
+    # ✅ SECOND: fallback to notification link
+    if notification.link:
+        return redirect(notification.link)
+
+    # ✅ FINAL fallback (same page)
     return redirect(request.META.get('HTTP_REFERER', 'notifications'))
 
 @login_required(login_url='/users/login')
 def mark_all_as_read(request):
-    Notification.objects.filter(
-        recipient=request.user,
-        is_read=False
-    ).update(is_read=True)
+    ntype = request.GET.get("type", "all")
 
-    return redirect(request.META.get('HTTP_REFERER', '/'))
+    qs = Notification.objects.filter(recipient=request.user)
+
+    if ntype == "unread":
+        qs = qs.filter(is_read=False)
+    elif ntype != "all":
+        qs = qs.filter(category=ntype)
+
+    qs.update(is_read=True)
+
+    return redirect(request.META.get('HTTP_REFERER', 'notifications'))
 
 
 
@@ -578,68 +910,83 @@ def get_notifications(request):
         "unread_count": unread_count
     })
 
+
+
+
 @login_required(login_url='/users/login')
-def notifications(request, ntype="all"):
-    notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+def notifications(request):
+    ntype = request.GET.get("type", "all")
 
+    # ✅ Base queryset
+    notifications_qs = Notification.objects.filter(
+        recipient=request.user
+    ).order_by('-created_at')
+
+    # ✅ UNIQUE categories (FIXED 🔥)
+    categories = sorted(set(
+        notifications_qs.values_list('category', flat=True)
+    ))
+
+    # ✅ Total count per category
+    category_counts = dict(
+        notifications_qs
+        .values('category')
+        .annotate(count=Count('id'))
+        .values_list('category', 'count')
+    )
+
+    # ✅ Unread count per category (🔥 for tabs)
+    category_unread = dict(
+        notifications_qs
+        .filter(is_read=False)
+        .values('category')
+        .annotate(count=Count('id'))
+        .values_list('category', 'count')
+    )
+
+    # ✅ FILTERING
     if ntype == "unread":
-        notifications = notifications.filter(is_read=False)
-    elif ntype in ["crm", "project", "finance", "employee", "system"]:
-        notifications = notifications.filter(category=ntype)
+        notifications_qs = notifications_qs.filter(is_read=False)
+    elif ntype != "all":
+        notifications_qs = notifications_qs.filter(category=ntype)
 
-    # Pagination
-    paginator = Paginator(notifications, 20)
-    page_number = request.GET.get('page')
-    notifications_page = paginator.get_page(page_number)
+    # ✅ PAGINATION
+    paginator = Paginator(notifications_qs, 20)
+    page = request.GET.get('page')
+    notifications_page = paginator.get_page(page)
 
-    # Prepare headings and icons for template
-    headings = {
-        "all": "All Notifications",
-        "unread": "Unread Notifications",
-        "crm": "Client Updates",
-        "lead": "Lead Updates",
-        "project": "Project Alerts",
-        "finance": "Finance Alerts",
-        "employee": "Employee Alerts",
-        "system": "System Alerts",
-        "admin": "Admin Alerts"
+    # ✅ CATEGORY STYLE CONFIG (icons + badge colors)
+    CATEGORY_STYLES = {
+        "project":  {"icon": "bi-briefcase-fill text-success", "badge": "bg-success"},
+        "tasks":    {"icon": "bi-list-check text-primary", "badge": "bg-primary"},
+        "material": {"icon": "bi-box-seam text-warning", "badge": "bg-warning text-dark"},
+        "service":  {"icon": "bi-wrench-adjustable text-info", "badge": "bg-info text-dark"},
+        "finance":  {"icon": "bi-cash-coin text-warning", "badge": "bg-warning text-dark"},
+        "employee": {"icon": "bi-people-fill text-info", "badge": "bg-info text-dark"},
+        "admin":    {"icon": "bi-bell-fill text-danger", "badge": "bg-danger"},
+        "lead":     {"icon": "bi-person-plus-fill text-primary", "badge": "bg-primary"},
+        "crm":      {"icon": "bi-person-lines-fill text-dark", "badge": "bg-dark"},
+        "system":   {"icon": "bi-gear-fill text-secondary", "badge": "bg-secondary"},
     }
 
-    icons = {
-        "crm": "bi-person-plus-fill text-primary",
-        "lead": "bi-person-plus-fill text-primary",
-        "project": "bi-briefcase-fill text-success",
-        "finance": "bi-cash-coin text-warning",
-        "employee": "bi-people-fill text-info",
-        "system": "bi-gear-fill text-secondary",
-        "tasks":"bi-list-check",
-        "material":"bi-box-seam",
-        "service":"bi-wrench-adjustable",
-        "admin":"bi-bell-fill text-danger"
-    }
+    # ✅ Attach icon + badge to each notification
+    for n in notifications_page:
+        style = CATEGORY_STYLES.get(n.category, CATEGORY_STYLES["system"])
+        n.icon = style["icon"]
+        n.badge = style["badge"]
 
-    badges = {
-        "crm": "bg-primary",
-        "lead": "bg-primary",
-        "project": "bg-success",
-        "finance": "bg-warning text-dark",
-        "employee": "bg-info text-dark",
-        "system": "bg-secondary",
-        "admin":"bg-danger"
-    }
+    # ✅ Total unread count
+    unread_count = notifications_qs.filter(is_read=False).count()
 
-    unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
-
-    context = {
+    return render(request, "dashboard/notifications.html", {
         "notifications": notifications_page,
         "ntype": ntype,
-        "headings": headings,
-        "icons": icons,
-        "badges": badges,
-        "unread_count": unread_count
-    }
+        "categories": categories,
+        "category_counts": category_counts,
+        "category_unread": category_unread,
+        "unread_count": unread_count,
+    })
 
-    return render(request, "dashboard/notifications.html", context)
 
 
 @login_required(login_url='/users/login')
@@ -657,9 +1004,18 @@ def delete_notification(request, nid):
 
 @login_required(login_url='/users/login')
 def delete_all_notifications(request):
-    Notification.objects.filter(recipient=request.user).delete()
-    messages.success(request, "All notifications deleted.")
-    return redirect(request.META.get('HTTP_REFERER', 'all_notifications'))
+    ntype = request.GET.get("type", "all")
+
+    qs = Notification.objects.filter(recipient=request.user)
+
+    if ntype == "unread":
+        qs = qs.filter(is_read=False)
+    elif ntype != "all":
+        qs = qs.filter(category=ntype)
+
+    qs.delete()
+
+    return redirect(request.META.get('HTTP_REFERER', 'notifications'))
 
 
 def notify_admins_and_assigned(sender, instance, title, message, link, admin_cat, emp_cat):

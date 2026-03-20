@@ -1,0 +1,271 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block link %}
+<link rel="stylesheet" href="{% static 'css/dashboard/view_lead.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-2">
+    <li class="breadcrumb-item">
+        <a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{% url 'lead_list' %}">Leads</a>
+    </li>
+    <li class="breadcrumb-item active">
+        View Lead
+    </li>
+  </ol>
+</nav>
+<div class="container mt-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center">
+            <h3 class="me-3 mb-0">{{ lead.name }}</h3>
+            <span class="badge status-{{ lead.status }}">{{ lead.get_status_display }}</span>
+        </div>
+
+        <div>
+            <a href="{% url 'update_lead' lead.id %}" class="btn btn-warning">Update</a>
+            <a href="{% url 'lead_list' %}" class="btn btn-secondary">Back</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- LEFT COLUMN -->
+        <div class="col-lg-5">
+
+            <!-- Customer Info -->
+            <div class="card shadow-sm p-4 mb-3">
+                <h5 class="mb-3">Customer Information</h5>
+
+                <div class="lead-info mb-2"><strong>Name:</strong> {{ lead.name }}</div>
+
+                <div class="lead-info mb-2">
+                    <strong>Phone:</strong>
+                    <a href="tel:{{ lead.phone }}">{{ lead.phone }}</a>
+                </div>
+
+                <div class="lead-info mb-2">
+                    <strong>Email:</strong>
+                    <a href="mailto:{{ lead.email }}">
+                        {{ lead.email|default:"Not provided" }}
+                    </a>
+                </div>
+
+                <div class="lead-info mb-2">
+                    <strong>Service:</strong>
+                    {{ lead.get_service_display }}
+                </div>
+
+                <div class="lead-info">
+                    <strong>Created:</strong>
+                    {{ lead.created_at|date:"M d, Y H:i" }}
+                </div>
+            </div>
+
+            <!-- Site Visits -->
+            <div class="card shadow-sm p-4 mb-3">
+                <h5 class="mb-3">Site Visits</h5>
+
+                {% for s in lead.site_visits.all %}
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+
+                    <div>
+                        {{ s.scheduled_date|date:"M d, Y" }}
+
+                        {% if s.status == "done" %}
+                        <span class="badge bg-success">Done</span>
+                        {% endif %}
+
+                        {% if s.notes %}
+                        - {{ s.notes }}
+                        {% endif %}
+                    </div>
+
+                    {% if s.status != "done" %}
+                    <form method="post" action="{% url 'mark_site_visit_done' s.id %}">
+                        {% csrf_token %}
+                        <button class="btn btn-primary btn-sm">Mark Done</button>
+                    </form>
+                    {% endif %}
+
+                </div>
+
+                {% empty %}
+                <p class="text-muted">No site visits scheduled.</p>
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+
+        <!-- RIGHT COLUMN -->
+        <div class="col-lg-7">
+
+            <!-- Lead Management -->
+            <div class="card shadow-sm p-4 mb-3">
+                <h5 class="mb-3">Lead Management</h5>
+
+                <div class="lead-info mb-2">
+                    <strong>Priority:</strong>
+                    <span class="badge priority-{{ lead.priority }}">
+                        {{ lead.get_priority_display }}
+                    </span>
+                </div>
+
+                <div class="lead-info mb-2">
+                    <strong>Assigned To:</strong>
+                    {{ lead.assigned_to|default:"Not assigned" }}
+                </div>
+            </div>
+
+
+            <!-- Follow-ups -->
+            <div class="card shadow-sm p-4 mb-3">
+                <h5 class="mb-3">Follow-ups</h5>
+
+                {% for f in lead.followups.all %}
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+
+                    <div>
+                        {{ f.scheduled_date|date:"M d, Y" }}
+
+                        {% if f.status == "done" %}
+                        <span class="badge bg-success">Done</span>
+                        {% endif %}
+
+                        {% if f.note %}
+                        - {{ f.note }}
+                        {% endif %}
+                    </div>
+
+                    {% if f.status != "done" %}
+                    <form method="post" action="{% url 'mark_followup_done' f.id %}">
+                        {% csrf_token %}
+                        <button class="btn btn-success btn-sm">Mark Done</button>
+                    </form>
+                    {% endif %}
+
+                </div>
+
+                {% empty %}
+                <p class="text-muted">No follow-ups scheduled.</p>
+                {% endfor %}
+
+            </div>
+
+
+            <!-- Lead Score -->
+            <div class="card shadow-sm p-4 text-center">
+
+                <strong>Lead Score</strong>
+
+                <div class="progress mt-2" style="height:25px;">
+
+                    <div class="progress-bar
+                        {% if lead.score > 80 %}
+                            bg-success
+                        {% elif lead.score > 50 %}
+                            bg-warning
+                        {% else %}
+                            bg-danger
+                        {% endif %}
+                    "
+                    style="width: {{ lead.score }}%">
+
+                        {{ lead.score }}%
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Message & Notes -->
+    <div class="row g-4 mt-3">
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm p-4">
+
+                <h5>Client Message</h5>
+
+                <div class="message-box mt-2">
+                    {{ lead.message|default:"No message provided." }}
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm p-4">
+
+                <h5>Internal Notes</h5>
+
+                <div class="message-box mt-2">
+                    {{ lead.notes|default:"No notes yet." }}
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Activity Timeline -->
+    <div class="card shadow-sm p-4 mt-4">
+
+        <h5 class="mb-4">Activity Timeline</h5>
+
+        <div class="timeline">
+
+            {% for activity in lead.activities.all %}
+
+            <div class="timeline-item">
+
+                <div class="timeline-dot"></div>
+
+                <div class="timeline-content">
+
+                    <div class="timeline-header">
+
+                        <strong>{{ activity.title }}</strong>
+
+                        <small class="text-muted float-end">
+                            {{ activity.created_at|date:"M d Y H:i" }}
+                        </small>
+
+                    </div>
+
+                    <p class="mb-0 text-muted">
+                        {{ activity.description }}
+                    </p>
+
+                </div>
+
+            </div>
+
+            {% empty %}
+            <p class="text-muted">No activity yet.</p>
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -78,7 +78,23 @@
 
         {% endif %}
 
+        <li class="sidebar-heading mt-3 text-muted small text-uppercase">System</li>
+        <!-- ================= NOTIFICATIONS ================= -->
+        <li class="nav-item mt-3">
+            <a href="{% url 'notifications' %}" class="nav-link d-flex align-items-center">
+                <i class="bi bi-bell nav-icon text-danger"></i>
+                <span class="link-text ms-2">Notifications</span>
+            </a>
+        </li>
 
+
+        <!-- ================= PROFILE ================= -->        
+        <li class="nav-item mt-3">
+            <a href="{% url 'profile' %}" class="nav-link d-flex align-items-center">
+                <i class="bi bi-person-circle nav-icon text-primary"></i>
+                <span class="link-text ms-2">My Profile</span>
+            </a>
+        </li>
         <!-- ================= SETTINGS ================= -->
         <li class="nav-item mt-3">
 

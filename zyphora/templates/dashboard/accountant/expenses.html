@@ -36,6 +36,7 @@
             <td>{{ e.submitted_by }}</td>
             <td>{{ e.status }}</td>
             <td>
+                <a href="{% url 'expense_detail' e.id %}" class="btn btn-sm btn-secondary">View</a>
                 {% if e.status == "pending" %}
                 <a href="{% url 'approve_expense' e.id %}" class="btn btn-sm btn-success">Approve</a>
                 <a href="{% url 'reject_expense' e.id %}" class="btn btn-sm btn-danger">Reject</a>

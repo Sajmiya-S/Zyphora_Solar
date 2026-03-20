@@ -1,0 +1,33 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+
+    <h2>Cost Overrun Alerts</h2>
+    {% if projects %}
+    <table class="table table-danger table-bordered">
+        <thead>
+            <tr>
+                <th>Project</th>
+                <th>Estimated Cost (₹)</th>
+                <th>Actual Cost (₹)</th>
+                <th>Overrun Amount (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in projects %}
+            <tr>
+                <td>{{ item.project.title }}</td>
+                <td>{{ item.estimated_cost }}</td>
+                <td>{{ item.actual_cost }}</td>
+                <td>{{ item.overrun_amount }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="alert alert-success">No cost overruns detected.</p>
+    {% endif %}
+</div>
+{% endblock %}

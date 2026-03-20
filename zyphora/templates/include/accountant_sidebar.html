@@ -13,11 +13,11 @@
 
     <div class="collapse submenu" id="invoiceMenu" data-bs-parent="#sidebarMenu">
         <ul class="nav flex-column ms-4">
-            <li><a href="#" class="nav-link">All Invoices</a></li>
-            <li><a href="#" class="nav-link">Draft Invoices</a></li>
-            <li><a href="#" class="nav-link">Sent Invoices</a></li>
-            <li><a href="#" class="nav-link">Paid Invoices</a></li>
-            <li><a href="#" class="nav-link">Overdue Invoices</a></li>
+            <li><a href="{% url 'invoice_list' %}" class="nav-link">All Invoices</a></li>
+            <li><a href="{% url 'invoice_draft' %}" class="nav-link">Draft Invoices</a></li>
+            <li><a href="{% url 'invoice_sent' %}" class="nav-link">Sent Invoices</a></li>
+            <li><a href="{% url 'invoice_paid' %}" class="nav-link">Paid Invoices</a></li>
+            <li><a href="{% url 'invoice_overdue' %}" class="nav-link">Overdue Invoices</a></li>
         </ul>
     </div>
 </li>
@@ -35,10 +35,10 @@
 
     <div class="collapse submenu" id="revenueMenu" data-bs-parent="#sidebarMenu">
         <ul class="nav flex-column ms-4">
-            <li><a href="#" class="nav-link">Client Payments</a></li>
-            <li><a href="#" class="nav-link">Pending Receivables</a></li>
-            <li><a href="#" class="nav-link">Payment Confirmations</a></li>
-            <li><a href="#" class="nav-link">Revenue Overview</a></li>
+            <li><a href="{% url 'client_payments' %}" class="nav-link">Client Payments</a></li>
+            <li><a href="{% url 'pending_receivables' %}" class="nav-link">Pending Receivables</a></li>
+            <li><a href="{% url 'payment_confirmations' %}" class="nav-link">Payment Confirmations</a></li>
+            <li><a href="{% url 'revenue_overview' %}" class="nav-link">Revenue Overview</a></li>
         </ul>
     </div>
 </li>
@@ -56,10 +56,10 @@
 
     <div class="collapse submenu" id="expenseMenu" data-bs-parent="#sidebarMenu">
         <ul class="nav flex-column ms-4">
-            <li><a href="#" class="nav-link">All Expenses</a></li>
-            <li><a href="#" class="nav-link">Pending Approvals</a></li>
-            <li><a href="#" class="nav-link">Approved Expenses</a></li>
-            <li><a href="#" class="nav-link">Rejected Expenses</a></li>
+            <li><a href="{% url 'all_expenses' %}" class="nav-link">All Expenses</a></li>
+            <li><a href="{% url 'pending_expenses' %}" class="nav-link">Pending Approvals</a></li>
+            <li><a href="{% url 'approved_expenses' %}" class="nav-link">Approved Expenses</a></li>
+            <li><a href="{% url 'rejected_expenses' %}" class="nav-link">Rejected Expenses</a></li>
         </ul>
     </div>
 </li>
@@ -77,9 +77,9 @@
 
     <div class="collapse submenu" id="fundMenu" data-bs-parent="#sidebarMenu">
         <ul class="nav flex-column ms-4">
-            <li><a href="#" class="nav-link">Expense History</a></li>
-            <li><a href="#" class="nav-link">Fund Release Requests</a></li>
-            <li><a href="#" class="nav-link">Approved Fund Releases</a></li>
+            <li><a href="{% url 'expense_history' %}" class="nav-link">Expense History</a></li>
+            <li><a href="{% url 'fund_release_requests' %}" class="nav-link">Fund Release Requests</a></li>
+            <li><a href="{% url 'approved_fund_releases' %}" class="nav-link">Approved Fund Releases</a></li>
         </ul>
     </div>
 </li>
@@ -97,10 +97,10 @@
 
     <div class="collapse submenu" id="budgetMenu" data-bs-parent="#sidebarMenu">
         <ul class="nav flex-column ms-4">
-            <li><a href="#" class="nav-link">Project Budgets</a></li>
-            <li><a href="#" class="nav-link">Budget vs Actual Cost</a></li>
-            <li><a href="#" class="nav-link">Remaining Budget</a></li>
-            <li><a href="#" class="nav-link">Cost Overrun Alerts</a></li>
+            <li><a href="{% url 'project_budgets' %}" class="nav-link">Project Budgets</a></li>
+            <li><a href="{% url 'budget_vs_actual' %}" class="nav-link">Budget vs Actual Cost</a></li>
+            <li><a href="{% url 'remaining_budget' %}" class="nav-link">Remaining Budget</a></li>
+            <li><a href="{% url 'cost_overrun_alerts' %}" class="nav-link">Cost Overrun Alerts</a></li>
         </ul>
     </div>
 </li>
@@ -118,103 +118,11 @@
 
     <div class="collapse submenu" id="reportMenu" data-bs-parent="#sidebarMenu">
         <ul class="nav flex-column ms-4">
-            <li><a href="#" class="nav-link">Monthly Expense Report</a></li>
-            <li><a href="#" class="nav-link">Project Profit Report</a></li>
-            <li><a href="#" class="nav-link">Cash Flow Summary</a></li>
-            <li><a href="#" class="nav-link">GST / Tax Reports</a></li>
+            <li><a href="{% url 'monthly_expense_report' %}" class="nav-link">Monthly Expense Report</a></li>
+            <li><a href="{% url 'project_profit_report' %}" class="nav-link">Project Profit Report</a></li>
+            <li><a href="{% url 'cash_flow_summary' %}" class="nav-link">Cash Flow Summary</a></li>
+            <li><a href="{% url 'gst_tax_reports' %}" class="nav-link">GST / Tax Reports</a></li>
             <li><a href="#" class="nav-link">Download Reports (PDF / Excel)</a></li>
         </ul>
     </div>
-</li>
-
-<!-- ================= NOTIFICATIONS ================= -->
-<li class="sidebar-heading mt-3 text-muted small">
-    ALERTS
-</li>
-
-<li class="nav-item">
-    <a class="nav-link d-flex align-items-center justify-content-between"
-       data-bs-toggle="collapse"
-       href="#notificationMenu">
-
-        <div class="d-flex align-items-center">
-            <i class="bi bi-bell nav-icon text-danger"></i>
-
-            <span class="link-text ms-2">
-                Notifications
-                {% if unread_count != 0 %}
-                    <span class="badge bg-danger rounded-pill">
-                        {{ unread_count }}
-                    </span>
-                {% endif %}
-            </span>
-        </div>
-
-        <i class="bi bi-chevron-down submenu-arrow"></i>
-    </a>
-
-    <div class="collapse submenu"
-         id="notificationMenu"
-         data-bs-parent="#sidebarMenu">
-
-        <ul class="nav flex-column ms-4">
-
-            <li>
-                <a href="{% url 'notifications' 'all' %}" class="nav-link">
-                    All Notifications
-                </a>
-            </li>
-
-            <li>
-                <a href="{% url 'notifications' 'unread' %}"
-                   class="nav-link d-flex justify-content-between">
-                    Unread
-                    <span class="badge bg-danger rounded-pill">
-                        {{ unread_count }}
-                    </span>
-                </a>
-            </li>
-
-            <li>
-                <a href="{% url 'notifications' 'admin' %}" class="nav-link">
-                    Admin Alerts
-                </a>
-            </li>
-
-            <li>
-                <a href="{% url 'notifications' 'finance' %}" class="nav-link">
-                    Finance Alerts
-                </a>
-            </li>
-
-            <li>
-                <a href="{% url 'notifications' 'expense' %}" class="nav-link">
-                    Expense Alerts
-                </a>
-            </li>
-
-            <li>
-                <a href="{% url 'notifications' 'system' %}" class="nav-link">
-                    System Alerts
-                </a>
-            </li>
-
-        </ul>
-    </div>
-</li>
-
-
-<!-- ================= PROFILE ================= -->
-<li class="sidebar-heading mt-3 text-muted small">
-    USER
-</li>
-
-<li class="nav-item">
-    <a href="{% url 'profile' %}" class="nav-link d-flex align-items-center">
-        <i class="bi bi-person-circle nav-icon text-primary"></i>
-        <span class="link-text ms-2">
-            My Profile
-        </span>
-    </a>
-</li>
 </li>

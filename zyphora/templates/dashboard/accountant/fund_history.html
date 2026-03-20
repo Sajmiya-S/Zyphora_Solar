@@ -1,0 +1,38 @@
+{% extends 'dashboard/dashboard.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h4>Fund History</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Project</th>
+                <th>Submitted By</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date Submitted</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for exp in expenses %}
+            <tr>
+                <td>{{ exp.project }}</td>
+                <td>{{ exp.submitted_by }}</td>
+                <td>₹{{ exp.total_amount }}</td>
+                <td>
+                    <span class="badge 
+                        {% if exp.status == 'approved' %}bg-success
+                        {% elif exp.status == 'rejected' %}bg-danger
+                        {% else %}bg-warning{% endif %}">
+                        {{ exp.status }}
+                    </span>
+                </td>
+                <td>{{ exp.created_at }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center">No records found</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

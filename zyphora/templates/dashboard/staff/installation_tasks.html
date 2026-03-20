@@ -1,0 +1,13 @@
+{% extends "dashboard/dashboard.html" %}
+{% block content %}
+<h3>Installation Tasks</h3>
+<ul class="list-group">
+    {% for task in tasks %}
+    <li class="list-group-item">
+        <strong>{{ task.title }}</strong> - {{ task.status }} - Due: {{ task.due_date }}
+    </li>
+    {% empty %}
+    <li class="list-group-item">No installation tasks assigned.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

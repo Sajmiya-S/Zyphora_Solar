@@ -5,16 +5,17 @@ from django.core.paginator import Paginator
 from django.urls import reverse
 from django.db.models import Q
 from django.db import transaction
-
+from datetime import date
 
 from users.utils import create_notification
 from users.views import notify_admins_and_assigned
+from users.models import Employee
 
 from .models import *
 from .forms import *
 
 
-
+from projects.models import Task
 
 
 
@@ -85,12 +86,21 @@ def delete_review(request, rid):
 @login_required(login_url='/users/login')
 def lead_list(request):
 
-    status = request.GET.get('status', '')
-    query = request.GET.get("q")
+    status = request.GET.get('status')
+    query = request.GET.get('q')
 
+    leads = Lead.objects.select_related(
+        "assigned_to"
+    ).prefetch_related(
+        "followups",
+        "site_visits"
+    ).all()
 
-    leads = Lead.objects.all()
+    if request.user.role != 'admin':
+        if request.user.role == 'sales':
+            leads = leads.filter(assigned_to=request.user)
 
+            
     if status:
         leads = leads.filter(status=status)
 
@@ -100,22 +110,28 @@ def lead_list(request):
             Q(phone__icontains=query) |
             Q(assigned_to__username__icontains=query)
         )
-        
+
     leads = leads.order_by('-created_at')
 
+    paginator = Paginator(leads, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'leads': leads,
+        'leads': page_obj,
+        'page_obj': page_obj,
         'status_choices': Lead.STATUS_CHOICES,
-        'status': status
+        'status': status,
+        'query': query
     }
 
-    return render(request, 'dashboard/admin/lead_list.html', context)
+    return render(request, 'dashboard/lead_list.html', context)
 
 
 @login_required(login_url='/users/login')
 def view_lead(request, lid):
     lead = get_object_or_404(Lead, id=lid)
-    return render(request, 'dashboard/admin/view_lead.html', {'lead': lead})
+    return render(request, 'dashboard/view_lead.html', {'lead': lead})
 
 
 @login_required(login_url='/users/login')
@@ -143,7 +159,7 @@ def add_lead(request):
             return redirect(lead_list)
     else: 
         form = LeadForm()
-    return render(request,'dashboard/admin/add_lead.html',{'form':form})
+    return render(request,'dashboard/add_lead.html',{'form':form})
 
 
 @login_required(login_url='/users/login')
@@ -161,143 +177,354 @@ def delete_lead(request, lid):
     )
     return redirect(lead_list)  
 
+@login_required(login_url='/users/login')
+def mark_followup_done(request, fid):
+
+    followup = get_object_or_404(FollowUp, id=fid)
+
+    followup.mark_done(user=request.user)
+
+    LeadActivity.objects.create(
+        lead=followup.lead,
+        title="Follow-up Completed",
+        description=f"Follow-up completed on {followup.completed_date}",
+        created_by=request.user
+    )
+
+    return redirect(update_lead, lid=followup.lead.id)
+
+
+@login_required(login_url='/users/login')
+def mark_site_visit_done(request, vid):
+
+    visit = get_object_or_404(SiteVisit, id=vid)
+
+    visit.mark_done(user=request.user)
+
+    LeadActivity.objects.create(
+        lead=visit.lead,
+        title="Site Visit Completed",
+        description=f"Site visit completed on {visit.completed_date}",
+        created_by=request.user
+    )
+
+    return redirect(update_lead, lid=visit.lead.id)
+
+
 
 @login_required(login_url='/users/login')
 def update_lead(request, lid):
 
-    lead = get_object_or_404(Lead, id=lid)
-    activities = lead.activities.all().order_by('-created_at')
-    link = reverse('view_lead', kwargs={'lid': lead.id})
+    lead = Lead.objects.select_related(
+        "assigned_to"
+    ).prefetch_related(
+        "followups",
+        "site_visits",
+        "activities"
+    ).get(id=lid)
+
+    activities = lead.activities.order_by('-created_at')
+
+    lead_form = LeadUpdateForm(instance=lead)
+    sitevisit_form = SiteVisitForm()
+    followup_form = FollowUpForm()
 
     if request.method == "POST":
 
-        old_status = lead.status
-        old_priority = lead.priority
-        old_followup = lead.follow_up_date
-        old_assigned = lead.assigned_to
+        form_type = request.POST.get("form_type")
 
-        form = LeadUpdateForm(request.POST, instance=lead)
+        with transaction.atomic():
 
-        if form.is_valid():
+            # -------- LEAD UPDATE --------
+            if form_type == "lead_update":
 
-            with transaction.atomic():
+                old_status = lead.status
+                old_priority = lead.priority
+                old_assigned = lead.assigned_to
 
-                lead = form.save()
+                lead_form = LeadUpdateForm(request.POST, instance=lead)
 
-                # STATUS CHANGE
-                if old_status != lead.status:
+                if lead_form.is_valid():
 
-                    LeadActivity.objects.create(
-                        lead=lead,
-                        title="Status Updated",
-                        description=f"Status changed to {lead.get_status_display()}",
-                        created_by=request.user
-                    )
+                    lead = lead_form.save()
 
-                    notify_admins_and_assigned(
-                        sender=request.user,
-                        instance=lead,
-                        title="Lead Status Updated",
-                        message=f"{lead.name} status changed to {lead.get_status_display()}",
-                        link=link,
-                        admin_cat="crm",
-                        emp_cat="lead"
-                    )
-
-                # PRIORITY CHANGE
-                if old_priority != lead.priority:
-
-                    LeadActivity.objects.create(
-                        lead=lead,
-                        title="Priority Updated",
-                        description=f"Priority changed to {lead.get_priority_display()}",
-                        created_by=request.user
-                    )
-
-                    if lead.priority == "high":
-
-                        notify_admins_and_assigned(
-                            sender=request.user,
-                            instance=lead,
-                            title="High Priority Lead",
-                            message=f"{lead.name} marked HIGH priority",
-                            link=link,
-                            admin_cat="crm",
-                            emp_cat="lead"
+                    if old_status != lead.status:
+                        LeadActivity.objects.create(
+                            lead=lead,
+                            title="Status Updated",
+                            description=f"Status changed to {lead.get_status_display()}",
+                            created_by=request.user
                         )
 
-                # ASSIGNMENT CHANGE
-                if old_assigned != lead.assigned_to:
+                    if old_priority != lead.priority:
+                        LeadActivity.objects.create(
+                            lead=lead,
+                            title="Priority Updated",
+                            description=f"Priority changed to {lead.get_priority_display()}",
+                            created_by=request.user
+                        )
 
-                    assigned_name = (
-                        lead.assigned_to.username
-                        if lead.assigned_to
-                        else "Unassigned"
-                    )
+                    if old_assigned != lead.assigned_to:
+
+                        assigned_name = lead.assigned_to.username if lead.assigned_to else "Unassigned"
+
+                        LeadActivity.objects.create(
+                            lead=lead,
+                            title="Lead Assigned",
+                            description=f"Assigned to {assigned_name}",
+                            created_by=request.user
+                        )
+
+            # -------- SITE VISIT --------
+            elif form_type == "site_visit":
+
+                sitevisit_form = SiteVisitForm(request.POST)
+
+                if sitevisit_form.is_valid():
+
+                    visit = sitevisit_form.save(commit=False)
+                    visit.lead = lead
+                    visit.added_by = request.user
+                    visit.save()
 
                     LeadActivity.objects.create(
                         lead=lead,
-                        title="Lead Assigned",
-                        description=f"Assigned to {assigned_name}",
+                        title="Site Visit Scheduled",
+                        description=f"Site visit scheduled on {visit.scheduled_date}",
                         created_by=request.user
                     )
 
+
+                    # CREATE TASK FOR ENGINEER
+                    if visit.engineer:
+
+                        task, created = Task.objects.get_or_create(
+                            title=f"Site Visit - {lead.name}",
+                            assigned_to=visit.engineer,
+                            due_date=visit.scheduled_date,
+                            defaults={
+                                "description": f"Site visit for {lead.name} on {visit.scheduled_date}",
+                                "assigned_by": request.user
+                            }
+                        )
+
+                    # NOTIFY ADMINS + ENGINEER
                     notify_admins_and_assigned(
                         sender=request.user,
                         instance=lead,
-                        title="Lead Assigned",
-                        message=f"{lead.name} has been assigned to {assigned_name}",  
-                        link=link,
+                        title="Site Visit Scheduled",
+                        message=f"Site visit for {lead.name} scheduled on {visit.scheduled_date}",
+                        link=reverse('update_lead', args=[lead.id]),
                         admin_cat="crm",
                         emp_cat="lead"
                     )
 
-                # FOLLOW-UP CHANGE
-                if old_followup != lead.follow_up_date and lead.follow_up_date:
+            # -------- FOLLOWUP --------
+            elif form_type == "followup":
 
-                    followup_date = lead.follow_up_date.strftime('%d %b %Y')
+                followup_form = FollowUpForm(request.POST)
+
+                if followup_form.is_valid():
+
+                    followup = followup_form.save(commit=False)
+                    followup.lead = lead
+                    followup.added_by = request.user
+                    followup.save()
 
                     LeadActivity.objects.create(
                         lead=lead,
                         title="Follow-up Scheduled",
-                        description=f"Follow-up scheduled for {followup_date}",
+                        description=f"Follow-up scheduled on {followup.scheduled_date}",
                         created_by=request.user
                     )
 
+                    # CREATE TASK FOR ASSIGNED USER
+                    if lead.assigned_to:
+
+                        task, created = Task.objects.get_or_create(
+                            title=f"Follow-up - {lead.name}",
+                            assigned_to=lead.assigned_to,
+                            due_date=followup.scheduled_date,
+                            defaults={
+                                "description": f"Follow-up with {lead.name} on {followup.scheduled_date}",
+                                "assigned_by": request.user
+                            }
+                        )
+
+                    # NOTIFY ADMINS + ASSIGNED STAFF
                     notify_admins_and_assigned(
                         sender=request.user,
                         instance=lead,
                         title="Follow-up Scheduled",
-                        message=f"Follow-up scheduled for {lead.name} on {followup_date}",
-                        link=link,
+                        message=f"Follow-up scheduled with {lead.name} on {followup.scheduled_date}",
+                        link=reverse('update_lead', args=[lead.id]),
                         admin_cat="crm",
                         emp_cat="lead"
                     )
 
-            return redirect('view_lead', lid=lead.id)
-
-    else:
-        form = LeadUpdateForm(instance=lead)
+        return redirect('update_lead', lid=lead.id)
 
     context = {
         "lead": lead,
-        "form": form,
-        "activities": activities
+        "activities": activities,
+        "lead_form": lead_form,
+        "sitevisit_form": sitevisit_form,
+        "followup_form": followup_form,
+        "today": timezone.localdate()
     }
 
-    return render(request, 'dashboard/admin/update_lead.html', context)
+    return render(request, "dashboard/update_lead.html", context)
+
+
+@login_required(login_url='/users/login')
+def site_visits(request, filter=None):
+    visits = SiteVisit.objects.filter(engineer=request.user)
+    today = date.today()
+
+    # Filter visits
+    todays = visits.filter(scheduled_date=today, status='pending')
+    upcoming = visits.filter(scheduled_date__gt=today, status='pending')
+    completed = visits.filter(status='done')
+
+    # Determine which tab to show
+    show_today = False
+    show_upcoming = False
+    show_completed = False
+
+    if filter == 'today' or filter is None:
+        show_today = True
+    elif filter == 'upcoming':
+        show_upcoming = True
+    elif filter == 'completed':
+        show_completed = True
+
+    context = {
+        'todays': todays,
+        'upcoming': upcoming,
+        'completed': completed,
+        'show_today': show_today,
+        'show_upcoming': show_upcoming,
+        'show_completed': show_completed,
+    }
+
+    return render(request, 'dashboard/engineer/sitevisits.html', context)
 
 
 
 @login_required(login_url='/users/login')
-def mark_followup_done(request, lid):
-    lead = get_object_or_404(Lead, id=lid)
-    lead.mark_followup_done()
-    return redirect(update_lead, lead.id)
+def edit_site_visit(request,vid):
+    visit = SiteVisit.objects.get(id=vid)
+
+    if request.method == 'POST':
+        form = UpdateVisitForm(request.POST, instance=visit)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Site Visit updated successfully.')
+
+            admin = CustomUser.objects.get(role='admin')
+            create_notification(
+                recipient=admin,
+                title='Site Visit Updated',
+                message=f'Engineer {visit.engineer} updated the site visit for the lead {visit.lead}.\nScheduled Date : {visit.scheduled_date}\nStatus : {visit.status}',
+                sender=request.user,
+                link= reverse('lead_list'),
+                category='crm'
+                )
+            
+            # Redirect to the appropriate tab (today/upcoming/completed)
+            if visit.status == 'done':
+                return redirect('site_visits', 'completed')
+            elif visit.scheduled_date == timezone.localdate():
+                return redirect('site_visits', 'today')
+            else:
+                return redirect('site_visits', 'upcoming')
+    else:
+        form = UpdateVisitForm(instance=visit)
+
+
+
+    context = {
+        'form': form,
+        'visit': visit
+    }
+    return render(request, 'dashboard/engineer/edit_visit.html', context)
+
 
 
 @login_required(login_url='/users/login')
-def mark_site_visit_done(request, lid):
-    lead = get_object_or_404(Lead, id=lid)
-    lead.mark_site_visit_done()
-    return redirect(update_lead, lead.id)
+def upload_site_photos_page(request):
+    visits = SiteVisit.objects.filter(engineer=request.user)
+
+    if request.method == 'POST':
+        form = SitePhotoForm(request.POST, request.FILES)
+        form.fields['visit'].queryset = visits  # limit to engineer’s visits
+        if form.is_valid():
+            form.save()  # ModelForm handles saving the single file
+            return redirect('upload_site_photos')
+    else:
+        form = SitePhotoForm()
+        form.fields['visit'].queryset = visits
+
+    return render(request, 'dashboard/engineer/upload_photos_page.html', {'form': form, 'visits': visits})
+
+
+@login_required(login_url='/users/login')
+def follow_ups(request, filter=None):
+    followups = FollowUp.objects.filter(lead__assigned_to=request.user)
+    today = timezone.localdate()
+
+    overdue = followups.filter(status='pending', scheduled_date__lt=today)
+    todays = followups.filter(status='pending', scheduled_date=today)
+    upcoming = followups.filter(status='pending', scheduled_date__gt=today)
+    completed = followups.filter(status='done')
+
+    # Tab logic
+    show_today = filter in (None, 'today')
+    show_upcoming = filter == 'upcoming'
+    show_completed = filter == 'completed'
+    show_overdue = filter == 'overdue'
+
+    context = {
+        'overdue': overdue,
+        'todays': todays,
+        'upcoming': upcoming,
+        'completed': completed,
+        'show_today': show_today,
+        'show_upcoming': show_upcoming,
+        'show_completed': show_completed,
+        'show_overdue': show_overdue,
+    }
+    return render(request, 'dashboard/sales/followups.html', context)
+
+
+@login_required(login_url='/users/login')
+def edit_followup(request, fid):
+    followup = get_object_or_404(FollowUp, id=fid)
+
+    if request.method == "POST":
+        form = FollowUpForm(request.POST, instance=followup)
+        if form.is_valid():
+            followup = form.save(commit=False)
+            followup.added_by = request.user  # track who edited
+            followup.save()
+
+            # Log activity
+            LeadActivity.objects.create(
+                lead=followup.lead,
+                title="Follow-up Updated",
+                description=f"Follow-up on {followup.scheduled_date} updated by {request.user.username}",
+                created_by=request.user
+            )
+
+            messages.success(request, "Follow-up updated successfully.")
+            return redirect('update_lead', lid=followup.lead.id)
+    else:
+        form = FollowUpForm(instance=followup)
+
+    context = {
+        'form': form,
+        'followup': followup,
+    }
+    return render(request, 'dashboard/sales/edit_followup.html', context)
+
+

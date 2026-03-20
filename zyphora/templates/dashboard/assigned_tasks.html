@@ -1,0 +1,119 @@
+{% extends "dashboard/dashboard.html" %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+
+    <li class="breadcrumb-item">
+        <a href="{% url request.user.role %}">{{ request.user.role | title }} Dashboard</a>
+    </li>
+
+    <li class="breadcrumb-item active">Assigned Tasks</li>
+
+  </ol>
+</nav>
+
+<div class="card-header"> 
+    <h5 class="mb-1">Assigned Tasks</h5> 
+    <small class="text-muted"> Manage tasks you have assigned to your team. Track progress, update details, or assign new work. </small>
+</div>
+
+<div class="card-body">
+
+    {% if tasks %}
+    <div class="mb-3 text-end"> 
+        <a href="{% url 'create_task' %}" class="btn btn-primary btn-sm"> 
+            <i class="bi bi-plus-circle"></i> 
+            Assign Task 
+        </a> 
+    </div>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Assigned To</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th width="160">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for task in tasks %}
+            <tr>
+
+                <td>
+                    <strong>{{ task.title }}</strong>
+                    <br>
+                    <small class="text-muted">
+                        {{ task.description|truncatewords:10 }}
+                    </small>
+                </td>
+
+                <td>{{ task.assigned_to }}</td>
+
+                <td>
+                    {% if task.due_date %}
+                        {{ task.due_date }}
+                    {% else %}
+                        <span class="text-muted">No date</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    <span class="badge
+                        {% if task.status == 'completed' %}bg-success
+                        {% elif task.status == 'overdue' %}bg-danger
+                        {% elif task.status == 'in_progress' %}bg-primary
+                        {% else %}bg-warning
+                        {% endif %}">
+                        {{ task.get_status_display }}
+                    </span>
+                </td>
+
+                <td>
+
+                    <a href="{% url 'edit_task' task.id %}" 
+                       class="btn btn-sm btn-outline-success">
+                       Edit
+                    </a>
+
+                    <form action="{% url 'delete_task' task.id %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('Are you sure you want to delete this task?');">
+                            Delete</i>
+                        </button>
+                    </form>
+                </td>
+
+            </tr>
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <div class="text-center py-4">
+
+        <p class="text-muted mb-3">
+            You haven't assigned any tasks yet.
+        </p>
+
+        <a href="{% url 'create_task' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i>
+            Assign a Task Now
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

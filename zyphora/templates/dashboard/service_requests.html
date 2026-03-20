@@ -1,0 +1,50 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<h3>Assigned Service Requests</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Project</th>
+            <th>Status</th>
+            <th>Requested By</th>
+            <th>Created At</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for request in service_requests %}
+        <tr>
+            <td>{{ request.title }}</td>
+            <td>{{ request.project.title }}</td>
+            <td>
+                {% if request.status == 'pending' %}
+                    <span class="badge bg-warning text-dark">{{ request.get_status_display }}</span>
+                {% elif request.status == 'in_progress' %}
+                    <span class="badge bg-primary">{{ request.get_status_display }}</span>
+                {% elif request.status == 'completed' %}
+                    <span class="badge bg-success">{{ request.get_status_display }}</span>
+                {% else %}
+                    <span class="badge bg-secondary">{{ request.get_status_display }}</span>
+                {% endif %}
+            </td>
+            <td>{{ request.requested_by.name }}</td>
+            <td>{{ request.created_at|date:"d M Y" }}</td>
+            <td>
+                {% if request.status != 'completed' %}
+                    <a href="{% url 'add_service_report' request.id %}" class="btn btn-sm btn-success">
+                        Add Report
+                    </a>
+                {% else %}
+                    <span class="badge bg-secondary">Report Submitted</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="text-center">No assigned service requests.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

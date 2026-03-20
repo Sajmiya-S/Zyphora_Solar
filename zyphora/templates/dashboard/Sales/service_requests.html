@@ -1,0 +1,39 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<h3>Service Requests</h3>
+
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#pending">Pending / Unassigned <span class="badge bg-warning">{{ unassigned_count }}</span></button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#inprogress">In Progress <span class="badge bg-primary">{{ in_progress_count }}</span></button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#completed">Completed <span class="badge bg-success">{{ completed_count }}</span></button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#cancelled">Cancelled <span class="badge bg-danger">{{ cancelled_count }}</span></button>
+    </li>
+</ul>
+
+<div class="tab-content">
+
+    <div class="tab-pane fade show active" id="pending">
+        {% include 'dashboard/sales/service_requests_table.html' with requests=pending_requests %}
+    </div>
+
+    <div class="tab-pane fade" id="inprogress">
+        {% include 'dashboard/sales/service_requests_table.html' with requests=in_progress_requests %}
+    </div>
+
+    <div class="tab-pane fade" id="completed">
+        {% include 'dashboard/sales/service_requests_table.html' with requests=completed_requests %}
+    </div>
+
+    <div class="tab-pane fade" id="cancelled">
+        {% include 'dashboard/sales/service_requests_table.html' with requests=cancelled_requests %}
+    </div>
+
+</div>
+{% endblock %}

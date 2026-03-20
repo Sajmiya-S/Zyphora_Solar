@@ -1,0 +1,23 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+
+    <h2>Project Budgets</h2>
+    <div class="row">
+        {% for item in projects %}
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.project.title }}</h5>
+                    <p><strong>Estimated Cost:</strong> ₹{{ item.estimated_cost }}</p>
+                    <p><strong>Actual Cost:</strong> ₹{{ item.actual_cost }}</p>
+                    <p><strong>Remaining Budget:</strong> ₹{{ item.remaining_budget }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,34 +1,77 @@
 <!-- ================= WORK SECTION ================= -->
-        <li class="sidebar-heading mt-3 text-muted small text-uppercase">Work</li>
 
-        <!-- Tasks -->
-        <li class="nav-item">
-            <a class="nav-link d-flex align-items-center justify-content-between"
-               data-bs-toggle="collapse"
-               href="#engineerTaskMenu">
+<li class="sidebar-heading mt-3 text-muted small text-uppercase">Work</li>
 
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-list-check nav-icon text-warning"></i>
-                    <span class="link-text ms-2">
-                        My Tasks
-                        {% if task_count %}
-                        <span class="badge bg-warning rounded-pill">{{task_count}}</span>
-                        {% endif %}
-                    </span>
-                </div>
+<!-- Tasks -->
 
-                <i class="bi bi-chevron-down submenu-arrow"></i>
+<li class="nav-item">
+    <a class="nav-link d-flex align-items-center justify-content-between"
+       data-bs-toggle="collapse"
+       href="#engineerTaskMenu">
+
+    <div class="d-flex align-items-center">
+        <i class="bi bi-list-check nav-icon text-warning"></i>
+        <span class="link-text ms-2">
+            Tasks
+            {% if task_count %}
+            <span class="badge bg-warning rounded-pill">{{ task_count }}</span>
+            {% endif %}
+        </span>
+    </div>
+
+    <i class="bi bi-chevron-down submenu-arrow"></i>
+</a>
+
+<div class="collapse submenu" id="engineerTaskMenu" data-bs-parent="#sidebarMenu">
+    <ul class="nav flex-column ms-4">
+
+        <!-- My Tasks -->
+        <li>
+            <a class="nav-link" href="{% url 'my_tasks' %}?filter=today">
+                Today's Tasks
+                {% if todays %}
+                    <span class="badge bg-primary rounded-pill">{{ todays }}</span>
+                {% endif %}
             </a>
-
-            <div class="collapse submenu" id="engineerTaskMenu" data-bs-parent="#sidebarMenu">
-                <ul class="nav flex-column ms-4">
-                    <li><a class="nav-link" href="#">Today's Tasks</a></li>
-                    <li><a class="nav-link" href="#">Pending Tasks</a></li>
-                    <li><a class="nav-link" href="#">Overdue Tasks</a></li>
-                    <li><a class="nav-link" href="#">Completed Tasks</a></li>
-                </ul>
-            </div>
         </li>
+
+        <li>
+            <a class="nav-link" href="{% url 'my_tasks' %}?filter=pending">
+                Pending Tasks
+                {% if pending %}
+                    <span class="badge bg-warning rounded-pill">{{ pending }}</span>
+                {% endif %}
+            </a>
+        </li>
+
+        <li>
+            <a class="nav-link" href="{% url 'my_tasks' %}?filter=overdue">
+                Overdue Tasks
+                {% if overdue %}
+                    <span class="badge bg-danger rounded-pill">{{ overdue }}</span>
+                {% endif %}
+            </a>
+        </li>
+
+        <li>
+            <a class="nav-link" href="{% url 'my_tasks' %}?filter=completed">
+                Completed Tasks
+            </a>
+        </li>
+
+        <li class="mt-2">
+            <a class="nav-link text-info" href="{% url 'assigned_tasks' %}">
+                <i class="bi bi-person-check me-1"></i>
+                Assigned Tasks
+            </a>
+        </li>
+
+    </ul>
+</div>
+
+
+</li>
+
 
         <!-- ================= PROJECTS SECTION ================= -->
         <li class="sidebar-heading mt-3 text-muted small text-uppercase">Projects</li>
@@ -40,7 +83,7 @@
 
                 <div class="d-flex align-items-center">
                     <i class="bi bi-folder2-open nav-icon text-primary"></i>
-                    <span class="link-text ms-2">My Projects</span>
+                    <span class="link-text ms-2">Projects</span>
                 </div>
 
                 <i class="bi bi-chevron-down submenu-arrow"></i>
@@ -48,10 +91,10 @@
 
             <div class="collapse submenu" id="engineerProjectMenu" data-bs-parent="#sidebarMenu">
                 <ul class="nav flex-column ms-4">
-                    <li><a class="nav-link" href="{% url 'project_list' %}">Assigned Projects</a></li>
-                    <li><a class="nav-link" href="#">Installation Progress</a></li>
-                    <li><a class="nav-link" href="#">Design Management</a></li>
-                    <li><a class="nav-link" href="{% url 'recent_activity' %}">Activities</a></li>
+                    <li><a class="nav-link" href="{% url 'project_list' %}">My Projects</a></li>
+                    <li><a class="nav-link" href="{% url 'progress' %}">Installation Progress</a></li>
+                    <li><a class="nav-link" href="{% url 'design_list' %}">Design Management</a></li>
+                    <li><a class="nav-link" href="{% url 'recent_activity' %}">Project Activities</a></li>
                     <li><a class="nav-link" href="{% url 'gallery_projects' %}">Project Gallery</a></li>
                 </ul>
             </div>
@@ -76,10 +119,8 @@
 
             <div class="collapse submenu" id="siteVisitMenu" data-bs-parent="#sidebarMenu">
                 <ul class="nav flex-column ms-4">
-                    <li><a class="nav-link" href="#">Today's Visits</a></li>
-                    <li><a class="nav-link" href="#">Upcoming Visits</a></li>
-                    <li><a class="nav-link" href="#">Add Site Visit Notes</a></li>
-                    <li><a class="nav-link" href="#">Upload Site Photos</a></li>
+                    <li><a class="nav-link" href="{% url 'site_visits' 'none' %}">Scheduled Visits</a></li>
+                    <li><a class="nav-link" href="{% url 'upload_site_photos' %}">Upload Site Photos</a></li>
                 </ul>
             </div>
         </li>
@@ -100,9 +141,9 @@
 
             <div class="collapse submenu" id="engineerInventoryMenu" data-bs-parent="#sidebarMenu">
                 <ul class="nav flex-column ms-4">
-                    <li><a href="#" class="nav-link">Inventory</a></li>
-                    <li><a href="#" class="nav-link">Request Materials</a></li>
-                    <li><a href="#" class="nav-link">My Requests</a></li>
+                    <li><a href="{% url 'material_list' %}" class="nav-link">Inventory</a></li>
+                    <li><a href="{% url 'request_material' %}" class="nav-link">Request Materials</a></li>
+                    <li><a href="{% url 'my_requests' %}" class="nav-link">My Requests</a></li>
                 </ul>
             </div>
         </li>
@@ -110,29 +151,37 @@
         <!-- ================= FINANCE SECTION ================= -->
         <li class="sidebar-heading mt-3 text-muted small text-uppercase">Finance</li>
 
-        <li class="nav-item">
-            <a class="nav-link d-flex align-items-center justify-content-between"
-               data-bs-toggle="collapse"
-               href="#engineerFinanceMenu">
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center justify-content-between"
+                data-bs-toggle="collapse"
+                href="#engineerFinanceMenu">
 
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-cash-coin nav-icon text-danger"></i>
-                    <span class="link-text ms-2">Expenses</span>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-cash-coin nav-icon text-danger"></i>
+                        <span class="link-text ms-2">Expenses</span>
+                    </div>
+
+                    <i class="bi bi-chevron-down submenu-arrow"></i>
+                </a>
+
+                <div class="collapse submenu" id="engineerFinanceMenu">
+                    <ul class="nav flex-column ms-4">
+
+                        <li>                    
+                            <a href="{% url 'create_expense' %}" class="nav-link">
+                                Create Expense Report
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{% url 'my_expenses' %}" class="nav-link">
+                                My Expense Reports
+                            </a>
+                        </li>
+
+                    </ul>
                 </div>
-
-                <i class="bi bi-chevron-down submenu-arrow"></i>
-            </a>
-
-            <div class="collapse submenu" id="engineerFinanceMenu" data-bs-parent="#sidebarMenu">
-                <ul class="nav flex-column ms-4">
-                    <li><a href="#" class="nav-link">Create Expense Report</a></li>
-                    <li><a href="#" class="nav-link">My Expense Reports</a></li>
-                    <li><a href="#" class="nav-link">Purchase Request</a></li>
-                    <li><a href="#" class="nav-link">Fund Request</a></li>
-                    <li><a href="#" class="nav-link">Expense Status</a></li>
-                </ul>
-            </div>
-        </li>
+            </li>
 
         <!-- ================= SERVICE SECTION ================= -->
         <li class="sidebar-heading mt-3 text-muted small text-uppercase">Service</li>
@@ -152,55 +201,8 @@
 
             <div class="collapse submenu" id="engineerServiceMenu" data-bs-parent="#sidebarMenu">
                 <ul class="nav flex-column ms-4">
-                    <li><a href="#" class="nav-link">Assigned Requests</a></li>
-                    <li><a href="#" class="nav-link">Add Service Report</a></li>
-                    <li><a href="#" class="nav-link">Service History</a></li>
+                    <li><a href="{% url 'assigned_service_requests' %}" class="nav-link">Assigned Requests</a></li>
+                    <li><a href="{% url 'service_history'  %}" class="nav-link">Service History</a></li>
                 </ul>
             </div>
-        </li>
-
-        <!-- ================= SYSTEM SECTION ================= -->
-        <li class="sidebar-heading mt-3 text-muted small text-uppercase">System</li>
-
-        <!-- Notifications -->
-        <li class="nav-item">
-            <a class="nav-link d-flex align-items-center justify-content-between"
-               data-bs-toggle="collapse"
-               href="#notificationMenu">
-
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-bell nav-icon text-warning"></i>
-                    <span class="link-text ms-2">
-                        Notifications
-                        {% if unread_count != 0 %}
-                        <span class="badge bg-danger rounded-pill">{{unread_count}}</span>
-                        {% endif %}
-                    </span>
-                </div>
-
-                <i class="bi bi-chevron-down submenu-arrow"></i>
-            </a>
-
-            <div class="collapse submenu" id="notificationMenu" data-bs-parent="#sidebarMenu">
-                <ul class="nav flex-column ms-4">
-                    <li><a href="{% url 'notifications' 'all' %}" class="nav-link">All Notifications</a></li>
-                    <li><a href="{% url 'notifications' 'unread' %}" class="nav-link d-flex justify-content-between">
-                        Unread <span class="badge bg-danger rounded-pill">{{unread_count}}</span>
-                    </a></li>
-                    <li><a href="{% url 'notifications' 'admin' %}" class="nav-link">Admin Alerts</a></li>
-                    <li><a href="{% url 'notifications' 'project' %}" class="nav-link">Project Alerts</a></li>
-                    <li><a href="{% url 'notifications' 'material' %}" class="nav-link">Inventory Alerts</a></li>
-                    <li><a href="{% url 'notifications' 'finance' %}" class="nav-link">Expense Alerts</a></li>
-                    <li><a href="{% url 'notifications' 'task' %}" class="nav-link">Task Alerts</a></li>
-                    <li><a href="{% url 'notifications' 'system' %}" class="nav-link">System Alerts</a></li>
-                </ul>
-            </div>
-        </li>
-
-        <!-- Profile -->
-        <li class="nav-item mt-3">
-            <a href="{% url 'profile' %}" class="nav-link d-flex align-items-center">
-                <i class="bi bi-person-circle nav-icon text-primary"></i>
-                <span class="link-text ms-2">My Profile</span>
-            </a>
         </li>

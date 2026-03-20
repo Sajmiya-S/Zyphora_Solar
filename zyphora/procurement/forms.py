@@ -84,16 +84,23 @@ class GoodsReceivedForm(forms.ModelForm):
 
 
 
-
-class MaterialAllocationForm(forms.ModelForm):
+class MaterialAllocationRequestForm(forms.ModelForm):
 
     class Meta:
         model = MaterialAllocation
-        exclude = ['allocated_date']
+        fields = ['project', 'material', 'quantity']   
 
         widgets = {
             "project": forms.Select(attrs={"class": "form-select"}),
             "material": forms.Select(attrs={"class": "form-select"}),
             "quantity": forms.NumberInput(attrs={"class": "form-control"}),
-            "allocated_by": forms.Select(attrs={"class": "form-select"}),
+        }
+        
+
+class MaterialAllocationForm(forms.ModelForm):
+    class Meta:
+        model = MaterialAllocation
+        fields = ['status']  # only allow status change
+        widgets = {
+            "status": forms.Select(attrs={"class": "form-select"}),
         }

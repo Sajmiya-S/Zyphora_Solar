@@ -1,0 +1,72 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+{% block content %}
+
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'engineer' %}">Engineer Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Upload Site Photos</li>
+      </ol>
+    </nav>
+
+<h3>Upload Site Photos</h3>
+
+<form method="post" enctype="multipart/form-data" class="mb-4">
+    {% csrf_token %}
+    <div class="mb-3">
+        {{ form.visit.label_tag }}
+        {{ form.visit }}
+    </div>
+    <div class="mb-3">
+        {{ form.photo.label_tag }}
+        {{ form.photo }}
+    </div>
+    <button type="submit" class="btn btn-success">Upload Photo</button>
+</form>
+
+<hr>
+
+<h4>Assigned Site Visits</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Lead</th>
+            <th>Project</th>
+            <th>Scheduled Date</th>
+            <th>Status</th>
+            <th>Notes</th>
+            <th>Uploaded Photos</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for visit in visits %}
+        <tr>
+            <td>{{ visit.lead.name|default:"N/A" }}</td>
+            <td>
+                {% if visit.project %}
+                    {{ visit.project.title }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>{{ visit.scheduled_date|default:"N/A" }}</td>
+            <td>{{ visit.status|capfirst|default:"N/A" }}</td>
+            <td>{{ visit.notes|default:"-" }}</td>
+            <td>
+                {% for photo in visit.photos.all %}
+                    <img src="{{ photo.photo.url }}" width="50" class="me-1 mb-1" alt="Photo">
+                {% empty %}
+                    No photos
+                {% endfor %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="text-center">No site visits assigned</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

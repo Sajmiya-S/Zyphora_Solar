@@ -1,0 +1,126 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-2">
+    <li class="breadcrumb-item">
+        <a href="{% url 'admin' %}">Admin Dashboard</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{% url 'material_list' %}">Materials</a>
+    </li>
+    <li class="breadcrumb-item active">
+        Material Requests
+    </li>
+  </ol>
+</nav>
+
+
+<div class="container mt-4">
+
+    <h3>Pending Material Requests</h3>
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Project</th>
+                <th>Material</th>
+                <th>Quantity</th>
+                <th>Allocated By</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in pending_requests %}
+            <tr>
+                <td>{{ req.project.title }}</td>
+                <td>{{ req.material.name }}</td>
+                <td>{{ req.quantity }}</td>
+                <td>{{ req.allocated_by.name }}</td>
+                <td>
+                    <form method="POST" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="request_id" value="{{ req.id }}">
+                        <button type="submit" name="action" value="approve"
+                                class="btn btn-success btn-sm">Approve</button>
+                    </form>
+
+                    <form method="POST" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="request_id" value="{{ req.id }}">
+                        <button type="submit" name="action" value="reject"
+                                class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">No pending requests</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr class="my-5">
+
+    <h3>Request History</h3>
+
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Project</th>
+                <th>Material</th>
+                <th>Quantity</th>
+                <th>Allocated By</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in history %}
+            <tr>
+                <td>{{ req.project.title }}</td>
+                <td>{{ req.material.name }}</td>
+                <td>{{ req.quantity }}</td>
+                <td>{{ req.allocated_by.name }}</td>
+                <td>
+                    {% if req.status == 'approved' %}
+                        <span class="badge bg-success">Approved</span>
+                    {% else %}
+                        <span class="badge bg-danger">Rejected</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- 📄 Pagination -->
+    <nav>
+        <ul class="pagination">
+            {% if history.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ history.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">
+                    Page {{ history.number }} of {{ history.paginator.num_pages }}
+                </span>
+            </li>
+
+            {% if history.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ history.next_page_number }}">Next</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+</div>
+{% endblock %}

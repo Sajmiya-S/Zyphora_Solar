@@ -15,6 +15,10 @@ urlpatterns = [
     path('delete-material/<int:mid>', delete_material, name="delete_material"),
     path('add-materials/', add_material, name="add_material"),
 
+    path('material-requests/', admin_material_requests, name="admin_material_requests"),
+    path('request-material/', request_material, name="request_material"),
+    path('my-requests/', my_requests, name="my_requests"),
+
     path('purchase-orders/', purchase_order_list, name="purchase_order_list"),
     path('purchase-orders/<int:oid>/', purchase_order_detail, name='purchase_order_detail'),
     path('purchase-orders/<int:oid>/receive/', receive_purchase_order, name='receive_purchase_order'),

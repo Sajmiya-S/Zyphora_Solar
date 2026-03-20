@@ -1,0 +1,30 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2>GST / Tax Report ({{ gst_rate }}%)</h2>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Invoice Number</th>
+                <th>Date</th>
+                <th>Total Amount (₹)</th>
+                <th>GST Amount (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in invoices %}
+            <tr>
+                <td>{{ invoice.invoice_number }}</td>
+                <td>{{ invoice.issue_date }}</td>
+                <td>{{ invoice.total_amount }}</td>
+                <td>{{ invoice.gst_amount }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="table-primary">
+                <td colspan="3"><strong>Total GST</strong></td>
+                <td><strong>₹{{ total_gst }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends 'dashboard/dashboard.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h4 class="mb-4">{{ title }}</h4>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- ================= MAIN FORM ================= -->
+        <div class="card shadow-sm mb-4 p-3">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Project</label>
+                    {{ form.project }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Expense Date</label>
+                    {{ form.expense_date }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Category</label>
+                    {{ form.category }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Notes</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= EXPENSE ITEMS ================= -->
+        <div class="card shadow-sm mb-4 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0">Expense Items</h5>
+                <button type="button" class="btn btn-sm btn-primary" onclick="addItem()">+ Add Item</button>
+            </div>
+
+            {{ item_formset.management_form }}
+            <div id="items-container">
+                {% for form in item_formset %}
+                <div class="row g-2 align-items-center item-form mb-2">
+                    <div class="col-md-6">{{ form.description }}</div>
+                    <div class="col-md-4">{{ form.amount }}</div>
+                    <div class="col-md-2 text-end">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">Remove</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="text-end mt-2">
+                <strong>Total: ₹ <span id="totalAmount">0.00</span></strong>
+            </div>
+        </div>
+
+        <!-- ================= RECEIPTS ================= -->
+        <div class="card shadow-sm mb-4 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5>Receipts</h5>
+                <button type="button" class="btn btn-sm btn-primary" onclick="addReceipt()">+ Add Receipt</button>
+            </div>
+
+            {{ receipt_formset.management_form }}
+            <div id="receipts-container">
+                {% for form in receipt_formset %}
+                <div class="row receipt-form mb-2">
+                    <div class="col-md-10">{{ form.file }}</div>
+                    <div class="col-md-2 text-end">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeReceipt(this)">Remove</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-success btn-lg">Submit Expense</button>
+        </div>
+    </form>
+</div>
+
+<!-- ================= JS ================= -->
+<script>
+    // ---------- LIVE TOTAL CALCULATION ----------
+    function updateTotal() {
+        let total = 0;
+        document.querySelectorAll("input[name$='amount']").forEach(input => {
+            total += parseFloat(input.value) || 0;
+        });
+        document.getElementById("totalAmount").innerText = total.toFixed(2);
+    }
+    document.addEventListener("input", updateTotal);
+
+    // ---------- ITEMS ----------
+    function addItem() {
+        let container = document.getElementById("items-container");
+        let totalForms = document.getElementById("id_items-TOTAL_FORMS");
+        let index = totalForms.value;
+        let html = `
+        <div class="row g-2 align-items-center item-form mb-2">
+            <div class="col-md-6">
+                <input type="text" name="items-${index}-description" class="form-control" placeholder="Enter item description">
+            </div>
+            <div class="col-md-4">
+                <input type="number" name="items-${index}-amount" class="form-control" step="0.01" placeholder="Enter amount">
+            </div>
+            <div class="col-md-2 text-end">
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">Remove</button>
+            </div>
+        </div>`;
+        container.insertAdjacentHTML('beforeend', html);
+        totalForms.value = parseInt(index) + 1;
+    }
+
+    function removeItem(button) {
+        button.closest('.item-form').remove();
+        updateTotal();
+    }
+
+    // ---------- RECEIPTS ----------
+    function addReceipt() {
+        let container = document.getElementById("receipts-container");
+        let totalForms = document.getElementById("id_receipts-TOTAL_FORMS");
+        let index = totalForms.value;
+        let html = `
+        <div class="row receipt-form mb-2">
+            <div class="col-md-10">
+                <input type="file" name="receipts-${index}-file" class="form-control">
+            </div>
+            <div class="col-md-2 text-end">
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeReceipt(this)">Remove</button>
+            </div>
+        </div>`;
+        container.insertAdjacentHTML('beforeend', html);
+        totalForms.value = parseInt(index) + 1;
+    }
+
+    function removeReceipt(button) {
+        button.closest('.receipt-form').remove();
+    }
+</script>
+{% endblock %}

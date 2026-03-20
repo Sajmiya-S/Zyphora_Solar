@@ -10,7 +10,7 @@
                     {{ request.user.role|title }} Dashboard
                 </a>
             </li>
-            <li class="breadcrumb-item active">Materials</li>
+            <li class="breadcrumb-item active">Inventory</li>
         </ol>
     </nav>
 
@@ -30,9 +30,11 @@
             </p>
         </div>
 
+        {% if request.user.role == 'admin' %}
         <a href="{% url 'add_material' %}" class="btn btn-success">
             <i class="bi bi-plus"></i> Add Material
         </a>
+        {% endif %}
 
     </div>
 
@@ -96,8 +98,9 @@
                             <th>Stock</th>
                             <th>Minimum</th>
                             <th>Status</th>
+                            {% if request.user.role == 'admin' %}
                             <th class="text-center">Actions</th>
-
+                            {% endif %}
                         </tr>
 
                     </thead>
@@ -150,7 +153,7 @@
 
                             </td>
 
-
+                            {% if request.user.role == 'admin' %}
                             <td class="text-end">
                                 <!-- Edit -->
                                 <a href="{% url 'edit_material' material.id %}" class="btn btn-sm btn-outline-primary">
@@ -166,6 +169,7 @@
                                     </button>
                                 </form>
                             </td>
+                            {% endif %}
 
                         </tr>
 

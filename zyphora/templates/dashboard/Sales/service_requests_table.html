@@ -1,0 +1,35 @@
+<table class="table table-striped mt-3">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Project</th>
+            <th>Status</th>
+            <th>Requested By</th>
+            <th>Assigned To</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sr in requests %}
+        <tr>
+            <td>{{ sr.title }}</td>
+            <td>{{ sr.project.title }}</td>
+            <td>
+                {% if sr.status == 'pending' %}<span class="badge bg-warning">Pending</span>{% endif %}
+                {% if sr.status == 'in_progress' %}<span class="badge bg-primary">In Progress</span>{% endif %}
+                {% if sr.status == 'completed' %}<span class="badge bg-success">Completed</span>{% endif %}
+                {% if sr.status == 'cancelled' %}<span class="badge bg-danger">Cancelled</span>{% endif %}
+            </td>
+            <td>{{ sr.requested_by }}</td>
+            <td>{{ sr.assigned_to }}</td>
+            <td>
+                {% if sr.status == 'pending' and not sr.assigned_to %}
+                <a href="{% url 'redirect_service_request' sr.id %}" class="btn btn-sm btn-outline-success">Assign</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center">No requests in this status.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>

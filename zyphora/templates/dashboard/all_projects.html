@@ -9,12 +9,8 @@
 
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb mb-0">
-    <li class="breadcrumb-item">
-        <a href="{% url 'admin' %}">Admin Dashboard</a>
-    </li>
-    <li class="breadcrumb-item active">
-        Projects
-    </li>
+    <li class="breadcrumb-item"><a href="{% url 'admin' %}">Admin Dashboard</a></li>
+    <li class="breadcrumb-item active">Projects</li>
   </ol>
 </nav>
 
@@ -23,53 +19,57 @@
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
         <div>
-            <h1 class="page-title">
-                <i class="bi bi-kanban-fill"></i>
-                Project Management
-            </h1>
-            <p class="page-subtitle">
-                Track and manage all your projects and their progress.
-            </p>
+            <h1 class="page-title"><i class="bi bi-kanban-fill"></i> Project Management</h1>
+            <p class="page-subtitle">Track and manage all your projects and their progress.</p>
         </div>
     </div>
 
-    <!-- Filter -->
+    <!-- Filter Form -->
     <form method="GET" class="row g-2 align-items-center mb-3">
-
-        <!-- Status Filter -->
-        <div class="col-12 col-md-auto">
-            <label for="statusFilter">Filter by Status:</label>
-        </div>
-
+        <div class="col-12 col-md-auto"><label for="statusFilter">Filter by Status:</label></div>
         <div class="col-12 col-md-auto">
             <select name="status" id="statusFilter" class="form-select">
                 <option value="">All</option>
                 {% for key,value in status_choices %}
-                <option value="{{ key }}" {% if key == status %}selected{% endif %}>
-                    {{ value }}
-                </option>
+                    <option value="{{ key }}" {% if key == status %}selected{% endif %}>{{ value }}</option>
                 {% endfor %}
             </select>
         </div>
-
-        <!-- Search -->
         <div class="col-12 col-md-3">
-            <input type="text"
-                name="q"
-                class="form-control"
-                placeholder="Search project..."
-                value="{{ request.GET.q }}">
+            <input type="text" name="q" class="form-control" placeholder="Search project..." value="{{ request.GET.q }}">
         </div>
-
-        <!-- Button -->
         <div class="col-12 col-md-auto">
-            <button class="btn btn-primary w-100">
-                <i class="bi bi-search"></i> Apply
-            </button>
+            <button class="btn btn-primary w-100"><i class="bi bi-search"></i> Apply</button>
         </div>
-
     </form>
-    
+
+    <!-- PAGINATION TOP -->
+    {% if page_obj.has_other_pages %}
+    <nav class="mb-3">
+        <ul class="pagination justify-content-center flex-wrap">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&status={{ status }}&q={{ request.GET.q|default_if_none:'' }}">Previous</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}&status={{ status }}&q={{ request.GET.q|default_if_none:'' }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&status={{ status }}&q={{ request.GET.q|default_if_none:'' }}">Next</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
     <!-- Project Table -->
     <div class="card shadow-sm">
         <div class="card-body p-0">
@@ -81,50 +81,35 @@
                             <th>Type</th>
                             <th>Status</th>
                             {% if request.user.role == 'admin' %}
-                            <th>Engineer</th>
-                            <th>Revenue</th>
+                                <th>Engineer</th>
+                                <th>Revenue</th>
                             {% elif request.user.role == 'engineer' %}
-                            <th>Start Date</th>
-                            <th>End Date</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
                             {% endif %}
                             <th>Latest Activity</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
-
                     <tbody>
                         {% for project in projects %}
                         <tr class="{% if project.status == 'completed' %}table-success{% endif %}">
                             <td><strong>{{ project.title }}</strong></td>
                             <td>{{ project.get_project_type_display }}</td>
-                            <td>
-                                <span class="badge status-{{ project.status }}">
-                                    {{ project.get_status_display }}
-                                </span>
-                            </td>
+                            <td><span class="badge status-{{ project.status }}">{{ project.get_status_display }}</span></td>
+
                             {% if request.user.role == 'admin' %}
-                            <td>
-                                {% if project.engineer %}
-                                    {{ project.engineer.user.username }}
-                                {% else %}
-                                    <span class="text-muted">Unassigned</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ project.revenue }}</td>
-
+                                <td>{% if project.engineer %}{{ project.engineer.user.username }}{% else %}<span class="text-muted">Unassigned</span>{% endif %}</td>
+                                <td>{{ project.revenue }}</td>
                             {% elif request.user.role == 'engineer' %}
-                            <td>{{ project.start_date|date:"d M Y"|default:"Not started" }}</td>
-                            <td>{{ project.end_date|date:"d M Y"|default:"Not completed" }}</td>
-
+                                <td>{{ project.start_date|date:"d M Y"|default:"Not started" }}</td>
+                                <td>{{ project.end_date|date:"d M Y"|default:"Not completed" }}</td>
                             {% endif %}
-                            <!-- Latest Activity -->
+
                             <td>
                                 {% if project.activities.exists %}
                                     {{ project.activities.last.title }}<br>
-                                    <small class="text-muted">
-                                        {{ project.activities.last.created_at|date:"M d, Y H:i" }}
-                                    </small>
-                                    <br>
+                                    <small class="text-muted">{{ project.activities.last.created_at|date:"M d, Y H:i" }}</small><br>
                                     <a href="{% url 'project_activities' project.id %}">View All</a>
                                 {% else %}
                                     <span class="text-muted">No activity</span>
@@ -133,22 +118,14 @@
 
                             <td class="text-center">
                                 <div class="d-flex flex-wrap justify-content-center gap-1">
-                                    <a href="{% url 'project_detail' project.id %}" class="btn btn-sm btn-info">
-                                        View
-                                    </a>
-                                    <a href="{% url 'edit_project' project.id %}" class="btn btn-sm btn-warning">
-                                        Edit
-                                    </a>
-
+                                    <a href="{% url 'project_detail' project.id %}" class="btn btn-sm btn-info">View</a>
+                                    <a href="{% url 'edit_project' project.id %}" class="btn btn-sm btn-warning">Edit</a>
                                 </div>
                             </td>
-
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="10" class="text-center p-4">
-                                No projects found
-                            </td>
+                            <td colspan="10" class="text-center p-4">No projects found</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -156,6 +133,34 @@
             </div>
         </div>
     </div>
+
+    <!-- PAGINATION BOTTOM -->
+    {% if page_obj.has_other_pages %}
+    <nav class="mt-3">
+        <ul class="pagination justify-content-center flex-wrap">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&status={{ status }}&q={{ request.GET.q|default_if_none:'' }}">Previous</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}&status={{ status }}&q={{ request.GET.q|default_if_none:'' }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&status={{ status }}&q={{ request.GET.q|default_if_none:'' }}">Next</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
 </div>
 
 {% endblock %}

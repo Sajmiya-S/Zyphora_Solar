@@ -1,0 +1,145 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block link %}
+<link rel="stylesheet" href="{% static 'css/dashboard/admin/edit_emp.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'profile' %}">My Profile</a></li>
+    <li class="breadcrumb-item active">Update Your Profile</li>
+  </ol>
+</nav>
+
+<div class="container mt-4">
+
+    <h1 class="mb-4">Update Your Profile</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+        <div class="row g-4">
+
+            <!-- LEFT SIDE FORM -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm p-4">
+
+                    <!-- Name & Phone -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.name.label_tag }}
+                            {{ form.name }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.phone.label_tag }}
+                            {{ form.phone }}
+                        </div>
+                    </div>
+
+                    <!-- Address & Other Fields -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.address.label_tag }}
+                            {{ form.address }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.designation.label_tag }}
+                                {{ form.designation }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.date_joined.label_tag }}
+                                {{ form.date_joined }}
+                            </div>
+                            {% if form.specialization %}
+                            <div class="mb-3">
+                                {{ form.specialization.label_tag }}
+                                {{ form.specialization }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Active Switch -->
+                    <div class="form-check form-switch mt-3">
+                        {{ form.is_active }}
+                        <label class="form-check-label" for="id_is_active">
+                            Active Employee
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="mt-4 text-end">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- RIGHT SIDE PROFILE IMAGE -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm p-4 text-center">
+
+                    <div class="profile-pic-wrapper position-relative">
+
+                        {% if employee.profile_pic %}
+                            <img src="{{ employee.profile_pic.url }}"
+                                 id="profilePreview"
+                                 class="profile-img"
+                                 alt="{{ employee.name|default:'Employee Profile' }}">
+                        {% else %}
+                            <img src="{% static 'images/profile.avif' %}"
+                                 id="profilePreview"
+                                 class="profile-img"
+                                 alt="Default Profile">
+                        {% endif %}
+
+                        <label for="id_profile_pic"
+                               class="edit-icon btn btn-warning d-flex align-items-center justify-content-center position-absolute top-0 end-0 m-2">
+                            <i class="bi bi-pencil"></i>
+                        </label>
+
+                        <input type="file"
+                               name="profile_pic"
+                               id="id_profile_pic"
+                               class="d-none"
+                               accept="image/*">
+
+                    </div>
+
+                    <p class="text-muted mt-3">
+                        Click the icon to update photo
+                    </p>
+
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<!-- Live Image Preview Script -->
+<script>
+document.getElementById("id_profile_pic").addEventListener("change", function(event) {
+    const file = event.target.files[0];
+    if(file){
+        if(FileReader){
+            const reader = new FileReader();
+            reader.onload = function(e){
+                document.getElementById("profilePreview").src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        } else {
+            alert("Your browser does not support image preview.");
+        }
+    }
+});
+</script>
+
+{% endblock %}

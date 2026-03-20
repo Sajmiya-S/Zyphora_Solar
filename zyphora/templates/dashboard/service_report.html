@@ -1,0 +1,25 @@
+{% extends 'dashboard/dashboard.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>Submit Service Report for: "{{ service_request.title }}"</h3>
+    <div class="card mt-3 p-3 shadow-sm">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                {{ form.report_text.label_tag }}
+                {{ form.report_text }}
+            </div>
+
+            <div class="mb-3">
+                {{ form.images.label_tag }}
+                {{ form.images }}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit & Complete Service</button>
+            <a href="{% url 'assigned_service_requests' %}" class="btn btn-secondary ms-2">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

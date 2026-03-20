@@ -1,27 +1,20 @@
 {% extends 'dashboard/dashboard.html' %}
 {% load static %}
-
-
 {% block link %}
-
-    <link rel="stylesheet" href="{% static 'css/dashboard/accountant/accountant.css' %}">
-
+<link rel="stylesheet" href="{% static 'css/dashboard/accountant/accountant.css' %}">
 {% endblock %}
 
 
 {% block content %}
 <div class="main-content">
-
     <div class="container-fluid mt-4">
         <div class="row g-4">
 
             <!-- Total Revenue -->
             <div class="col-12 col-sm-6 col-lg-3">
                 <div class="kpi-card revenue text-center">
-                    <div class="kpi-icon">
-                        <i class="bi bi-currency-rupee"></i>
-                    </div>
-                    <div class="kpi-value">₹12,50,000</div>
+                    <div class="kpi-icon"><i class="bi bi-currency-rupee"></i></div>
+                    <div class="kpi-value">₹{{ total_revenue|floatformat:0 }}</div>
                     <div class="kpi-label">Total Revenue</div>
                 </div>
             </div>
@@ -29,10 +22,8 @@
             <!-- Total Expenses -->
             <div class="col-12 col-sm-6 col-lg-3">
                 <div class="kpi-card expenses text-center">
-                    <div class="kpi-icon">
-                        <i class="bi bi-wallet2"></i>
-                    </div>
-                    <div class="kpi-value">₹7,20,000</div>
+                    <div class="kpi-icon"><i class="bi bi-wallet2"></i></div>
+                    <div class="kpi-value">₹{{ total_expenses|floatformat:0 }}</div>
                     <div class="kpi-label">Total Expenses</div>
                 </div>
             </div>
@@ -40,10 +31,8 @@
             <!-- Net Profit -->
             <div class="col-12 col-sm-6 col-lg-3">
                 <div class="kpi-card profit text-center">
-                    <div class="kpi-icon">
-                        <i class="bi bi-graph-up-arrow"></i>
-                    </div>
-                    <div class="kpi-value">₹5,30,000</div>
+                    <div class="kpi-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                    <div class="kpi-value">₹{{ net_profit|floatformat:0 }}</div>
                     <div class="kpi-label">Net Profit</div>
                 </div>
             </div>
@@ -51,10 +40,8 @@
             <!-- Pending Payments -->
             <div class="col-12 col-sm-6 col-lg-3">
                 <div class="kpi-card pending text-center">
-                    <div class="kpi-icon">
-                        <i class="bi bi-credit-card-2-front-fill"></i>
-                    </div>
-                    <div class="kpi-value">₹3,10,000</div>
+                    <div class="kpi-icon"><i class="bi bi-credit-card-2-front-fill"></i></div>
+                    <div class="kpi-value">₹{{ pending_payments|floatformat:0 }}</div>
                     <div class="kpi-label">Pending Payments</div>
                 </div>
             </div>
@@ -62,73 +49,132 @@
         </div>
     </div>
 
-</div>
+    <div class="row mt-4">
+        <!-- Revenue vs Expenses -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3">
+                <h6>Revenue vs Expenses</h6>
+                <canvas id="financeChart"></canvas>
+            </div>
+        </div>
 
-
-<div class="row mt-4">
-
-    <!-- Revenue vs Expenses -->
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm p-3">
-            <h6>Revenue vs Expenses</h6>
-            <canvas id="financeChart"></canvas>
+        <!-- Expense Breakdown -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3">
+                <h6>Expense Breakdown</h6>
+                <canvas id="expenseChart"></canvas>
+            </div>
         </div>
     </div>
 
-    <!-- Expense Breakdown -->
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm p-3">
-            <h6>Expense Breakdown</h6>
-            <canvas id="expenseChart"></canvas>
+    <!-- Recent Tables -->
+    <div class="row mt-4">
+        <!-- Recent Invoices -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3">
+                <h6>Recent Invoices</h6>
+                <table class="table table-hover table-sm mt-2">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Invoice No</th>
+                            <th>Project</th>
+                            <th>Status</th>
+                            <th>Amount</th>
+                            <th>Due Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in recent_invoices %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ invoice.invoice_number }}</td>
+                            <td>{{ invoice.project.title }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if invoice.status == 'paid' %}bg-success
+                                    {% elif invoice.status == 'sent' %}bg-primary
+                                    {% elif invoice.status == 'draft' %}bg-secondary
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ invoice.status|capfirst }}
+                                </span>
+                            </td>
+                            <td>₹{{ invoice.total_amount|floatformat:0 }}</td>
+                            <td>{{ invoice.due_date }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center text-muted">No recent invoices</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Expense Reports -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3">
+                <h6>Recent Expense Reports</h6>
+                <table class="table table-hover table-sm mt-2">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Project</th>
+                            <th>Category</th>
+                            <th>Submitted By</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in recent_expense_reports %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ report.project.title }}</td>
+                            <td>{{ report.category|capfirst }}</td>
+                            <td>{{ report.submitted_by.get_full_name }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if report.status == 'approved' %}bg-success
+                                    {% elif report.status == 'pending' %}bg-warning
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ report.status|capfirst }}
+                                </span>
+                            </td>
+                            <td>₹{{ report.total_amount|floatformat:0 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center text-muted">No recent expense reports</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
+const financeChartData = {{ finance_chart_data|safe }};
+const expenseChartData = {{ expense_breakdown_data|safe }};
 
-/* Revenue vs Expenses */
 new Chart(document.getElementById('financeChart'), {
     type: 'bar',
-    data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        datasets: [
-            {
-                label: 'Revenue',
-                data: [200000, 180000, 220000, 250000, 210000, 300000],
-                backgroundColor: '#198754'
-            },
-            {
-                label: 'Expenses',
-                data: [120000, 100000, 150000, 160000, 140000, 170000],
-                backgroundColor: '#dc3545'
-            }
-        ]
+    data: financeChartData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,  // allow custom height
+        plugins: { legend: { position: 'top' } }
     }
 });
 
-
-/* Expense Breakdown */
 new Chart(document.getElementById('expenseChart'), {
     type: 'doughnut',
-    data: {
-        labels: ['Materials', 'Labour', 'Transport', 'Misc'],
-        datasets: [{
-            data: [300000, 200000, 100000, 120000],
-            backgroundColor: [
-                '#0d6efd',
-                '#ffc107',
-                '#6f42c1',
-                '#dc3545'
-            ]
-        }]
+    data: expenseChartData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,  // allow custom height
+        plugins: { legend: { position: 'bottom' } }
     }
 });
-
 </script>
-
-
-
 {% endblock %}

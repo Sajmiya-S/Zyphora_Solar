@@ -1,0 +1,25 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+
+    <h2>Remaining Budget</h2>
+    <table class="table table-hover table-bordered">
+        <thead>
+            <tr>
+                <th>Project</th>
+                <th>Remaining Budget (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in projects %}
+            <tr>
+                <td>{{ item.project.title }}</td>
+                <td>{{ item.remaining_budget }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block link %}
+<link rel="stylesheet" href="{% static 'css/dashboard/update_lead.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a href="{% url 'sales' %}">Sales Dashboard</a>
+        </li>
+        <li class="breadcrumb-item"><a href="{% url 'followups' %}">Followups</a></li>
+        <li class="breadcrumb-item active">Follow-up of {{ followup.lead }}</li>
+        <li class="breadcrumb-item active">Edit Follow-up</li>
+      </ol>
+    </nav>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-8">
+
+            <!-- Card -->
+            <div class="card shadow-sm p-4">
+
+                <h5 class="mb-4">Edit Follow-up for {{ followup.lead.name }}</h5>
+
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    Please correct the errors below.
+                    {{ form.errors }}
+                </div>
+                {% endif %}
+
+                <form method="POST">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <a href="{% url 'update_lead' followup.lead.id %}" class="btn btn-secondary">Back</a>
+
+                        <div class="d-flex gap-2">
+                            {% if followup.status != 'done' %}
+                            <form method="post" action="{% url 'mark_followup_done' followup.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success">Mark Done</button>
+                            </form>
+                            {% endif %}
+
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

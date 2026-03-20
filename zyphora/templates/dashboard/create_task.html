@@ -1,0 +1,81 @@
+{% extends "dashboard/dashboard.html" %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+
+    <li class="breadcrumb-item">
+        <a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a>
+    </li>
+
+    <li class="breadcrumb-item">
+        {% if request.user.role == 'admin' or request.user.role == 'engineer' %}
+            <a href="{% url 'assigned_tasks' %}">Assigned Tasks</a>
+        {% else %}
+            <a href="{% url 'my_tasks' %}">My Tasks</a>
+        {% endif %}
+    </li>
+
+    <li class="breadcrumb-item active">Create Task</li>
+
+  </ol>
+</nav>
+
+<div class="card shadow-sm">
+
+
+<div class="card-header">
+    <h5>Create Task</h5>
+</div>
+
+<div class="card-body">
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label">Title</label>
+            {{ form.title }}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            {{ form.description }}
+        </div>
+
+        <!-- Assign To only for Admin / Engineer -->
+        {% if request.user.role == 'admin' or request.user.role == 'engineer' %}
+        <div class="mb-3">
+            <label class="form-label">Assign To</label>
+            {{ form.assigned_to }}
+        </div>
+        {% else %}
+            <!-- Hidden assignment fields for normal users -->
+            {{ form.assigned_to }}
+            {{ form.assigned_by }}
+        {% endif %}
+
+        <div class="mb-3">
+            <label class="form-label">Due Date</label>
+            {{ form.due_date }}
+        </div>
+
+        <button class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Create Task
+        </button>
+
+        {% if request.user.role == 'admin' or request.user.role == 'engineer' %}
+        <a href="{% url 'assigned_tasks' %}" class="btn btn-secondary">Cancel</a>
+        {% else %}
+        <a href="{% url 'my_tasks' %}" class="btn btn-secondary">Cancel</a>
+        {% endif %}
+
+    </form>
+
+</div>
+
+
+</div>
+
+{% endblock %}
