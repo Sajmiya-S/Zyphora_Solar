@@ -416,7 +416,6 @@ class InstallationTask(models.Model):
         ('structure_fixing', 'Mounting Structure Fixed'),
         ('panel_mounting', 'Solar Panels Mounted'),
         ('wiring', 'DC & AC Wiring Completed'),
-        ('inverter', 'Inverter Installed & Connected'),
         ('testing', 'System Testing '),
     )
 

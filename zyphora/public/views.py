@@ -28,7 +28,7 @@ def home_page(request):
             Notification.objects.create(
                 recipient=admin,
                 message=f"New review received from {review.name}",
-                link = reverse('notifications',kwargs={'ntype':'all'}),
+                link = reverse('notifications'),
                 category='crm'
                 )
     form = ReviewForm()
@@ -55,7 +55,7 @@ def contact_page(request):
                 recipient=admin,
                 title="New Lead Added",
                 message=f"{lead.name} has been added from website contact form",
-                link=reverse('notifications',kwargs={'ntype':'all'}),
+                link=reverse('notifications'),
                 category='crm'
             )
         messages.success(request,'Thank you for requesting a free consultation! Our representative will reach out to you shortly to assist you.')

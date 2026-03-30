@@ -2,6 +2,26 @@
 {% load static %}
 
 {% block content %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-2">
+    <li class="breadcrumb-item">
+        <a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{% url 'project_list' %}">Projects</a>
+    </li>
+    <li class="breadcrumb-item active">
+        Licensing Workflow
+    </li>
+    <li class="breadcrumb-item active">
+        {{ project.title }}
+    </li>
+  </ol>
+</nav>
+
+
 <div class="container-fluid">
 
     <!-- HEADER -->
