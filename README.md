@@ -51,6 +51,14 @@ Zyphora Solar ERP provides a **centralized, role-based platform** that:
 
 ---
 
+### 🔹 Design Module
+
+* Design Preparation
+* Design approval
+* Cost Approval
+
+---
+
 ### 🔹 Installation Module
 
 * Structure work tracking
@@ -166,8 +174,10 @@ python manage.py runserver
 
 1. Lead Created (CRM)
 2. Converted to Project
-3. Installation Phase
-4. Licensing Phase
-5. Procurement & Finance Tracking
-6. Energisation
-7. Project Completed
+3. Feasibility Study
+4. Design Phase
+5. Installation Phase
+6. Licensing Phase
+7. Procurement & Finance Tracking
+8. Energisation
+9. Project Completed
