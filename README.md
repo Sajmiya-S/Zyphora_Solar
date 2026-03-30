@@ -103,7 +103,7 @@ Structured government approval tracking:
 | Admin      | Full system control    |
 | Engineer   | Installation execution |
 | Liaison    | Licensing & approvals  |
-| Accountant | Finance % Expense      |
+| Accountant | Finance & Expense      |
 | Staff      | Installation tasks     |
 
 
