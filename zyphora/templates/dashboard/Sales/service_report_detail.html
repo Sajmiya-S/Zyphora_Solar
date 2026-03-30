@@ -1,28 +1,93 @@
 {% extends 'dashboard/dashboard.html' %}
 {% block content %}
-<div class="container-fluid py-4">
-    <h3>Service Report Detail</h3>
 
-    <div class="card mb-3">
-        <div class="card-header">
-            <strong>Service Request:</strong> {{ report.service_request.title }}<br>
-            <strong>Project:</strong> {{ report.service_request.project.title }}<br>
-            <strong>Reported By:</strong> {{ report.report_by.user.name }}
-        </div>
-        <div class="card-body">
-            <h5 class="card-title">Report Text</h5>
-            <p class="card-text">{{ report.report_text }}</p>
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0 align-items-center">
+    
+    <li class="breadcrumb-item">
+        <a href="{% url request.user.role %}" class="d-flex align-items-center">
+            {{ request.user.role|title }} Dashboard
+        </a>
+    </li>
 
-            {% if report.images %}
-            <h5>Images</h5>
-            <img src="{{ report.images.url }}" class="img-fluid mb-2" style="max-width:400px;">
-            {% else %}
-            <p><em>No images attached.</em></p>
-            {% endif %}
-        </div>
-        <div class="card-footer">
-            <a href="{% url 'service_reports' %}" class="btn btn-secondary">Back to Service Reports</a>
-        </div>
+    <li class="breadcrumb-item active d-flex align-items-center">
+        View Service Report
+    </li>
+
+  </ol>
+</nav>
+
+<div class="container my-5">
+
+    <!-- Report Header -->
+    <div class="text-center mb-4">
+        <h2 class="fw-bold">Service Report</h2>
+        <p class="text-muted mb-0">Report ID: {{ report.id }}</p>
+        <p class="text-muted">Date: {{ report.created_at|date:"d M Y, H:i" }}</p>
+        <hr>
     </div>
+
+    <!-- Service Request & Project Info -->
+    <div class="mb-4">
+        <table class="table table-borderless">
+            <tbody>
+                <tr>
+                    <th scope="row" style="width:200px;">Service Request:</th>
+                    <td>{{ report.service_request.title }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Project:</th>
+                    <td>{{ report.service_request.project.title }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Reported By:</th>
+                    <td>{{ report.report_by.name }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Assigned Engineer:</th>
+                    <td>
+                        {% if report.service_request.assigned_to %}
+                            {{ report.service_request.assigned_to.name }}
+                        {% else %}
+                            <em>Not assigned</em>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Status:</th>
+                    <td>{{ report.service_request.status|capfirst }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Report Text -->
+    <div class="mb-4">
+        <h5 class="fw-bold">Report Details</h5>
+        <p class="border rounded p-3">{{ report.report_text }}</p>
+    </div>
+
+    <!-- Images Section -->
+    <div class="mb-4">
+        <h5 class="fw-bold">Attached Images</h5>
+        {% if report.images %}
+            <div class="row g-3">
+                <div class="col-md-4 col-sm-6">
+                    <img src="{{ report.images.url }}" class="img-fluid border rounded" alt="Report Image">
+                </div>
+            </div>
+        {% else %}
+            <p class="text-muted"><em>No images attached.</em></p>
+        {% endif %}
+    </div>
+    
+    <a href="{% url 'download_report' 'service' report.id %}" class="btn btn-sm btn-primary">Download</a>
+    
+    <!-- Back Button -->
+    <div class="text-end">
+        <a href="{% url 'service_reports' %}" class="btn btn-secondary">Back to Service Reports</a>
+    </div>
+
 </div>
 {% endblock %}

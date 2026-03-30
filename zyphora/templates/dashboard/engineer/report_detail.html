@@ -1,0 +1,31 @@
+{% extends 'dashboard/dashboard.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <h4 class="mb-3">Report Details</h4>
+
+    <div class="card shadow-sm p-3">
+
+        <p><strong>Project:</strong> {{ report.project.name }}</p>
+        <p><strong>Date:</strong> {{ report.date }}</p>
+        <p><strong>Work Type:</strong> {{ report.get_work_type_display }}</p>
+        <p><strong>Status:</strong> {{ report.status }}</p>
+        <p><strong>Description:</strong><br>{{ report.description }}</p>
+
+        {% if report.before_image %}
+            <p><strong>Before:</strong><br>
+                <img src="{{ report.before_image.url }}" width="200">
+            </p>
+        {% endif %}
+
+        {% if report.after_image %}
+            <p><strong>After:</strong><br>
+                <img src="{{ report.after_image.url }}" width="200">
+            </p>
+        {% endif %}
+
+    </div>
+
+</div>
+{% endblock %}

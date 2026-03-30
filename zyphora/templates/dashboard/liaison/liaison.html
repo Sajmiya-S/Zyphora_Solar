@@ -1,0 +1,224 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block link %}
+<link rel="stylesheet" href="{% static 'css/dashboard/engineer/engineer.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- KPI SECTION -->
+    <div class="row g-4">
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card assigned text-center">
+                <div class="kpi-icon">
+                    <i class="bi bi-folder-fill"></i>
+                </div>
+                <div class="kpi-value">{{ assigned_projects }}</div>
+                <div class="kpi-label">Assigned Projects</div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card ongoing text-center">
+                <div class="kpi-icon">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div class="kpi-value">{{ licensing_in_progress }}</div>
+                <div class="kpi-label">Licensing In Progress</div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card completed text-center">
+                <div class="kpi-icon">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div class="kpi-value">{{ licensing_completed }}</div>
+                <div class="kpi-label">Licensing Completed</div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card pending text-center">
+                <div class="kpi-icon">
+                    <i class="bi bi-list-check"></i>
+                </div>
+                <div class="kpi-value">{{ pending_tasks }}</div>
+                <div class="kpi-label">Pending Licensing Tasks</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CHARTS -->
+    <div class="row mt-4 g-4">
+
+        <!-- Licensing Step Chart -->
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h6>Licensing Step Distribution</h6>
+
+                <div class="chart-container position-relative">
+                    <canvas id="licensingChart"></canvas>
+
+                    <div class="empty-state text-center" id="licensingEmpty">
+                        <i class="bi bi-bar-chart fs-3"></i><br>
+                        No licensing data
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Status Chart -->
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h6>Task Status Overview</h6>
+
+                <div class="chart-container position-relative">
+                    <canvas id="taskChart"></canvas>
+
+                    <div class="empty-state text-center" id="taskEmpty">
+                        <i class="bi bi-bar-chart-line fs-3"></i><br>
+                        No task data
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TASKS + DEADLINES -->
+    <div class="row mt-4 g-4">
+
+        <!-- Today's Tasks -->
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h6>Today's Licensing Tasks</h6>
+
+                {% for task in todays_tasks %}
+                <div class="list-item d-flex justify-content-between align-items-center mb-2">
+
+                    <div>
+                        <strong>{{ task.get_step_display }}</strong><br>
+                        <small class="text-muted">{{ task.project.title }}</small>
+                    </div>
+
+                    <span class="badge
+                        {% if task.status == 'new' %} bg-primary
+                        {% elif task.status == 'in_progress' %} bg-warning text-dark
+                        {% elif task.status == 'completed' %} bg-success
+                        {% elif task.status == 'overdue' %} bg-danger
+                        {% endif %}
+                    ">
+                        {{ task.status|title }}
+                    </span>
+
+                </div>
+                {% empty %}
+                <div class="empty-list text-center py-3">
+                    <i class="bi bi-inbox fs-4"></i><br>
+                    No tasks today
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+
+        <!-- Upcoming Deadlines -->
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h6>Upcoming Deadlines</h6>
+
+                {% for task in upcoming_tasks %}
+                <div class="list-item d-flex justify-content-between align-items-center mb-2">
+
+                    <div>
+                        <strong>{{ task.get_step_display }}</strong><br>
+                        <small class="text-muted">{{ task.due_date|date:"M d, Y" }}</small>
+                    </div>
+
+                    <span class="badge bg-warning text-dark">
+                        Due Soon
+                    </span>
+
+                </div>
+                {% empty %}
+                <div class="empty-list text-center py-3">
+                    <i class="bi bi-calendar-x fs-4"></i><br>
+                    No upcoming deadlines
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- CHART SCRIPT -->
+<script>
+    const stepLabels = {{ step_labels|safe }};
+    const stepCounts = {{ step_counts|safe }};
+
+    const statusLabels = {{ status_labels|safe }};
+    const statusCounts = {{ status_counts|safe }};
+
+    // Licensing Chart
+    if (stepCounts.length > 0) {
+        document.getElementById('licensingEmpty').style.display = 'none';
+
+        new Chart(document.getElementById('licensingChart'), {
+            type: 'doughnut',
+            data: {
+                labels: stepLabels,
+                datasets: [{
+                    data: stepCounts,
+                    backgroundColor: [
+                        '#0d6efd',
+                        '#ffc107',
+                        '#198754',
+                        '#dc3545',
+                        '#6f42c1'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+
+    // Task Status Chart
+    if (statusCounts.length > 0) {
+        document.getElementById('taskEmpty').style.display = 'none';
+
+        new Chart(document.getElementById('taskChart'), {
+            type: 'bar',
+            data: {
+                labels: statusLabels,
+                datasets: [{
+                    label: 'Tasks',
+                    data: statusCounts,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+</script>
+
+{% endblock %}

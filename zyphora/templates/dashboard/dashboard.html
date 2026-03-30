@@ -27,14 +27,48 @@
 
     <div class="dashboard-wrapper">
 
-        {% include "include/sidebar.html" %}
+        <!-- ================= ROLE BASED SIDEBAR ================= -->
+
+        <!-- Admin -->
+        {% if request.user.role == "admin" %}
+
+            {% include "include/admin_sidebar.html" %}
+
+        <!-- Engineer -->
+        {% elif request.user.role == "engineer" %}
+
+            {% include "include/engineer_sidebar.html" %}
+
+        <!-- Accountant -->
+        {% elif request.user.role == "accountant" %}
+
+            {% include "include/accountant_sidebar.html" %}
+
+        <!-- Sales -->
+        {% elif request.user.role == "sales" %}
+
+            {% include "include/sales_sidebar.html" %}
+
+        <!-- Staff -->
+        {% elif request.user.role == "staff" %}
+
+            {% include "include/staff_sidebar.html" %}
+
+        {% elif request.user.role == 'liaison' %}
+
+            {% include "include/liaison_sidebar.html" %}
+
+        {% endif %}
+
 
         <div class="main-wrapper">
 
             {% include "include/topnavbar.html" %}
 
             <main class="main-content p-4">
+
                 {% block content %}{% endblock %}
+
             </main>
 
         </div>
@@ -150,6 +184,32 @@
 
     // Initial load
     loadNotifications();
+
+    (function () {
+    var checkbox = document.getElementById('sidebarToggleCheckbox');
+    if (!checkbox) return;
+
+    function resetOnMobile() {
+        if (window.innerWidth <= 991) {
+            checkbox.checked = false;
+        }
+    }
+
+    // Reset immediately on page load
+    resetOnMobile();
+
+    // Reset if user resizes from desktop to mobile
+    window.addEventListener('resize', resetOnMobile);
+
+    // Close sidebar when overlay is tapped
+    var overlay = document.getElementById('sidebarOverlay');
+    if (overlay) {
+        overlay.addEventListener('click', function () {
+            checkbox.checked = false;
+        });
+    }
+})();
+
     </script>
 
 </body>

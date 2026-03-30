@@ -1,52 +1,93 @@
 {% extends 'dashboard/dashboard.html' %}
 {% block content %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+        <a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active">Inventory</li>
+    <li class="breadcrumb-item active">Request Materials</li>
+  </ol>
+</nav>
+
 <div class="container mt-4">
-    <h3>Request Materials</h3>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ formset.management_form }}
+    <!-- Header -->
+    <div class="mb-4">
+        <h4 class="fw-bold d-flex align-items-center text-primary mb-1">
+            <i class="bi bi-box-seam me-2"></i>
+            Request Materials
+        </h4>
+        <p class="text-muted mb-0">
+            Request required materials for your assigned installation tasks
+        </p>
+    </div>
 
-        <table class="table table-bordered mt-3" id="material-table">
-            <thead>
-                <tr>
-                    <th>Project</th>
-                    <th>Material</th>
-                    <th>Quantity</th>
-                    <th>Delete</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for form in formset %}
-                <tr class="material-row">
-                    <td>
-                        {{ form.project }}
-                        {{ form.project.errors }}
-                    </td>
-                    <td>
-                        {{ form.material }}
-                        {{ form.material.errors }}
-                    </td>
-                    <td>
-                        {{ form.quantity }}
-                        {{ form.quantity.errors }}
-                    </td>
-                    <td>{{ form.DELETE }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Form Card -->
+    <div class="card shadow-sm p-3 {% if request.user.is_dark_mode %}bg-dark text-light{% endif %}">
+        
+        <form method="post">
+            {% csrf_token %}
+            {{ formset.management_form }}
 
-        <button type="button" id="add-material-btn" class="btn btn-secondary">
-            Add Another Material
-        </button>
+            <!-- Table -->
+            <div class="table-responsive">
+                <table class="table align-middle mt-2" id="material-table">
+                    <thead class="table-secondary }">
+                        <tr>
+                            <th>Project</th>
+                            <th>Material</th>
+                            <th>Quantity</th>
+                            <th class="text-center">Remove</th>
+                        </tr>
+                    </thead>
 
-        <button type="submit" class="btn btn-primary">
-            Submit All Requests
-        </button>
-    </form>
+                    <tbody>
+                        {% for form in formset %}
+                        <tr class="material-row">
+                            <td>
+                                {{ form.project }}
+                                <small class="text-danger">{{ form.project.errors }}</small>
+                            </td>
+
+                            <td>
+                                {{ form.material }}
+                                <small class="text-danger">{{ form.material.errors }}</small>
+                            </td>
+
+                            <td>
+                                {{ form.quantity }}
+                                <small class="text-danger">{{ form.quantity.errors }}</small>
+                            </td>
+
+                            <td class="text-center">
+                                {{ form.DELETE }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex justify-content-between flex-wrap gap-2 mt-3">
+                <button type="button" id="add-material-btn" class="btn btn-outline-primary">
+                    <i class="bi bi-plus-circle me-1"></i> Add Material
+                </button>
+
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle me-1"></i> Submit Requests
+                </button>
+            </div>
+
+        </form>
+    </div>
+
 </div>
 
+<!-- JS -->
 <script>
 const addBtn = document.getElementById("add-material-btn");
 const table = document.querySelector("#material-table tbody");

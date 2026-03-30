@@ -10,7 +10,6 @@ class Review(models.Model):
     location = models.CharField(max_length=100, blank=True,null=True)
     rating = models.IntegerField()
     review = models.TextField()
-    is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -93,18 +92,25 @@ class Lead(models.Model):
 
     # --- Save method with project creation ---
     def save(self, *args, **kwargs):
-        self.score = self.calculate_score()
+
+        is_new = self.pk is None
 
         old_status = None
-        if self.pk:
+        if not is_new:
             old_status = Lead.objects.get(pk=self.pk).status
 
+        # First save (so PK exists)
         super().save(*args, **kwargs)
 
-        # --- Create project if lead converted ---
+        # calculate score
+        self.score = self.calculate_score()
+        super().save(update_fields=['score'])
+
+        # --- Create project if converted ---
         if self.status == 'converted' and old_status != 'converted':
-            from projects.models import Project  # adjust import if needed
-            if not hasattr(self, 'projects') or not self.projects.exists():
+            from projects.models import Project
+
+            if not self.projects.exists():
                 Project.objects.create(
                     title=f"{self.name} {self.service} Project",
                     lead=self,

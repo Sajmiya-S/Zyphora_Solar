@@ -85,6 +85,8 @@ def dashboard(request):
         return redirect(sales_dashboard)
     elif request.user.role == 'staff':
         return redirect(staff_dashboard)
+    elif request.user.role == 'liaison':
+        return redirect(liaison_dashboard)
 
 
 @login_required(login_url='/users/login')    
@@ -102,7 +104,7 @@ def admin_dashboard(request):
     active_projects = Project.objects.exclude(status='completed').count()
 
     # ---- Revenue & Pending Payments ----
-    revenue = sum([pc.revenue() for pc in ProjectCosting.objects.all()])
+    revenue = sum([pc.revenue for pc in ProjectCosting.objects.all()])
 
     pending_payments = Invoice.objects.annotate(
         paid_amount=Sum('payments__amount')
@@ -135,10 +137,6 @@ def admin_dashboard(request):
 
     return render(request, 'dashboard/admin/admin.html', context)
 
-import json
-from django.db.models import Count
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 
 @login_required(login_url='/users/login')
 def engineer_dashboard(request):
@@ -414,13 +412,6 @@ def staff_dashboard(request):
     projects = Project.objects.filter(installation_tasks__assigned_to=request.user).distinct()  # assigned projects
     assigned_projects = projects.count()
 
-    # Installation checklist progress for all projects
-    checklist_progress = {}
-    for project in projects:
-        total_items = project.installation_tasks.count()
-        completed_items = project.installation_tasks.filter(status='completed').count()
-        percent = int((completed_items / total_items) * 100) if total_items else 0
-        checklist_progress[project.id] = percent
 
     today = timezone.localdate()
     context = {
@@ -439,36 +430,56 @@ def staff_dashboard(request):
         'assigned_projects': assigned_projects,
         'task_counts': task_counts,
         'today': today,
-        'checklist_progress': checklist_progress,
     }
 
     return render(request, 'dashboard/staff/staff.html', context)
 
+
 @login_required(login_url='/users/login')
-@require_POST
-def save_installation_checklist(request):
-    """
-    Save checklist progress for an InstallationTask.
-    Expects JSON: { "task_id": int, "completed_stages": [str, str, ...] }
-    """
-    try:
-        data = json.loads(request.body)
-        task_id = data.get('task_id')
-        completed_stages = data.get('completed_stages', [])
+def liaison_dashboard(request):
+    user = request.user
 
-        task = InstallationTask.objects.get(id=task_id)
+    tasks = LicensingTask.objects.filter(assigned_to=user)
 
-        # Save the completed stages
-        task.completed_stages = completed_stages  # Make sure your model field allows storing list (JSONField or TextField)
-        task.save(update_fields=['completed_stages'])
+    from django.utils.timezone import now
+from django.db.models import Count
 
-        return JsonResponse({'success': True, 'message': 'Checklist saved', 'completed_count': len(completed_stages)})
+@login_required(login_url='/users/login')
+def liaison_dashboard(request):
+    user = request.user
 
-    except InstallationTask.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Task not found'}, status=404)
-    except Exception as e:
-        return JsonResponse({'success': False, 'message': str(e)}, status=400)
-    
+    tasks = LicensingTask.objects.filter(assigned_to=user)
+
+    # Step Distribution
+    step_data = tasks.values('step').annotate(count=Count('id'))
+
+    step_labels = [item['step'] for item in step_data]
+    step_counts = [item['count'] for item in step_data]
+
+    # Status Distribution
+    status_data = tasks.values('status').annotate(count=Count('id'))
+
+    status_labels = [item['status'] for item in status_data]
+    status_counts = [item['count'] for item in status_data]
+
+    context = {
+        "assigned_projects": Project.objects.filter(licensing_tasks__assigned_to=user).distinct().count(),
+        "licensing_in_progress": tasks.filter(status='in_progress').count(),
+        "licensing_completed": tasks.filter(status='completed').count(),
+        "pending_tasks": tasks.filter(status='new').count(),
+
+        "todays_tasks": tasks.filter(due_date=now().date()),
+        "upcoming_tasks": tasks.filter(due_date__gt=now().date())[:5],
+
+        # chart data
+        "step_labels": step_labels,
+        "step_counts": step_counts,
+        "status_labels": status_labels,
+        "status_counts": status_counts,
+    }
+
+    return render(request, 'dashboard/liaison/liaison.html', context)
+
 
 
 class ChangePassword(PasswordChangeView):
@@ -568,8 +579,14 @@ def add_employee(request):
                     return redirect(all_employees)
 
             except Exception as e:
-                messages.error(request, str(e))
-                print(str(e))
+                create_notification(
+                        recipient=request.user,
+                        title="Employee registration Failed ",
+                        message=f"{e}",
+                        sender=request.user,
+                        link=reverse('emplist'),
+                        category="employee"
+                    )
 
     else:
         form = EmployeeForm(role=role)
@@ -912,22 +929,22 @@ def get_notifications(request):
 
 
 
-
 @login_required(login_url='/users/login')
 def notifications(request):
     ntype = request.GET.get("type", "all")
 
-    # ✅ Base queryset
     notifications_qs = Notification.objects.filter(
         recipient=request.user
+    ).exclude(
+        category__isnull=True
+    ).exclude(
+        category=''
     ).order_by('-created_at')
 
-    # ✅ UNIQUE categories (FIXED 🔥)
     categories = sorted(set(
         notifications_qs.values_list('category', flat=True)
     ))
 
-    # ✅ Total count per category
     category_counts = dict(
         notifications_qs
         .values('category')
@@ -935,7 +952,6 @@ def notifications(request):
         .values_list('category', 'count')
     )
 
-    # ✅ Unread count per category (🔥 for tabs)
     category_unread = dict(
         notifications_qs
         .filter(is_read=False)
@@ -944,18 +960,17 @@ def notifications(request):
         .values_list('category', 'count')
     )
 
-    # ✅ FILTERING
     if ntype == "unread":
-        notifications_qs = notifications_qs.filter(is_read=False)
+        filtered_qs = notifications_qs.filter(is_read=False)
     elif ntype != "all":
-        notifications_qs = notifications_qs.filter(category=ntype)
+        filtered_qs = notifications_qs.filter(category=ntype)
+    else:
+        filtered_qs = notifications_qs
 
-    # ✅ PAGINATION
-    paginator = Paginator(notifications_qs, 20)
+    paginator = Paginator(filtered_qs, 20)
     page = request.GET.get('page')
     notifications_page = paginator.get_page(page)
 
-    # ✅ CATEGORY STYLE CONFIG (icons + badge colors)
     CATEGORY_STYLES = {
         "project":  {"icon": "bi-briefcase-fill text-success", "badge": "bg-success"},
         "tasks":    {"icon": "bi-list-check text-primary", "badge": "bg-primary"},
@@ -969,14 +984,15 @@ def notifications(request):
         "system":   {"icon": "bi-gear-fill text-secondary", "badge": "bg-secondary"},
     }
 
-    # ✅ Attach icon + badge to each notification
     for n in notifications_page:
         style = CATEGORY_STYLES.get(n.category, CATEGORY_STYLES["system"])
         n.icon = style["icon"]
         n.badge = style["badge"]
 
-    # ✅ Total unread count
-    unread_count = notifications_qs.filter(is_read=False).count()
+    unread_count = Notification.objects.filter(
+        recipient=request.user,
+        is_read=False
+    ).count()
 
     return render(request, "dashboard/notifications.html", {
         "notifications": notifications_page,

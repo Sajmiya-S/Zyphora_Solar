@@ -90,10 +90,13 @@
                     </div>
 
                     {% if s.status != "done" %}
-                    <form method="post" action="{% url 'mark_site_visit_done' s.id %}">
-                        {% csrf_token %}
-                        <button class="btn btn-primary btn-sm">Mark Done</button>
-                    </form>
+                        {% if request.user.role == admin or request.user.role == 'engineer' %}
+                        <form method="post" action="{% url 'mark_site_visit_done' s.id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-primary btn-sm">Mark Done</button>
+                        </form>
+                        {% endif %}
+
                     {% endif %}
 
                 </div>

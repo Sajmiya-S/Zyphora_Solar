@@ -1,0 +1,407 @@
+{% extends "dashboard/dashboard.html" %}
+{% block content %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+        <a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{% url 'design_list' %}">Design Management</a>
+    </li>
+    <li class="breadcrumb-item active">{{ project.title }}</li>
+  </ol>
+</nav>
+
+<!-- HEADER -->
+<div class="mb-3">
+    <h4 class="fw-bold text-primary">
+        <i class="bi bi-gear-wide-connected me-2 "></i>{{ project.title }}
+    </h4>
+    <p class="text-muted">Admin Design Control Panel</p>
+</div>
+
+<!-- Phase Flow -->
+<div class="mb-4 d-flex flex-wrap gap-2">
+
+    <!-- Preparation -->
+    <span class="badge {% if current_phase == 'preparation' %}bg-primary{% else %}bg-secondary{% endif %}">
+        <i class="bi bi-gear-fill me-1"></i> Preparation
+    </span>
+
+    <!-- Discussion -->
+    <span class="badge {% if current_phase == 'discussion' %}bg-warning{% else %}bg-secondary{% endif %}">
+        <i class="bi bi-chat-left-text me-1"></i> Discussion
+    </span>
+
+    <!-- Correction -->
+    {% if design_documents and design_documents.0.needs_correction %}
+    <span class="badge {% if current_phase == 'correction' %}bg-danger{% else %}bg-secondary{% endif %}">
+        <i class="bi bi-exclamation-triangle-fill me-1"></i> Correction
+    </span>
+    {% endif %}
+
+    <!-- Design Cost -->
+    <span class="badge 
+        {% if current_phase == 'design_costing' %}bg-info
+        {% elif current_phase == 'design_costing_review' %}bg-info
+        {% else %}bg-secondary{% endif %}">
+        <i class="bi bi-cash-stack me-1"></i> Design Cost
+    </span>
+
+    <!-- Cost Approval -->
+    <span class="badge 
+        {% if current_phase == 'design_costing_review' %}bg-warning
+        {% else %}bg-secondary{% endif %}">
+        <i class="bi bi-check2-square me-1"></i> Cost Approval
+    </span>
+
+    <!-- Project Cost -->
+    <span class="badge {% if current_phase == 'project_costing' %}bg-success{% else %}bg-secondary{% endif %}">
+        <i class="bi bi-calculator me-1"></i> Project Cost
+    </span>
+    
+    <!-- Proposal sent -->
+    <span class="badge 
+        {% if project.project_costing and project.project_costing.proposal_sent and not project.project_costing.client_approved %}
+            bg-warning
+        {% else %}
+            bg-secondary
+        {% endif %}">
+        
+        <i class="bi bi-send-check me-1"></i>
+        {% if project.project_costing and project.project_costing.client_approved %}
+            Proposal Completed
+        {% else %}
+            Proposal Sent
+        {% endif %}
+    </span>
+
+
+    <!-- Client Approval -->
+    <span class="badge 
+        {% if current_phase == 'client_approval' %}bg-primary
+        {% elif project.project_costing and project.project_costing.client_approved %}bg-success
+        {% else %}bg-secondary{% endif %}">
+        <i class="bi bi-person-check me-1"></i> Client Approval
+    </span>
+
+    <!-- Completed -->
+    <span class="badge 
+        {% if current_phase == 'completed' %}bg-success
+        {% else %}bg-secondary{% endif %}">
+        <i class="bi bi-check-circle-fill me-1"></i> Completed
+    </span>
+
+</div>
+
+<!-- ================= GLOBAL STATUS ================= -->
+
+{% if not design_documents %}
+    <div class="alert alert-warning">
+        <i class="bi bi-hourglass-split me-2"></i>
+        Waiting for engineer to upload design.
+
+        {% if messages %}
+            {% for message in messages %}
+                <span class="badge bg-success">{{ message }}</span>
+            {% endfor %}
+        {% else %}
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" name="notify_engineer" class="btn btn-sm btn-primary">
+                    Notify Engineer
+                </button>
+            </form>
+        {% endif %}
+    </div>
+{% endif %}
+
+{% if design_documents and not design_documents.0.discussion_date %}
+<div class="alert alert-info">
+    <i class="bi bi-calendar me-2"></i>
+    Discussion date not fixed. Please schedule discussion.
+</div>
+{% endif %}
+
+{% if current_phase == "discussion" %}
+<div class="alert alert-primary">
+    <i class="bi bi-chat me-2"></i>
+    Discussion Phase Active
+</div>
+{% endif %}
+{% if current_phase == "design_costing" and not project.design_costing %}
+<div class="alert alert-info d-flex align-items-center">
+    <i class="bi bi-hourglass-split me-2"></i>
+    Awaiting design cost submission from engineer to proceed further.
+</div>
+{% endif %}
+{% if project.design_costing and project.design_costing.status == "pending" %}
+<div class="alert alert-info">
+    <i class="bi bi-hourglass-split me-2"></i>
+    Waiting for admin to approve design cost.
+</div>
+{% endif %}
+
+{% if project.project_costing and project.project_costing.proposal_sent and not project.project_costing.client_approved %}
+<div class="alert alert-warning">
+    <i class="bi bi-send-check me-1"></i>
+    Proposal sent. Waiting for client approval.
+</div>
+{% endif %}
+
+{% if project.project_costing and project.project_costing.client_approved %}
+<div class="alert alert-success">
+    <i class="bi bi-rocket-takeoff me-2"></i>
+    Client approved! Project is ON. Start installation.
+</div>
+{% endif %}
+
+<!-- ================= DESIGN DOCUMENTS ================= -->
+
+{% if design_documents %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5><i class="bi bi-folder2-open me-2"></i>Design Documents</h5>
+
+        <div class="row">
+            {% for doc in design_documents %}
+            <div class="col-md-3 col-6 mb-3 text-center">
+                {% with file_url=doc.file.url %}
+                    {% if file_url|lower|slice:"-4:" == ".jpg" or file_url|lower|slice:"-5:" == ".jpeg" or file_url|lower|slice:"-4:" == ".png" %}
+                        <img src="{{ file_url }}" class="img-fluid preview-thumb"
+                             data-bs-toggle="modal" data-bs-target="#previewModal"
+                             data-type="image" data-src="{{ file_url }}">
+                    {% elif file_url|lower|slice:"-4:" == ".mp4" %}
+                        <video src="{{ file_url }}" class="img-fluid preview-thumb"
+                               data-bs-toggle="modal" data-bs-target="#previewModal"
+                               data-type="video" data-src="{{ file_url }}"></video>
+                    {% else %}
+                        <a href="{{ file_url }}" target="_blank">{{ doc.caption }}</a>
+                    {% endif %}
+                {% endwith %}
+                <div class="small text-muted">{{ doc.caption }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ================= DISCUSSION DATE FIX ================= -->
+
+{% if design_documents and not design_documents.0.discussion_date %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5><i class="bi bi-calendar me-2"></i>Fix Discussion Date</h5>
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="date" 
+                name="discussion_date" 
+                class="form-control w-auto mb-2" 
+                required
+                min="{{ today|date:'Y-m-d' }}">
+            <button class="btn btn-primary">Save & Start Discussion</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- ================= DISCUSSION PHASE ================= -->
+
+{% if current_phase == "discussion" %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5><i class="bi bi-chat-left-text me-2"></i>Discussion</h5>
+
+        <form method="POST">
+            {% csrf_token %}
+            <textarea name="notes" class="form-control mb-2" placeholder="Enter feedback or corrections"></textarea>
+
+            <button name="action" value="approve" class="btn btn-success me-2">
+                Approve Design
+            </button>
+            <button name="action" value="reject" class="btn btn-danger">
+                Request Correction
+            </button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- ================= DESIGN COST APPROVAL ================= -->
+
+{% if current_phase == "design_costing_review" %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5><i class="bi bi-cash-stack me-2"></i>Design Cost Approval</h5>
+
+        <p><strong>Cost:</strong> ₹{{ project.design_costing.cost }}</p>
+
+        {% if project.design_costing.design_file %}
+        <a href="{{ project.design_costing.design_file.url }}" target="_blank" class="btn btn-outline-primary btn-sm mb-2">
+            View Document
+        </a>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <button name="action" value="approve" class="btn btn-success me-2">
+                Approve
+            </button>
+            <button name="action" value="reject" class="btn btn-danger">
+                Reject
+            </button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- ================= PROJECT COSTING ================= -->
+
+{% if current_phase == "project_costing" %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5><i class="bi bi-calculator me-2"></i>Project Costing</h5>
+
+        <p><strong>Design Cost:</strong> ₹{{ project.design_costing.cost }}</p>
+        {% if not project.project_costing %}
+        <form method="POST">
+            {% csrf_token %}
+
+            <input type="number" name="system_cost" id="systemCost" class="form-control mb-2" placeholder="System Cost" required>
+            <input type="number" name="kseb_cost" id="ksebCost" class="form-control mb-2" placeholder="KSEB Cost" required>
+
+            <div class="alert alert-info">
+                Total Cost: ₹ <span id="totalCost">{{ project.design_costing.cost }}</span>
+            </div>
+
+            <button name="submit_cost" class="btn btn-success">
+                Finalize the Project cost
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ================= CLIENT APPROVAL ================= -->
+
+{% if project.project_costing %}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+
+        <h5><i class="bi bi-person-check me-2"></i>Client Approval</h5>
+
+        <p><strong>Total Cost:</strong> ₹{{ project.project_costing.estimated_cost }}</p>
+
+        <!-- STEP 1: SEND PROPOSAL -->
+        {% if not project.project_costing.proposal_sent %}
+        <form method="POST">
+            {% csrf_token %}
+            <button name="send_proposal" class="btn btn-warning">
+                <i class="bi bi-send-check me-1"></i>
+                Send Proposal to Client
+            </button>
+        </form>
+        {% endif %}
+
+        <!-- STEP 2: WAITING -->
+        {% if project.project_costing.proposal_sent and not project.project_costing.client_approved %}
+        <div class="alert alert-info mt-2">
+            ⏳ Waiting for client approval...
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <label>Project Start Date</label>
+            <input type="date" 
+            name="start_date" 
+            class="form-control w-auto mb-2" 
+            required
+            min="{{ today|date:'Y-m-d' }}">
+
+            <button name="client_approve" class="btn btn-success">
+                ✅ Mark Client Approved
+            </button>
+        </form>
+        {% endif %}
+
+        <!-- STEP 3: COMPLETED -->
+        {% if project.project_costing.client_approved %}
+        <div class="alert alert-success mt-2">
+            🎉 Client Approved! Project Started.
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endif %}
+
+<!-- ================= MODAL ================= -->
+
+<div class="modal fade" id="previewModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body">
+        <img id="previewImage" class="img-fluid d-none">
+        <video id="previewVideo" controls class="w-100 d-none"></video>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= JS ================= -->
+
+<script>
+const systemCost = document.getElementById("systemCost");
+const ksebCost = document.getElementById("ksebCost");
+const totalCost = document.getElementById("totalCost");
+const designCost = parseFloat("{{ project.design_costing.cost|default:0 }}");
+
+if(systemCost){
+    systemCost.addEventListener("input", updateTotal);
+    ksebCost.addEventListener("input", updateTotal);
+}
+
+function updateTotal(){
+    let system = parseFloat(systemCost.value) || 0;
+    let kseb = parseFloat(ksebCost.value) || 0;
+    totalCost.innerText = (designCost + system + kseb).toFixed(2);
+}
+
+document.getElementById("previewModal").addEventListener("show.bs.modal", function (event) {
+    let btn = event.relatedTarget;
+    let type = btn.getAttribute("data-type");
+    let src = btn.getAttribute("data-src");
+
+    let img = document.getElementById("previewImage");
+    let vid = document.getElementById("previewVideo");
+
+    img.classList.add("d-none");
+    vid.classList.add("d-none");
+
+    if(type === "image"){
+        img.src = src;
+        img.classList.remove("d-none");
+    } else {
+        vid.src = src;
+        vid.classList.remove("d-none");
+    }
+});
+</script>
+
+<style>
+.preview-thumb {
+    max-height:120px;
+    cursor:pointer;
+    border-radius:6px;
+}
+</style>
+
+{% endblock %}

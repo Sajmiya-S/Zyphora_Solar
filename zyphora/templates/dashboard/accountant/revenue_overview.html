@@ -1,0 +1,102 @@
+{% extends "dashboard/dashboard.html" %}
+{% block content %}
+
+<div class="container-fluid mt-3">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0 align-items-center">
+            <li class="breadcrumb-item">
+                <a href="{% url request.user.role %}" class="d-flex align-items-center">
+                    Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item active d-flex align-items-center">
+                Revenue Overview
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="mb-4">
+        <h4 class="fw-bold d-flex align-items-center text-primary mb-1">
+            <i class="bi bi-graph-up me-2 "></i>
+            Revenue Overview
+        </h4>
+        <p class="text-muted mb-0">
+            Monitor project-wise revenue, expenses, and profit performance.
+        </p>
+    </div>
+
+    <!-- Table Card -->
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>Project</th>
+                        <th>Estimated Cost</th>
+                        <th>Actual Cost</th>
+                        <th>Revenue</th>
+                        <th>Profit</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for project in projects %}
+                    <tr>
+
+                        <!-- Project -->
+                        <td class="fw-semibold">
+                            <i class="bi bi-building me-1"></i>
+                            {{ project.title }}
+                        </td>
+
+                        <!-- Estimated -->
+                        <td>
+                            ₹{{ project.costing.estimated_cost|default:"0.00" }}
+                        </td>
+
+                        <!-- Actual -->
+                        <td>
+                            ₹{{ project.costing.actual_cost|default:"0.00" }}
+                        </td>
+
+                        <!-- Revenue -->
+                        <td>
+                            ₹{{ project.costing.revenue|default:"0.00" }}
+                        </td>
+
+                        <!-- Profit -->
+                        <td>
+                            {% with profit=project.costing.profit %}
+                                <span class="badge px-3 py-2
+                                    {% if profit > 0 %}bg-success
+                                    {% elif profit < 0 %}bg-danger
+                                    {% else %}bg-secondary{% endif %}">
+                                    ₹{{ profit|default:"0.00" }}
+                                </span>
+                            {% endwith %}
+                        </td>
+
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <i class="bi bi-inbox fs-3 text-muted"></i>
+                            <p class="mt-2 text-muted">No projects found</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

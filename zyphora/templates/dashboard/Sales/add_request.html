@@ -1,42 +1,79 @@
-{% extends 'dashboard/dashboard.html' %}
+{% extends "dashboard/dashboard.html" %}
 {% load static %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <h3 class="mb-4">Add Service Request</h3>
+<div class="container mt-4">
 
-    <form method="post">
-        {% csrf_token %}
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'service_requests' %}">Service Requests</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Add Service Request</li>
+        </ol>
+    </nav>
 
-        {{ form.non_field_errors }}
-
-        <!-- Project Selection -->
-        <div class="mb-3">
-            <label for="id_project" class="form-label">Project</label>
-            {{ form.project }}
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Add Service Request</h5>
         </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
 
-        <!-- Title -->
-        <div class="mb-3">
-            <label for="id_title" class="form-label">Title</label>
-            {{ form.title }}
+                <!-- Display form errors -->
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>Error:</strong> Please fix the issues below.
+                        <ul>
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <!-- Form Fields -->
+                <div class="mb-3">
+                    {{ form.title.label_tag }}
+                    {{ form.title }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.project.label_tag }}
+                    {{ form.project }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.assigned_to.label_tag }}
+                    {{ form.assigned_to }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.description.label_tag }}
+                    {{ form.description }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.due_date.label_tag }}
+                    {{ form.due_date }}
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-success">Create Service Request</button>
+                <a href="{% url 'service_requests' %}" class="btn btn-secondary ms-2">Cancel</a>
+            </form>
         </div>
-
-        <!-- Description -->
-        <div class="mb-3">
-            <label for="id_description" class="form-label">Description</label>
-            {{ form.description }}
-        </div>
-
-        <!-- Assign Engineer -->
-        <div class="mb-3">
-            <label for="id_assigned_to" class="form-label">Assign to Engineer (Optional)</label>
-            {{ form.assigned_to }}
-        </div>
-
-        <!-- Buttons -->
-        <button type="submit" class="btn btn-primary">Create Service Request</button>
-        <a href="{% url 'service_requests' %}" class="btn btn-secondary ms-2">Cancel</a>
-    </form>
+    </div>
 </div>
+
 {% endblock %}

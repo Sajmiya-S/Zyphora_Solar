@@ -23,21 +23,21 @@
         </div>
 
         <div class="row g-4">
-            
+            {% for project in projects %}
             <!-- Project Card -->
             <div class="col-md-4">
                 <div class="card project-card shadow-sm border-0">
                     <img src="{% static 'images/project1.jpg' %}" class="card-img-top" alt="Residential Solar Project">
                     <div class="card-body">
-                        <h5 class="card-title">5kW Residential Rooftop</h5>
+                        <h5 class="card-title">{{project.title}}</h5>
                         <p class="card-text text-muted">
-                            Location: Trivandrum<br>
-                            Type: On-grid Solar System<br>
-                            Annual Savings: ₹65,000+
+                            Location: {{project.location}}<br>
+                            Type: {{project.project_type}}<br>
                         </p>
                     </div>
                 </div>
             </div>
+            {% endfor %}
 
             <!-- Repeat Cards -->
             
@@ -53,10 +53,10 @@
         </div>
         <div class="row align-items-center">
             <div class="col-md-6">
-                <img src="{% static 'images/before.jpg' %}" class="img-fluid rounded shadow">
+                <img src="{% static 'images/before.png' %}" class="img-fluid rounded shadow">
             </div>
             <div class="col-md-6">
-                <img src="{% static 'images/after.jpg' %}" class="img-fluid rounded shadow">
+                <img src="{% static 'images/after.png' %}" class="img-fluid rounded shadow">
             </div>
         </div>
     </div>

@@ -13,10 +13,16 @@ class CustomUser(AbstractUser):
         ('accountant', 'Accountant'),
         ('sales','Sales'),
         ('staff', 'Staff'),
+        ('liaison','Liaison Officer')
     )
 
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='staff')
     must_change_password = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if self.is_superuser:
+            self.role = 'admin'
+        super().save(*args, **kwargs)
 
 
 

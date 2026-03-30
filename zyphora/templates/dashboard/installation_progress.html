@@ -1,63 +1,183 @@
 {% extends "dashboard/dashboard.html" %}
+{% load static %}
 
 {% block content %}
 
-<!-- Breadcrumbs -->
+<!-- Breadcrumb -->
 <nav aria-label="breadcrumb" class="mb-3">
   <ol class="breadcrumb">
     <li class="breadcrumb-item">
-        <a href="{% url request.user.role %}">{{request.user.role|title}} Dashboard</a>
+        <a href="{% url request.user.role %}">
+            {{ request.user.role|title }} Dashboard
+        </a>
     </li>
-    <li class="breadcrumb-item active" aria-current="page">Installation Progress</li>
+    <li class="breadcrumb-item active">Installation Progress</li>
   </ol>
 </nav>
 
-<h3>Installation Progress</h3>
+<!-- Header -->
+<div class="mb-4">
+    <h3 class="fw-bold text-primary">
+        <i class="bi bi-tools me-2"></i> Installation Progress
+    </h3>
+    <p class="text-muted">
+        Track real-time installation progress based on completed tasks.
+    </p>
+</div>
+
+<!-- Search Bar -->
+<form method="get" id="searchForm" class="mb-4">
+    <div class="input-group shadow-sm">
+        <span class="input-group-text border-end-0">
+            <i class="bi bi-search text-muted"></i>
+        </span>
+        <input type="text"
+               name="q"
+               id="searchInput"
+               class="form-control border-start-0"
+               placeholder="Search project, step or notes..."
+               value="{{ search }}">
+        <a href="{% url 'installation_progress' %}" class="btn btn-outline-secondary">
+            Reset
+        </a>
+    </div>
+</form>
 
 {% if projects %}
-    <div class="row">
-        {% for project in projects %}
-            <div class="col-md-6 mb-4">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ project.title }}</h5>
+<div class="row">
+{% for project in projects %}
+<div class="col-md-6 mb-4">
+    <div class="card shadow-sm h-100 {% if request.user.is_dark_mode %}bg-dark text-light{% endif %}">
+        <div class="card-body">
 
-                        <!-- Progress Bar -->
-                        <div class="progress mb-3">
-                            <div class="progress-bar bg-success" style="width: {{ project.progress_percent }}%;">
-                                {{ project.progress_percent }}%
-                            </div>
-                        </div>
+            <!-- Title + Progress -->
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5>{{ project.title }}</h5>
+                <span class="badge 
+                    {% if project.real_progress < 50 %}bg-danger
+                    {% elif project.real_progress < 80 %}bg-warning text-dark
+                    {% else %}bg-success{% endif %}">
+                    {{ project.real_progress }}%
+                </span>
+            </div>
 
-                        <!-- Checklist Form -->
-                        <form method="POST">
-                            {% csrf_token %}
-                            <input type="hidden" name="project_id" value="{{ project.id }}">
-
-                            {% for status_value, status_label in project.STATUS_CHOICES %}
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio"
-                                           name="status"
-                                           value="{{ status_value }}"
-                                           id="{{ project.id }}_{{ status_value }}"
-                                           {% if status_value == project.status %}checked{% endif %}
-                                           {% if status_value == 'new' %}disabled{% endif %}>
-                                    <label class="form-check-label" for="{{ project.id }}_{{ status_value }}">
-                                        {{ status_label }}
-                                    </label>
-                                </div>
-                            {% endfor %}
-
-                            <button type="submit" class="btn btn-primary w-100 mt-2">Update Progress</button>
-                        </form>
-
-                    </div>
+            <div class="progress mb-3" style="height: 18px;">
+                <div class="progress-bar 
+                    {% if project.real_progress < 50 %}bg-danger
+                    {% elif project.real_progress < 80 %}bg-warning
+                    {% else %}bg-success{% endif %}"
+                    style="width: {{ project.real_progress }}%;">
                 </div>
             </div>
-        {% endfor %}
+
+            <!-- Installation Tasks -->
+            <h6 class="fw-bold mt-3">Installation Steps</h6>
+
+            {% for task in project.filtered_tasks %}
+            <div class="d-flex justify-content-between align-items-center mb-2">
+
+                <div>
+                    <i class="bi 
+                        {% if task.status == 'completed' %}bi-check-circle-fill text-success
+                        {% elif task.status == 'in_progress' %}bi-hourglass-split text-warning
+                        {% else %}bi-circle text-muted{% endif %} me-2"></i>
+                    {{ task.get_step_display }}
+
+                    {% if request.user.role != 'staff' %}
+                        <small class="text-muted ms-2">
+                            Assigned to: {{ task.assigned_to.employee.name|default:"Unassigned" }}
+                        </small>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex align-items-center gap-1">
+
+                    {% if request.user.role != 'staff' and not task.assigned_to %}
+                    <!-- Assignment Form -->
+                    <form method="POST" class="d-flex m-0 p-0 gap-1">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="assign_task">
+                        <input type="hidden" name="task_id" value="{{ task.id }}">
+                        <select name="assigned_to" class="form-select form-select-sm">
+                            <option value="">Unassigned</option>
+                            {% for staff in staff_users %}
+                                <option value="{{ staff.id }}"
+                                    {% if task.assigned_to and task.assigned_to.id == staff.id %}selected{% endif %}>
+                                    {{ staff.employee.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary">Assign</button>
+                    </form>
+                    {% endif %}
+
+                    {% if task.status != 'completed' and request.user.role != 'staff' %}
+                    <!-- Mark Completed Form (small icon) -->
+                    <form method="POST" class="d-inline-block m-0 p-0">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="mark_task_completed">
+                        <input type="hidden" name="complete_task_id" value="{{ task.id }}">
+                        <button type="submit" class="btn btn-sm btn-success" title="Mark Completed">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+
+            </div>
+            {% empty %}
+                <small class="text-muted">No installation tasks yet</small>
+            {% endfor %}
+
+            <hr>
+
+            <!-- Status Update -->
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="update_project_status">
+                <input type="hidden" name="project_id" value="{{ project.id }}">
+
+                <h6 class="fw-bold">Update Project Stage</h6>
+
+                {% for value,label in project.STATUS_CHOICES %}
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="radio"
+                               name="status"
+                               value="{{ value }}"
+                               id="{{ project.id }}_{{ value }}"
+                               {% if value == project.status %}checked{% endif %}>
+                        <label class="form-check-label
+                            {% if value == project.status %}fw-bold text-primary{% endif %}"
+                            for="{{ project.id }}_{{ value }}">
+                            {{ label }}
+                        </label>
+                    </div>
+                {% endfor %}
+
+                <button class="btn btn-primary w-100 mt-3">Update Status</button>
+            </form>
+
+        </div>
     </div>
+</div>
+{% endfor %}
+</div>
 {% else %}
-    <p>No projects assigned.</p>
+<div class="text-center p-5">
+    <i class="bi bi-search fs-1 text-muted"></i>
+    <p class="text-muted mt-2">No matching results</p>
+</div>
 {% endif %}
+
+<script>
+let timer;
+document.getElementById("searchInput").addEventListener("input", function () {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+        document.getElementById("searchForm").submit();
+    }, 400);
+});
+</script>
 
 {% endblock %}

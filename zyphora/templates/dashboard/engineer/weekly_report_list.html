@@ -1,0 +1,155 @@
+{% extends 'dashboard/dashboard.html' %}
+{% block content %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+        <a href="{% url request.user.role %}">
+            {{ request.user.role|title }} Dashboard
+        </a>
+    </li>
+    <li class="breadcrumb-item active">Weekly Reports</li>
+  </ol>
+</nav>
+
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="fw-bold mb-1 text-primary">
+                <i class="bi bi-calendar-week me-2"></i> Weekly Summary
+            </h4>
+            <p class="text-muted mb-0">
+                Automatically generated weekly work summaries
+            </p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body">
+            <form method="GET" class="row g-2">
+
+                <div class="col-md-4">
+                    <input type="date" name="date"
+                           value="{{ filters.date }}"
+                           class="form-control">
+                </div>
+
+                <div class="col-md-4">
+                    <input type="text" name="project"
+                           value="{{ filters.project }}"
+                           class="form-control"
+                           placeholder="Project ID">
+                </div>
+
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary w-100">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
+                </div>
+
+                <div class="col-md-2">
+                    <a href="" class="btn btn-outline-secondary w-100">
+                        Reset
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Reports -->
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+                    <tr>
+                        <th>Week</th>
+                        <th>Project</th>
+                        <th>Summary</th>
+                        <th>Progress</th>
+                        <th>Status</th>
+                        <th width="120">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for r in reports %}
+                    <tr>
+
+                        <!-- Week -->
+                        <td>
+                            <strong>{{ r.date }}</strong><br>
+                            <small class="text-muted">
+                                Weekly Report
+                            </small>
+                        </td>
+
+                        <!-- Project -->
+                        <td>
+                            {{ r.project.title }}
+                        </td>
+
+                        <!-- Summary -->
+                        <td>
+                            <small class="text-muted">
+                                {{ r.description|truncatewords:15 }}
+                            </small>
+                        </td>
+
+                        <!-- Progress -->
+                        <td>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar"
+                                     role="progressbar"
+                                     style="width: {{ r.progress }}%">
+                                </div>
+                            </div>
+                            <small>{{ r.progress }}%</small>
+                        </td>
+
+                        <!-- Status -->
+                        <td>
+                            <span class="badge
+                                {% if r.status == 'completed' %}bg-success
+                                {% elif r.status == 'in_progress' %}bg-warning text-dark
+                                {% else %}bg-secondary{% endif %}">
+                                {{ r.get_status_display }}
+                            </span>
+                        </td>
+
+                        <!-- Action -->
+                        <td>
+                            <a href="{% url 'daily_report_detail' r.id %}"
+                               class="btn btn-sm btn-info text-white">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            <i class="bi bi-calendar-x fs-4 d-block mb-2"></i>
+                            No weekly reports available
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

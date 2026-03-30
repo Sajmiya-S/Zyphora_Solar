@@ -2,38 +2,51 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h4>{{ title }}</h4>
+
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+        </ol>
+    </nav>
+
+    <h4 class="mb-4 text-primary">{{ title }}</h4>
 
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <!-- ================= MAIN INFO ================= -->
+        <!-- MAIN INFO -->
         <div class="card shadow-sm mb-4 p-3">
             <div class="row g-3">
                 <div class="col-md-4">
-                    <label for="id_project" class="form-label">Project</label>
-                    {{ form.project }}
+                    <label class="form-label">Project</label>
+                    {{ form.project|add_class:"form-select" }}
                 </div>
                 <div class="col-md-4">
-                    <label for="id_expense_date" class="form-label">Expense Date</label>
-                    {{ form.expense_date }}
+                    <label class="form-label">Expense Date</label>
+                    {{ form.expense_date|add_class:"form-control" }}
                 </div>
                 <div class="col-md-4">
-                    <label for="id_category" class="form-label">Category</label>
-                    {{ form.category }}
+                    <label class="form-label">Category</label>
+                    {{ form.category|add_class:"form-select" }}
                 </div>
                 <div class="col-12">
-                    <label for="id_notes" class="form-label">Notes</label>
-                    {{ form.notes }}
+                    <label class="form-label">Notes</label>
+                    {{ form.notes|add_class:"form-control" }}
                 </div>
             </div>
         </div>
 
-        <!-- ================= EXPENSE ITEMS ================= -->
+        <!-- EXPENSE ITEMS -->
         <div class="card shadow-sm mb-4 p-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h5>Expense Items</h5>
-                <button type="button" class="btn btn-sm btn-primary" onclick="addItem()">+ Add Item</button>
+                <button type="button" class="btn btn-sm btn-primary" onclick="addItem()">
+                    <i class="bi bi-plus-lg"></i> Add Item
+                </button>
             </div>
 
             {{ item_formset.management_form }}
@@ -41,13 +54,15 @@
                 {% for form in item_formset %}
                 <div class="row g-2 align-items-center item-form mb-2">
                     <div class="col-md-6">
-                        <input type="text" name="{{ form.description.html_name }}" value="{{ form.description.value|default_if_none:'' }}" class="form-control" placeholder="Item description">
+                        {{ form.description|add_class:"form-control" }}
                     </div>
                     <div class="col-md-4">
-                        <input type="number" name="{{ form.amount.html_name }}" value="{{ form.amount.value|default_if_none:'' }}" class="form-control" placeholder="Amount" step="0.01">
+                        {{ form.amount|add_class:"form-control" }}
                     </div>
                     <div class="col-md-2 text-end">
-                        <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">Remove</button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </div>
                 </div>
                 {% endfor %}
@@ -58,11 +73,13 @@
             </div>
         </div>
 
-        <!-- ================= RECEIPTS ================= -->
+        <!-- RECEIPTS -->
         <div class="card shadow-sm mb-4 p-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h5>Receipts</h5>
-                <button type="button" class="btn btn-sm btn-primary" onclick="addReceipt()">+ Add Receipt</button>
+                <button type="button" class="btn btn-sm btn-primary" onclick="addReceipt()">
+                    <i class="bi bi-plus-lg"></i> Add Receipt
+                </button>
             </div>
 
             {{ receipt_formset.management_form }}
@@ -70,10 +87,12 @@
                 {% for form in receipt_formset %}
                 <div class="row receipt-form mb-2">
                     <div class="col-md-10">
-                        {{ form.file }}
+                        {{ form.file|add_class:"form-control" }}
                     </div>
                     <div class="col-md-2 text-end">
-                        <button type="button" class="btn btn-danger btn-sm" onclick="removeReceipt(this)">Remove</button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeReceipt(this)">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </div>
                 </div>
                 {% endfor %}
@@ -81,18 +100,19 @@
         </div>
 
         <div class="text-end">
-            <button type="submit" class="btn btn-success btn-lg">Submit Expense</button>
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="bi bi-check-circle"></i> Submit Expense
+            </button>
         </div>
     </form>
 </div>
 
-<!-- ================= JS ================= -->
+<!-- JS: Add/Remove items & receipts, update total -->
 <script>
 function updateTotal() {
     let total = 0;
     document.querySelectorAll("input[name$='amount']").forEach(input => {
-        let val = parseFloat(input.value) || 0;
-        total += val;
+        total += parseFloat(input.value) || 0;
     });
     document.getElementById("totalAmount").innerText = total.toFixed(2);
 }
@@ -102,19 +122,21 @@ function addItem() {
     let container = document.getElementById("items-container");
     let totalForms = document.getElementById("id_items-TOTAL_FORMS");
     let index = totalForms.value;
-    let newForm = `
-    <div class="row g-2 align-items-center item-form mb-2">
-        <div class="col-md-6">
-            <input type="text" name="items-${index}-description" class="form-control" placeholder="Item description">
+    container.insertAdjacentHTML('beforeend', `
+        <div class="row g-2 align-items-center item-form mb-2">
+            <div class="col-md-6">
+                <input type="text" name="items-${index}-description" class="form-control" placeholder="Description">
+            </div>
+            <div class="col-md-4">
+                <input type="number" name="items-${index}-amount" class="form-control" placeholder="Amount" step="0.01">
+            </div>
+            <div class="col-md-2 text-end">
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
         </div>
-        <div class="col-md-4">
-            <input type="number" name="items-${index}-amount" class="form-control" placeholder="Amount" step="0.01">
-        </div>
-        <div class="col-md-2 text-end">
-            <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)">Remove</button>
-        </div>
-    </div>`;
-    container.insertAdjacentHTML('beforeend', newForm);
+    `);
     totalForms.value = parseInt(index) + 1;
 }
 
@@ -127,16 +149,18 @@ function addReceipt() {
     let container = document.getElementById("receipts-container");
     let totalForms = document.getElementById("id_receipts-TOTAL_FORMS");
     let index = totalForms.value;
-    let newForm = `
-    <div class="row receipt-form mb-2">
-        <div class="col-md-10">
-            <input type="file" name="receipts-${index}-file" class="form-control">
+    container.insertAdjacentHTML('beforeend', `
+        <div class="row receipt-form mb-2">
+            <div class="col-md-10">
+                <input type="file" name="receipts-${index}-file" class="form-control">
+            </div>
+            <div class="col-md-2 text-end">
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeReceipt(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
         </div>
-        <div class="col-md-2 text-end">
-            <button type="button" class="btn btn-danger btn-sm" onclick="removeReceipt(this)">Remove</button>
-        </div>
-    </div>`;
-    container.insertAdjacentHTML('beforeend', newForm);
+    `);
     totalForms.value = parseInt(index) + 1;
 }
 
@@ -144,4 +168,5 @@ function removeReceipt(button) {
     button.closest('.receipt-form').remove();
 }
 </script>
+
 {% endblock %}

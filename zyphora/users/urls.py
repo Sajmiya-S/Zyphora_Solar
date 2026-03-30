@@ -13,8 +13,8 @@ urlpatterns = [
     path('accountant/',accountant_dashboard,name='accountant'),
     path('sales/',sales_dashboard,name='sales'),
     path('staff/',staff_dashboard,name='staff'),
-    path('checklist/',save_installation_checklist, name='save_checklist'),
-    path('addemp/',add_employee,name='addemp'),
+    path('liaison/',liaison_dashboard,name='liaison'),
+
     path('change-password/',ChangePassword.as_view(),name='password'),
     path('addemp/',add_employee,name='addemp'),
     path('emplist/',all_employees,name='emplist'),

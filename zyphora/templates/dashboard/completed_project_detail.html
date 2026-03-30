@@ -1,0 +1,254 @@
+{% extends "dashboard/dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+
+<!-- ================= HEADER ================= -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="mb-1">{{ project.title }}</h2>
+        <p class="text-muted mb-0">
+            {{ project.get_project_type_display }} | {{ project.location }}
+        </p>
+
+        <div class="mt-2">
+            <span class="badge bg-success">Completed</span>
+            <span class="ms-3">Start: {{ project.start_date }}</span>
+            <span class="ms-3">End: {{ project.end_date|default:project.updated_at|date:"d M Y" }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- ================= OVERVIEW ================= -->
+<div class="row">
+
+<div class="col-md-6">
+<div class="card mb-4">
+<div class="card-body">
+<h5>Project Overview</h5>
+
+<table class="table table-sm">
+<tr><th>Engineer</th><td>{{ project.engineer.name }}</td></tr>
+<tr><th>Revenue</th><td>₹ {{ project.revenue }}</td></tr>
+<tr><th>Status</th><td>{{ project.get_status_display }}</td></tr>
+<tr><th>Created</th><td>{{ project.created_at }}</td></tr>
+</table>
+
+</div>
+</div>
+</div>
+
+<div class="col-md-6">
+<div class="card mb-4">
+<div class="card-body">
+<h5>Progress Summary</h5>
+
+<p><strong>Total Progress:</strong> {{ project.progress_percent }}%</p>
+
+<p><strong>Completed Stages:</strong></p>
+<ul>
+    {% for stage in project.completed_stages %}
+    <li>{{ stage|title }}</li>
+    {% endfor %}
+</ul>
+
+</div>
+</div>
+</div>
+
+</div>
+
+<!-- ================= FEASIBILITY ================= -->
+{% if project.feasibility %}
+<div class="card mb-4">
+<div class="card-body">
+<h5>Feasibility Details</h5>
+
+<div class="row">
+<div class="col-md-6">
+    <p><strong>Site Type:</strong> {{ project.feasibility.site_type }}</p>
+    <p><strong>Roof Type:</strong> {{ project.feasibility.roof_type }}</p>
+    <p><strong>Roof Area:</strong> {{ project.feasibility.roof_area }} sq.ft</p>
+</div>
+
+<div class="col-md-6">
+    <p><strong>Capacity:</strong> {{ project.feasibility.suggested_capacity }} kW</p>
+    <p><strong>System:</strong> {{ project.feasibility.system_type }}</p>
+    <p><strong>Connection:</strong> {{ project.feasibility.connection_type }}</p>
+</div>
+</div>
+
+</div>
+</div>
+{% endif %}
+
+<!-- ================= INSTALLATION SUMMARY ================= -->
+<div class="card mb-4">
+<div class="card-body">
+<h5>Installation Summary</h5>
+
+<table class="table">
+<thead>
+<tr>
+<th>Step</th>
+<th>Status</th>
+<th>Completed At</th>
+</tr>
+</thead>
+<tbody>
+{% for task in project.installation_tasks.all %}
+<tr>
+<td>{{ task.get_step_display }}</td>
+<td><span class="badge bg-success">{{ task.status }}</span></td>
+<td>{{ task.completed_at }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+</div>
+</div>
+
+<!-- ================= LICENSING SUMMARY ================= -->
+<div class="card mb-4">
+<div class="card-body">
+<h5>Licensing Summary</h5>
+
+<table class="table">
+<thead>
+<tr>
+<th>Step</th>
+<th>Phase</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+{% for task in project.licensing_tasks.all %}
+<tr>
+<td>{{ task.get_step_display }}</td>
+<td>{{ task.get_phase_display }}</td>
+<td><span class="badge bg-success">{{ task.status }}</span></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+</div>
+</div>
+
+<!-- ================= DOCUMENTS ================= -->
+<div class="card mb-4">
+<div class="card-body">
+<h5>All Documents</h5>
+
+<ul>
+{% for task in project.licensing_tasks.all %}
+    {% for doc in task.documents.all %}
+        <li>
+            {{ doc.get_document_type_display }} -
+            <a href="{{ doc.file.url }}" target="_blank" class="btn btn-outline-primary">{{doc.caption|default:View}}</a>
+        </li>
+    {% endfor %}
+{% endfor %}
+</ul>
+
+</div>
+</div>
+
+<!-- ================= MEDIA ================= -->
+<div class="card mb-4">
+<div class="card-body">
+<h5>Project Media</h5>
+
+<div class="row">
+{% for media in project.media.all %}
+<div class="col-md-3 mb-3">
+    <div class="border p-2 rounded">
+        <small>{{ media.get_category_display }}</small>
+        {% if media.file.url|lower|slice:"-3:" == "jpg" or media.file.url|lower|slice:"-3:" == "png" %}
+            <img src="{{ media.file.url }}" class="img-fluid">
+        {% else %}
+            <a href="{{ media.file.url }}" target="_blank" class="btn btn-outline-primary btn-sm">View</a>
+        {% endif %}
+        
+    </div>
+</div>
+{% endfor %}
+</div>
+
+</div>
+</div>
+
+<!-- ================= COSTING ================= -->
+{% if project.project_costing %}
+<div class="card mb-4">
+<div class="card-body">
+<h5>Financial Summary</h5>
+
+<table class="table">
+<tr><th>Estimated Cost</th><td>{{ project.project_costing.estimated_cost }}</td></tr>
+<tr><th>Actual Cost</th><td>{{ project.project_costing.actual_cost }}</td></tr>
+<tr><th>Revenue</th><td>{{ project.project_costing.revenue }}</td></tr>
+<tr class="table-success">
+    <th>Profit</th>
+    <td>{{ project.project_costing.profit }}</td>
+</tr>
+</table>
+
+</div>
+</div>
+{% endif %}
+
+<!-- ================= WORK REPORTS ================= -->
+<div class="card mb-4">
+<div class="card-body">
+<h5>Work Reports</h5>
+
+{% for r in project.workreport_set.all %}
+<div class="border p-2 mb-2">
+    <strong>{{ r.date }}</strong> - {{ r.work_type }}<br>
+    {{ r.description }}
+</div>
+{% endfor %}
+
+</div>
+</div>
+
+<!-- ================= ISSUES ================= -->
+<div class="card mb-4">
+<div class="card-body">
+<h5>Issues Faced</h5>
+
+{% for issue in project.issues.all %}
+<div class="border p-2 mb-2">
+    <strong>{{ issue.title }}</strong><br>
+    {{ issue.description }}
+</div>
+{% empty %}
+<p>No major issues recorded</p>
+{% endfor %}
+
+</div>
+</div>
+
+<!-- ================= ACTIVITY ================= -->
+<div class="card mb-4">
+<div class="card-body">
+<h5>Project Timeline</h5>
+
+<ul class="list-group">
+{% for act in project.activities.all %}
+<li class="list-group-item">
+    <strong>{{ act.title }}</strong><br>
+    {{ act.description }}<br>
+    <small class="text-muted">{{ act.created_at }}</small>
+</li>
+{% endfor %}
+</ul>
+
+</div>
+</div>
+
+</div>
+{% endblock %}

@@ -2,204 +2,227 @@
 {% load static %}
 
 {% block link %}
+
 <link rel="stylesheet" href="{% static 'css/dashboard/staff.css' %}">
 {% endblock %}
 
 {% block content %}
+
 <div class="container-fluid mt-4">
-    <!-- ===== KPI CARDS ===== -->
-    <div class="row g-3 mb-4">
 
-        <!-- Total Tasks -->
-        <div class="col-md-3">
-            <div class="card text-white bg-primary p-3">
-                <h5>Total Tasks</h5>
-                <h3>{{ total_tasks }}</h3>
-            </div>
+<!-- KPI CARDS -->
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        <div class="card text-white bg-primary p-3">
+            <h5>Total Tasks</h5>
+            <h3>{{ total_tasks }}</h3>
         </div>
-
-        <!-- Completed Tasks -->
-        <div class="col-md-3">
-            <div class="card text-white bg-success p-3">
-                <h5>Completed Tasks</h5>
-                <h3>{{ completed_tasks }}</h3>
-            </div>
-        </div>
-
-        <!-- Pending Tasks -->
-        <div class="col-md-3">
-            <div class="card text-white bg-warning p-3">
-                <h5>Pending Tasks</h5>
-                <h3>{{ pending_tasks }}</h3>
-            </div>
-        </div>
-
-        <!-- Projects Assigned -->
-        <div class="col-md-3">
-            <div class="card text-white bg-info p-3">
-                <h5>Assigned Projects</h5>
-                <h3>{{ assigned_projects }}</h3>
-            </div>
-        </div>
-
     </div>
 
+    <div class="col-md-3">
+        <div class="card text-white bg-success p-3">
+            <h5>Completed Tasks</h5>
+            <h3>{{ completed_tasks }}</h3>
+        </div>
+    </div>
 
+    <div class="col-md-3">
+        <div class="card text-white bg-warning p-3">
+            <h5>Pending Tasks</h5>
+            <h3>{{ pending_tasks }}</h3>
+        </div>
+    </div>
 
-            <!-- ===== Tasks Status Chart ===== -->
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card p-3">
-                <h5>Task Status Overview</h5>
+    <div class="col-md-3">
+        <div class="card text-white bg-info p-3">
+            <h5>Assigned Projects</h5>
+            <h3>{{ assigned_projects }}</h3>
+        </div>
+    </div>
+
+</div>
+
+<!-- CHARTS -->
+<div class="row mt-4">
+
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h5>Task Status Overview</h5>
+
+            <div style="height:300px;">
                 <canvas id="taskStatusChart"></canvas>
             </div>
         </div>
+    </div>
 
-        <div class="col-md-6">
-            <div class="card p-3">
-                <h5>Project Progress Overview</h5>
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h5>Project Progress Overview</h5>
+
+            <div style="height:300px;">
                 <canvas id="projectProgressChart"></canvas>
             </div>
         </div>
     </div>
 
-    </div>
-
-        <div class="row">
-
-        <!-- LEFT SIDE -->
-        <div class="col-lg-8">
-
-            <!-- 🔹 My Tasks -->
-            <div class="card shadow-sm mb-4 mt-4">
-                <div class="card-header fw-bold">
-                    My Tasks
-                </div>
-                <div class="card-body">
-                    {% for task in tasks %}
-                        <div class="task-item mb-3 p-3 border rounded">
-                            <h6>{{ task.title }}</h6>
-                            <p class="mb-1">Due: {{ task.due_date }}</p>
-                            <p class="mb-1">Status: {{ task.get_status_display }}</p>
-
-                            {% if task.due_date < today %}
-                                <span class="badge bg-danger">Overdue</span>
-                            {% else %}
-                                <span class="badge bg-warning">{{ task.get_status_display }}</span>
-                            {% endif %}
-
-                            <button class="btn btn-sm btn-success mt-2">
-                                Mark as Completed
-                            </button>
-                        </div>
-                    {% empty %}
-                        <p>No tasks assigned.</p>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- 🔹 Assigned Projects -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header fw-bold">
-                    Assigned Projects
-                </div>
-                <div class="card-body">
-                    {% for project in projects %}
-                        <div class="mb-3">
-                            <strong>{{ project.title }}</strong>
-                            <div class="progress mt-2">
-                                <div class="progress-bar bg-success"
-                                     style="width: {{ project.progress_percent }}%">
-                                    {{ project.progress_percent }}%
-                                </div>
-                            </div>
-                        </div>
-                    {% empty %}
-                        <p>No assigned projects.</p>
-                    {% endfor %}
-                </div>
-            </div>
-
-        </div>
-
-        <!-- RIGHT SIDE -->
-        <div class="col-lg-4">
-
-            <!-- Installation Checklist -->
-            <div class="card shadow-sm mb-4 mt-4">
-                <div class="card-header fw-bold">
-                    Installation Checklist
-                </div>
-                <div class="card-body">
-                    <div class="progress mb-3">
-                        <div id="checklistProgress" class="progress-bar bg-success" style="width: {{ checklist_percent }}%">
-                            {{ checklist_percent }}%
-                        </div>
-                    </div>
-
-                    <form method="POST" action="{% url 'save_checklist' %}">
-                        {% csrf_token %}
-                        {% for item in checklist_items %}
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox"
-                                       id="check{{ forloop.counter }}"
-                                       name="check{{ forloop.counter }}"
-                                       {% if item.completed %}checked{% endif %}>
-                                <label class="form-check-label" for="check{{ forloop.counter }}">
-                                    {{ item.title }}
-                                </label>
-                            </div>
-                        {% endfor %}
-                        <button type="submit" class="btn btn-primary w-100">Save Checklist</button>
-                    </form>
-                </div>
-            </div>
-
-        </div>
-        
 </div>
 
-<script>
-    const checkboxes = document.querySelectorAll('.form-check-input');
-    const progressBar = document.getElementById('checklistProgress');
+<!-- TASKS + PROJECTS -->
+<div class="row mt-4">
 
-    function updateProgress() {
-        const total = checkboxes.length;
-        const checked = document.querySelectorAll('.form-check-input:checked').length;
-        const percent = Math.round((checked / total) * 100);
-        progressBar.style.width = percent + "%";
-        progressBar.innerText = percent + "%";
+    <!-- TASKS -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold">
+                My Tasks
+            </div>
+
+            <div class="card-body">
+                {% for task in tasks %}
+                    <div class="mb-3 p-3 border rounded">
+                        <h6>{{ task.title }}</h6>
+
+                        <p class="mb-1">
+                            Due: {{ task.due_date }}
+                        </p>
+
+                        <p class="mb-1">
+                            Status: {{ task.get_status_display }}
+                        </p>
+
+                        {% if task.due_date and task.due_date < today %}
+                            <span class="badge bg-danger">Overdue</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">
+                                {{ task.get_status_display }}
+                            </span>
+                        {% endif %}
+
+                        <button class="btn btn-sm btn-success mt-2">
+                            Mark as Completed
+                        </button>
+                    </div>
+                {% empty %}
+                    <p>No tasks assigned.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold">
+                Assigned Projects
+            </div>
+
+            <div class="card-body">
+                {% for project in projects %}
+                    <div class="mb-3">
+                        <strong>{{ project.title }}</strong>
+
+                        <div class="progress mt-2">
+                            <div class="progress-bar bg-success"
+                                 style="width: {{ project.progress_percent }}%">
+                                {{ project.progress_percent }}%
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No assigned projects.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+</div>
+
+<!-- CHART JS -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // TASK PIE CHART
+    const ctx1 = document.getElementById('taskStatusChart');
+
+    if (ctx1) {
+        new Chart(ctx1, {
+            type: 'pie',
+            data: {
+                labels: ['Pending', 'Completed', 'Overdue'],
+                datasets: [{
+                    data: [{{ pending_tasks }}, {{ completed_tasks }}, {{ overdue_tasks }}],
+                    backgroundColor: ['#ffc107','#198754','#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
     }
 
-    checkboxes.forEach(cb => cb.addEventListener('change', updateProgress));
+    // PROJECT BAR CHART
+    const ctx2 = document.getElementById('projectProgressChart');
 
-    // Task Status Pie Chart
-    const ctx1 = document.getElementById('taskStatusChart').getContext('2d');
-    const taskStatusChart = new Chart(ctx1, {
-        type: 'pie',
-        data: {
-            labels: ['Pending', 'Completed', 'Overdue'],
-            datasets: [{
-                data: [{{ pending_tasks }}, {{ completed_tasks }}, {{ overdue_tasks }}],
-                backgroundColor: ['#ffc107','#198754','#dc3545']
-            }]
+    if (ctx2) {
+    new Chart(ctx2, {
+    type: 'bar',
+    data: {
+    labels: [{% for project in projects|slice:":8" %}'#{{ project.id }}',{% endfor %}],
+    datasets: [{
+    label: 'Progress (%)',
+    data: [{% for project in projects|slice:":8" %}{{ project.progress_percent }},{% endfor %}],
+    backgroundColor: '#0d6efd'
+    }]
+    },
+    options: {
+    responsive: true,
+    maintainAspectRatio: false,
+
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            const titles = [
+                                {% for project in projects|slice:":8" %}
+                                    "{{ project.title }}",
+                                {% endfor %}
+                            ];
+                            return titles[context[0].dataIndex];
+                        }
+                    }
+                }
+            },
+
+            scales: {
+                x: {
+                    ticks: {
+                        maxRotation: 0
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
         }
     });
 
-    // Project Progress Bar Chart
-    const ctx2 = document.getElementById('projectProgressChart').getContext('2d');
-    const projectProgressChart = new Chart(ctx2, {
-        type: 'bar',
-        data: {
-            labels: [{% for project in projects %}'{{ project.title }}',{% endfor %}],
-            datasets: [{
-                label: 'Progress (%)',
-                data: [{% for project in projects %}{{ project.progress_percent }},{% endfor %}],
-                backgroundColor: '#0d6efd'
-            }]
-        },
-        options: { scales: { y: { beginAtZero: true, max: 100 } } }
-    });
 
+    }
+
+
+});
 </script>
+
 {% endblock %}

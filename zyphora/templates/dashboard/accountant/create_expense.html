@@ -1,14 +1,32 @@
 {% extends 'dashboard/dashboard.html' %}
 
 {% block content %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a>
+        </li>
+        <li class="breadcrumb-item active">Expenses</li>
+        <li class="breadcrumb-item active">{{ title }}</li>
+    </ol>
+</nav>
+
 <div class="container mt-4">
-    <h4 class="mb-4">{{ title }}</h4>
+    <h4 class="mb-1 fw-bold text-primary">
+        <i class="bi bi-cash-stack me-2"></i>
+        {{ title }}
+    </h4>
+    <p class="{% if request.user.is_dark_mode %}text-light-50{% else %}text-muted{% endif %} mb-3">
+        Fill in the details of your expense report, add items, attach receipts, and submit for approval.
+    </p>
 
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
 
         <!-- ================= MAIN FORM ================= -->
-        <div class="card shadow-sm mb-4 p-3">
+        <div class="card shadow-sm mb-4 p-3 {% if request.user.is_dark_mode %}bg-dark text-light{% endif %}">
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Project</label>
@@ -30,7 +48,7 @@
         </div>
 
         <!-- ================= EXPENSE ITEMS ================= -->
-        <div class="card shadow-sm mb-4 p-3">
+        <div class="card shadow-sm mb-4 p-3 {% if request.user.is_dark_mode %}bg-dark text-light{% endif %}">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h5 class="mb-0">Expense Items</h5>
                 <button type="button" class="btn btn-sm btn-primary" onclick="addItem()">+ Add Item</button>
@@ -55,7 +73,7 @@
         </div>
 
         <!-- ================= RECEIPTS ================= -->
-        <div class="card shadow-sm mb-4 p-3">
+        <div class="card shadow-sm mb-4 p-3 {% if request.user.is_dark_mode %}bg-dark text-light{% endif %}">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h5>Receipts</h5>
                 <button type="button" class="btn btn-sm btn-primary" onclick="addReceipt()">+ Add Receipt</button>
@@ -140,4 +158,5 @@
         button.closest('.receipt-form').remove();
     }
 </script>
+
 {% endblock %}

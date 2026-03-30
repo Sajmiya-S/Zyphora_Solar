@@ -1,0 +1,213 @@
+{% extends "dashboard/dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">{{ project.title }}</h4>
+            <small class="text-muted">Licensing Workflow</small>
+        </div>
+
+        <div style="width:250px;">
+            <small class="text-muted">Overall Progress</small>
+            <div class="progress rounded-pill">
+                <div class="progress-bar {{ total_color }}" style="width: {{ total_progress }}%;">
+                    {{ total_progress }}%
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHASE TABS -->
+    <ul class="nav nav-pills mb-4">
+        {% for phase in phase_data %}
+        <li class="nav-item me-2">
+            <button class="nav-link {% if phase.key == active_phase_key %}active{% endif %}" 
+                    data-bs-toggle="tab" data-bs-target="#{{ phase.key }}">
+                {{ phase.label }}
+                {% if phase.overdue > 0 %}
+                <span class="badge bg-danger ms-1">{{ phase.overdue }}</span>
+                {% endif %}
+            </button>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <!-- TAB CONTENT -->
+    <div class="tab-content">
+        {% for phase in phase_data %}
+        <div class="tab-pane fade {% if phase.key == active_phase_key %}show active{% endif %}" id="{{ phase.key }}">
+
+            <!-- Phase Progress -->
+            <div class="progress mb-4 rounded-pill">
+                <div class="progress-bar {{ phase.color }}" style="width: {{ phase.progress }}%;">
+                    {{ phase.progress }}%
+                </div>
+            </div>
+
+            <div class="row g-4">
+                {% for task in phase.tasks %}
+                <div class="col-lg-6">
+
+                    <div class="card shadow-sm {% if task.status == 'completed' %}opacity-75 border-success{% elif task.status != 'completed' and task.due_date < now %}border-danger{% endif %}">
+                        <div class="card-body">
+
+                            <!-- TASK HEADER -->
+                            <div class="d-flex justify-content-between mb-2">
+                                <h6>{{ task.get_step_display }}</h6>
+                                <span class="badge 
+                                    {% if task.status == 'completed' %}bg-success
+                                    {% elif task.status == 'in_progress' %}bg-warning text-dark
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ task.get_status_display }}
+                                </span>
+                            </div>
+
+                            <small class="text-muted d-block mb-1">
+                                Assigned to: {{ task.assigned_to|default:"Unassigned" }}
+                            </small>
+
+                            {% if task.due_date %}
+                            <small class="d-block mb-2 {% if task.status != 'completed' and task.due_date < now %}text-danger{% endif %}">
+                                Due: {{ task.due_date|date:"d M Y" }}
+                            </small>
+                            {% endif %}
+
+                            <!-- ========================= -->
+                            <!-- COMPLETED TASK VIEW -->
+                            <!-- ========================= -->
+                            {% if task.status == 'completed' %}
+                            <div class="mt-3">
+                                <div class="text-success fw-semibold mb-2">✔ Task Completed</div>
+
+                                <small class="text-muted">Documents</small>
+                                {% for doc in task.documents.all %}
+                                    <div class="alert alert-success mt-2 d-flex justify-content-between align-items-center">
+                                        <span>{{ doc.caption|default:"Document" }}</span>
+                                        <a href="{{ doc.file.url }}" target="_blank" class="btn btn-sm btn-outline-success">
+                                            View
+                                        </a>
+                                    </div>
+                                {% empty %}
+                                    <p class="alert alert-warning">No documents uploaded</p>
+                                {% endfor %}
+                            </div>
+
+                            {% else %}
+                            <!-- ========================= -->
+                            <!-- EDIT MODE FOR ACTIVE TASK -->
+                            <!-- ========================= -->
+
+                            <!-- STATUS FORM -->
+                            <form method="POST" class="d-flex gap-2 mt-3">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="update_status">
+                                <input type="hidden" name="task_id" value="{{ task.id }}">
+
+                                <select name="status" class="form-select form-select-sm">
+                                    <option value="new" {% if task.status == 'new' %}selected{% endif %}>New</option>
+                                    <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                                <button class="btn btn-sm btn-primary">Update</button>
+                            </form>
+
+                            <!-- DOCUMENT LIST -->
+                            <div class="mt-3">
+                                <small class="text-muted">Documents</small>
+                                {% for doc in task.documents.all %}
+                                    <div class="border rounded p-1 small mt-1">
+                                        <a href="{{ doc.file.url }}" target="_blank">{{ doc.caption|default:"View File" }}</a>
+                                    </div>
+                                {% empty %}
+                                    <small class="text-muted">No documents</small>
+                                {% endfor %}
+                            </div>
+
+                            <!-- UPLOAD DOCUMENT FORM -->
+                            {% if liaison_access or admin_access %}
+                            <form method="POST" enctype="multipart/form-data" class="mt-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="upload_doc">
+                                <input type="hidden" name="task_id" value="{{ task.id }}">
+                                <input type="hidden" name="form_id" value="{{ task.id }}-{{ forloop.counter }}-{{ now|date:'U' }}">
+
+                                <input type="file" name="file" class="form-control form-control-sm mb-1" required>
+                                <input type="text" name="caption" class="form-control form-control-sm mb-1" placeholder="Caption">
+                                <button class="btn btn-sm btn-outline-primary w-100">Upload</button>
+                            </form>
+                            {% endif %}
+
+                            <!-- ADMIN CONTROLS -->
+                            {% if admin_access %}
+                            <!-- UPDATE DUE DATE -->
+                            <form method="POST" class="d-flex gap-2 mt-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="update_due_date">
+                                <input type="hidden" name="task_id" value="{{ task.id }}">
+                                <input type="date" 
+                                name="due_date" 
+                                value="{{ task.due_date|date:'Y-m-d' }}" 
+                                class="form-control form-control-sm w-50" 
+                                min="{{ today|date:'Y-m-d' }}">
+                                <button class="btn btn-sm btn-warning w-50">Update Due Date</button>
+                            </form>
+                            
+                            <!-- NOTES SECTION -->
+                            <div class="mt-2">
+                                <small class="text-muted">Notes:</small>
+                                {% for note in task.notes.all %}
+                                    <div class="border rounded p-1 small mt-1">
+                                        {{ note.content }} - <em>{{ note.created_by.get_full_name }} on {{ note.created_at|date:"d M Y H:i" }}</em>
+                                    </div>
+                                {% empty %}
+                                    <p class="small text-muted mb-1">No notes added</p>
+                                {% endfor %}
+
+                                <!-- ADD NOTE FORM (only for liaison or admin) -->
+                                {% if liaison_access or admin_access %}
+                                <form method="POST" class="mt-1">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="add_note">
+                                    <input type="hidden" name="task_id" value="{{ task.id }}">
+                                    <input type="text" name="note_content" class="form-control form-control-sm" placeholder="Add a note" required>
+                                    <button class="btn btn-sm btn-primary mt-1 w-100">Add Note</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                            <!-- NOTIFY LIAISON OFFICER -->
+                            <div class="alert alert-warning mt-2">
+                                {% if messages %}
+                                    {% for message in messages %}
+                                        <span class="badge bg-success">{{ message }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                <form method="POST" class="mt-1">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="notify_officer">
+                                    <input type="hidden" name="task_id" value="{{ task.id }}">
+                                    <button class="btn btn-sm btn-danger w-100">Notify Officer</button>
+                                </form>
+                                {% endif %}
+                            </div>
+
+                            {% endif %}  {# admin_access endif #}
+
+                            {% endif %}  {# task.status != completed else endif #}
+
+                        </div>
+                    </div>
+
+                </div>
+                {% endfor %}  {# tasks loop #}
+            </div>
+
+        </div>
+        {% endfor %}  {# phases loop #}
+    </div>
+
+</div>
+{% endblock %}

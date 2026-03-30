@@ -3,7 +3,7 @@
     padding-bottom: 20px;
 }
 
-/* KPI CARDS */
+/* ================= KPI CARDS ================= */
 
 .kpi-card {
     min-height: 170px;
@@ -31,8 +31,7 @@
     letter-spacing: 1px;
 }
 
-
-/* COLORS */
+/* KPI COLORS */
 
 .leads {
     background: linear-gradient(135deg,#0d6efd,#3b8dff);
@@ -51,13 +50,12 @@
     background: linear-gradient(135deg,#6f42c1,#9b6bff);
 }
 
-
-/* DASHBOARD CARD */
+/* ================= DASHBOARD CARD ================= */
 
 .dashboard-card {
     border-radius: 16px;
     padding: 20px;
-    background: #fff;
+    background: #ffffff;
     box-shadow: 0 8px 25px rgba(0,0,0,0.08);
     transition: 0.3s ease;
 }
@@ -66,16 +64,28 @@
     transform: translateY(-3px);
 }
 
+/* DARK MODE CARD */
 
-/* CHART */
+[data-bs-theme="dark"] .dashboard-card {
+    background: #1e1e2d;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ================= CHART ================= */
 
 .chart-container {
     position: relative;
     height: 280px;
+    padding: 10px;
+    border-radius: 12px;
 }
 
+[data-bs-theme="dark"] .chart-container {
+    background: rgba(255,255,255,0.03);
+}
 
-/* EMPTY STATE */
+/* ================= EMPTY STATES ================= */
 
 .empty-state {
     position: absolute;
@@ -86,8 +96,18 @@
     color: #999;
 }
 
+.empty-list {
+    text-align: center;
+    padding: 20px;
+    color: #999;
+}
 
-/* LIST */
+[data-bs-theme="dark"] .empty-state,
+[data-bs-theme="dark"] .empty-list {
+    color: #aaa;
+}
+
+/* ================= LIST ================= */
 
 .custom-list {
     padding: 0;
@@ -104,17 +124,13 @@
     background: rgba(0,0,0,0.05);
 }
 
+/* DARK LIST HOVER */
 
-/* EMPTY */
-
-.empty-list {
-    text-align: center;
-    padding: 20px;
-    color: #aaa;
+[data-bs-theme="dark"] .list-item:hover {
+    background: rgba(255,255,255,0.05);
 }
 
-
-/* DROP ITEMS */
+/* ================= DROP ITEMS ================= */
 
 .drop-item {
     display: flex;
@@ -127,13 +143,14 @@
     background: rgba(0,0,0,0.03);
 }
 
+[data-bs-theme="dark"] .drop-item {
+    background: rgba(255,255,255,0.05);
+}
 
-/* MOBILE */
+/* ================= MOBILE ================= */
 
 @media (max-width:768px){
-
     .kpi-card{
         min-height: 140px;
     }
-
 }

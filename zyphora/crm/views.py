@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.db.models import Q
 from django.db import transaction
 from datetime import date
+from django.utils.http import urlencode
 
 from users.utils import create_notification
 from users.views import notify_admins_and_assigned
@@ -37,24 +38,6 @@ def review_list(request):
     page_obj = paginator.get_page(page_number)
     return render(request, 'dashboard/admin/review_list.html', {'page_obj': page_obj})
 
-@login_required(login_url='/users/login')
-def approve_review(request, rid):
-    review = Review.objects.get(id=rid)
-    review.is_approved = True
-    review.save()
-    admin = CustomUser.objects.get(role='admin')
-
-    create_notification(
-        recipient=admin,
-        sender=request.user,
-        title="Review Approved",
-        message=f"Review from {review.name} has been approved",
-        link=reverse('review'),
-        category="crm"
-    )
-
-    return redirect(review_list)
-
 
 @login_required(login_url='/users/login')
 def delete_review(request, rid):
@@ -83,11 +66,11 @@ def delete_review(request, rid):
 # Admin or staff can view, update status, assign, or delete leads.
 
 
+
 @login_required(login_url='/users/login')
 def lead_list(request):
-
     status = request.GET.get('status')
-    query = request.GET.get('q')
+    query = request.GET.get('q', '').strip()
 
     leads = Lead.objects.select_related(
         "assigned_to"
@@ -96,14 +79,15 @@ def lead_list(request):
         "site_visits"
     ).all()
 
-    if request.user.role != 'admin':
-        if request.user.role == 'sales':
-            leads = leads.filter(assigned_to=request.user)
+    # Filter by user role
+    if request.user.role != 'admin' and request.user.role == 'sales':
+        leads = leads.filter(assigned_to=request.user)
 
-            
+    # Filter by status
     if status:
         leads = leads.filter(status=status)
 
+    # Search query
     if query:
         leads = leads.filter(
             Q(name__icontains=query) |
@@ -113,16 +97,24 @@ def lead_list(request):
 
     leads = leads.order_by('-created_at')
 
+    # Pagination
     paginator = Paginator(leads, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
+    # Preserve GET parameters for pagination links
+    params = request.GET.copy()
+    if 'page' in params:
+        params.pop('page')
+    querystring = params.urlencode()
 
     context = {
         'leads': page_obj,
         'page_obj': page_obj,
         'status_choices': Lead.STATUS_CHOICES,
         'status': status,
-        'query': query
+        'query': query,
+        'querystring': querystring,  # pass to template
     }
 
     return render(request, 'dashboard/lead_list.html', context)
@@ -278,6 +270,10 @@ def update_lead(request, lid):
             # -------- SITE VISIT --------
             elif form_type == "site_visit":
 
+                # 🚫 BLOCK if pending visit exists
+                if lead.site_visits.filter(status__in=['scheduled', 'pending']).exists():
+                    return redirect('update_lead', lid=lead.id)
+                
                 sitevisit_form = SiteVisitForm(request.POST)
 
                 if sitevisit_form.is_valid():
@@ -322,6 +318,10 @@ def update_lead(request, lid):
             # -------- FOLLOWUP --------
             elif form_type == "followup":
 
+                # 🚫 BLOCK if pending follow-up exists
+                if lead.followups.filter(status__in=['scheduled', 'pending']).exists():
+                    return redirect('update_lead', lid=lead.id)
+    
                 followup_form = FollowUpForm(request.POST)
 
                 if followup_form.is_valid():
@@ -364,50 +364,76 @@ def update_lead(request, lid):
 
         return redirect('update_lead', lid=lead.id)
 
+    pending_visit_exists = lead.site_visits.filter(status__in=['scheduled', 'pending']).exists()
+    pending_followup_exists = lead.followups.filter(status__in=['scheduled', 'pending']).exists()
+
     context = {
         "lead": lead,
         "activities": activities,
         "lead_form": lead_form,
         "sitevisit_form": sitevisit_form,
         "followup_form": followup_form,
-        "today": timezone.localdate()
+        "today": timezone.localdate(),
+        "pending_visit_exists": pending_visit_exists,
+        "pending_followup_exists": pending_followup_exists
     }
 
     return render(request, "dashboard/update_lead.html", context)
 
 
+
 @login_required(login_url='/users/login')
 def site_visits(request, filter=None):
+
     visits = SiteVisit.objects.filter(engineer=request.user)
     today = date.today()
 
-    # Filter visits
+    # Filters
+    overdue = visits.filter(scheduled_date__lt=today, status='pending')
     todays = visits.filter(scheduled_date=today, status='pending')
     upcoming = visits.filter(scheduled_date__gt=today, status='pending')
     completed = visits.filter(status='done')
 
-    # Determine which tab to show
+    # Flags
+    show_overdue = False
     show_today = False
     show_upcoming = False
     show_completed = False
 
-    if filter == 'today' or filter is None:
+    # Manual filter
+    if filter == 'overdue':
+        show_overdue = True
+    elif filter == 'today':
         show_today = True
     elif filter == 'upcoming':
         show_upcoming = True
     elif filter == 'completed':
         show_completed = True
 
+    # Auto priority
+    else:
+        if overdue.exists():
+            show_overdue = True
+        elif todays.exists():
+            show_today = True
+        elif upcoming.exists():
+            show_upcoming = True
+        else:
+            show_completed = True
+
     context = {
+        'overdue': overdue,
         'todays': todays,
         'upcoming': upcoming,
         'completed': completed,
+        'show_overdue': show_overdue,
         'show_today': show_today,
         'show_upcoming': show_upcoming,
         'show_completed': show_completed,
     }
 
     return render(request, 'dashboard/engineer/sitevisits.html', context)
+
 
 
 

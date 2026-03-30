@@ -29,6 +29,7 @@ urlpatterns = [
     path('add-goods-received/', add_goods_received, name="add_goods_received"),
 
     path('stock/', stock_list, name="stock_list"),
+    path('material-stock/<int:material_id>/', get_material_stock, name='material_stock'),
 
     path('allocation/', allocation_list, name="allocation_list"),
     path('add-allocation/', allocate_material, name="allocate_material"),

@@ -1,0 +1,159 @@
+{% extends 'dashboard/dashboard.html' %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb mb-0 align-items-center">
+        <li class="breadcrumb-item">
+            <a href="{% url 'engineer' %}" class="d-flex align-items-center">
+                Engineer Dashboard
+            </a>
+        </li>
+        <li class="breadcrumb-item active d-flex align-items-center">
+            Daily Work Reports
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-1 d-flex align-items-center text-primary">
+                <i class="bi bi-clipboard-data me-2 }"></i>
+                Work Reports
+            </h4>
+            <p class="{% if request.user.is_dark_mode %}text-light-50{% else %}text-muted{% endif %} mb-0">
+                Track and manage your daily work activity
+            </p>
+        </div>
+
+        <a href="{% url 'create_daily_report' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> New Report
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-3 {% if request.user.is_dark_mode %}bg-dark text-light{% endif %}">
+        <div class="card-body">
+            <form method="GET" class="row g-2">
+
+                <div class="col-md-3">
+                    <input type="date" name="date" value="{{ request.GET.date }}" class="form-control">
+                </div>
+
+                <div class="col-md-3">
+                    <select name="status" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="completed">Completed</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <button class="btn btn-outline-primary w-100">
+                        <i class="bi bi-funnel me-1"></i> Filter
+                    </button>
+                </div>
+
+                <div class="col-md-3">
+                    <a href="{% url 'daily_report_list' %}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-clockwise me-1"></i> Reset
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card shadow-sm ">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-secondary">
+                    <tr>
+                        <th>Date</th>
+                        <th>Project</th>
+                        <th>Work Type</th>
+                        <th>Status</th>
+                        <th width="180" class="text-end">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for r in reports %}
+                    <tr>
+
+                        <!-- Date -->
+                        <td>
+                            <strong>{{ r.date }}</strong><br>
+                            <small class="text-muted">
+                                {{ r.date|timesince }} ago
+                            </small>
+                        </td>
+
+                        <!-- Project -->
+                        <td>
+                            <i class="bi bi-building me-1"></i>
+                            {{ r.project.name }}
+                        </td>
+
+                        <!-- Work Type -->
+                        <td>
+                            <span class="badge bg-light text-dark">
+                                {{ r.get_work_type_display }}
+                            </span>
+                        </td>
+
+                        <!-- Status -->
+                        <td>
+                            <span class="badge px-3 py-2
+                                {% if r.status == 'completed' %}bg-success
+                                {% elif r.status == 'in_progress' %}bg-warning text-dark
+                                {% else %}bg-danger{% endif %}">
+                                {{ r.status|title }}
+                            </span>
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-1">
+
+                                <a href="{% url 'daily_report_detail' r.id %}"
+                                   class="btn btn-sm btn-info text-white"
+                                   title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+
+                                <a href="#"
+                                   class="btn btn-sm btn-secondary"
+                                   title="Download">
+                                    <i class="bi bi-download"></i>
+                                </a>
+
+                            </div>
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <i class="bi bi-inbox fs-3 text-muted"></i>
+                            <p class="mb-0 mt-2 text-muted">No reports found</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

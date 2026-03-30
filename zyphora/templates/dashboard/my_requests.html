@@ -1,50 +1,104 @@
 {% extends 'dashboard/dashboard.html' %}
+
 {% block content %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a href="{% url request.user.role %}">
+                {{ request.user.role|title }} Dashboard
+            </a>
+        </li>
+        <li class="breadcrumb-item active">Material Requests</li>
+    </ol>
+</nav>
 
 <div class="container mt-4">
 
-    <h3>My Material Requests</h3>
+    <!-- Header -->
+    <div class="mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+            <h4 class="fw-bold text-primary">My Material Requests</h4>
+            <p class="{% if request.user.is_dark_mode %}text-light-50{% else %}text-muted{% endif %} mb-0">
+                Track the status of materials requested for your projects
+            </p>
+        </div>
+        <a href="{% url 'request_material' %}" class="btn btn-primary btn-sm d-flex align-items-center">
+            <i class="bi bi-plus-circle me-1"></i> Request Material
+        </a>
+    </div>
 
-    <table class="table table-bordered table-striped mt-3">
-        <thead class="table-light">
-            <tr>
-                <th>Project</th>
-                <th>Material</th>
-                <th>Quantity</th>
-                <th>Requested On</th>
-                <th>Status</th>
-            </tr>
-        </thead>
+    <!-- Card -->
+    <div class="card shadow-sm border-0 {% if request.user.is_dark_mode %}bg-dark text-light{% endif %}">
 
-        <tbody>
-            {% for req in requests %}
-            <tr>
-                <td>{{ req.project }}</td>
-                <td>{{ req.material }}</td>
-                <td>{{ req.quantity }}</td>
-                <td>{{ req.allocated_date }}</td>
+        <div class="card-body p-0">
 
-                <td>
-                    {% if req.status == "pending" %}
-                        <span class="badge bg-warning">Pending</span>
-                    {% elif req.status == "approved" %}
-                        <span class="badge bg-success">Approved</span>
-                    {% elif req.status == "rejected" %}
-                        <span class="badge bg-danger">Rejected</span>
-                    {% endif %}
-                </td>
+            {% if requests %}
 
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" class="text-center">
-                    No material requests yet
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 {% if request.user.is_dark_mode %}table-dark{% endif %}">
+                    <thead class="{% if request.user.is_dark_mode %}table-secondary text-dark-75{% else %}table-light{% endif %}">
+                        <tr>
+                            <th>Project</th>
+                            <th>Material</th>
+                            <th>Quantity</th>
+                            <th>Requested On</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
 
-    </table>
+                    <tbody>
+                    {% for req in requests %}
+                    <tr class="{% if req.status == 'pending' %}table-warning{% elif req.status == 'rejected' %}table-danger-subtle{% endif %}">
+
+                        <!-- Project -->
+                        <td class="fw-semibold">{{ req.project }}</td>
+
+                        <!-- Material -->
+                        <td>{{ req.material }}</td>
+
+                        <!-- Quantity -->
+                        <td class="fw-semibold">{{ req.quantity }}</td>
+
+                        <!-- Date -->
+                        <td>{{ req.allocated_date|date:"d M Y, H:i" }}</td>
+
+                        <!-- Status -->
+                        <td>
+                            <span class="badge px-3 py-2
+                                {% if req.status == 'pending' %}bg-warning-subtle text-dark
+                                {% elif req.status == 'approved' %}bg-success-subtle text-success
+                                {% elif req.status == 'rejected' %}bg-danger-subtle text-danger
+                                {% endif %}">
+                                {{ req.status|title }}
+                            </span>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% else %}
+
+            <!-- Empty State -->
+            <div class="text-center p-5">
+                <i class="bi bi-box-seam fs-1 {% if request.user.is_dark_mode %}text-light-50{% else %}text-muted{% endif %}"></i>
+                <h6 class="mt-3">No Requests Yet</h6>
+                <p class="{% if request.user.is_dark_mode %}text-light-50{% else %}text-muted{% endif %} mb-3">
+                    You haven’t requested any materials yet.
+                </p>
+                <a href="{% url 'request_material' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i> Request Material
+                </a>
+            </div>
+
+            {% endif %}
+
+        </div>
+    </div>
 
 </div>
 

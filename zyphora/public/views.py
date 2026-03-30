@@ -9,11 +9,12 @@ from .models import BlogPost
 from crm.models import LeadActivity,Review
 from crm.forms import ReviewForm,LeadForm
 
+from projects.models import Project
 from users.models import Notification,CustomUser
 
 
 def home_page(request):
-    reviews = Review.objects.filter(is_approved=True).order_by('-created_at')[:8]
+    reviews = Review.objects.order_by('-created_at')[:8]
     if request.method == "POST":
         form = ReviewForm(request.POST)
         rating = request.POST.get('rating') 
@@ -63,7 +64,8 @@ def contact_page(request):
     return render(request,'public_view/contact.html',{'form':form})
 
 def projects_page(request):
-    return render(request,'public_view/projects.html')
+    projects = Project.objects.filter(status='completed')
+    return render(request,'public_view/projects.html',{'projects':projects})
 
 def savings_calculator(request):
     default_tariff = 7  # Kerala average ₹/kWh

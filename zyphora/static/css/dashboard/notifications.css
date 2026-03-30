@@ -19,6 +19,14 @@
     opacity: 1;
 }
 
+.notification-item:hover {
+    background-color: var(--bs-primary-bg-hover, rgba(0, 123, 255, 0.15));
+    transition: background-color 0.2s;
+}
+.bg-primary.bg-opacity-10 {
+    transition: background-color 0.2s;
+}
+
 /* Responsive adjustments */
 @media (max-width: 576px) {
     .notification-item {

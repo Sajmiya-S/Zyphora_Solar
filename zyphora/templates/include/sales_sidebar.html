@@ -1,131 +1,179 @@
 <!-- ================= SALES SIDEBAR ================= -->
 
-<!-- WORK / TASKS -->
-<li class="sidebar-heading mt-3 text-muted small text-uppercase">Work</li>
-<li class="nav-item">
-    <a class="nav-link d-flex align-items-center justify-content-between"
-       data-bs-toggle="collapse"
-       href="#salesTaskMenu">
-        <div class="d-flex align-items-center">
-            <i class="bi bi-list-check nav-icon text-warning"></i>
-            <span class="link-text ms-2">
-                Tasks
-                {% if task_count %}
-                    <span class="badge bg-warning rounded-pill">{{ task_count }}</span>
-                {% endif %}
-            </span>
-        </div>
-        <i class="bi bi-chevron-down submenu-arrow"></i>
-    </a>
-    <div class="collapse submenu" id="salesTaskMenu" data-bs-parent="#sidebarMenu">
-        <ul class="nav flex-column ms-4">
-            <li>
-                <a class="nav-link" href="{% url 'my_tasks' %}?filter=today">
-                    Today's Tasks
-                    {% if todays %}<span class="badge bg-primary rounded-pill">{{ todays }}</span>{% endif %}
-                </a>
-            </li>
-            <li>
-                <a class="nav-link" href="{% url 'my_tasks' %}?filter=pending">
-                    Pending Tasks
-                    {% if pending %}<span class="badge bg-warning rounded-pill">{{ pending }}</span>{% endif %}
-                </a>
-            </li>
-            <li>
-                <a class="nav-link" href="{% url 'my_tasks' %}?filter=overdue">
-                    Overdue Tasks
-                    {% if overdue %}<span class="badge bg-danger rounded-pill">{{ overdue }}</span>{% endif %}
-                </a>
-            </li>
-            <li>
-                <a class="nav-link" href="{% url 'my_tasks' %}?filter=completed">Completed Tasks</a>
-            </li>
-        </ul>
-    </div>
-</li>
+{% load static %}
 
-<!-- CLIENT MANAGEMENT / LEADS -->
-<li class="sidebar-heading mt-3 text-muted small text-uppercase">Client Management</li>
-<li class="nav-item">
-    <a class="nav-link d-flex align-items-center justify-content-between" 
-       data-bs-toggle="collapse" href="#crmMenu">
-        <div class="d-flex align-items-center">
-            <i class="bi bi-person-lines-fill nav-icon text-primary"></i>
-            <span class="link-text ms-2">
-                Leads
-                {% if total_leads %}
-                    <span class="badge bg-primary rounded-pill">{{ total_leads }}</span>
-                {% endif %}
-            </span>
-        </div>
-        <i class="bi bi-chevron-down submenu-arrow"></i>
-    </a>
-    <div class="collapse submenu" id="crmMenu" data-bs-parent="#sidebarMenu">
-        <ul class="nav flex-column ms-4">
-            <li><a href="{% url 'lead_list' %}" class="nav-link">All Leads</a></li>
-            <li><a href="{% url 'add_lead' %}" class="nav-link">Add Lead</a></li>
-            <li><a href="{% url 'followups' %}" class="nav-link">Follow-ups</a></li>
-        </ul>
-    </div>
-</li>
+<!-- ================= SIDEBAR ================= -->
+<nav id="sidebar" class="sidebar bg-body-tertiary border-end">
 
-<!-- SERVICE REQUESTS -->
-<li class="sidebar-heading mt-3 text-muted small text-uppercase">Service Requests</li>
-<li class="nav-item">
-    <a class="nav-link d-flex align-items-center justify-content-between" 
-       data-bs-toggle="collapse" href="#serviceRequestMenu">
-        <div class="d-flex align-items-center">
-            <i class="bi bi-tools nav-icon text-success"></i>
-            <span class="link-text ms-2">Service Requests</span>
-        </div>
-        <i class="bi bi-chevron-down submenu-arrow"></i>
-    </a>
-    <div class="collapse submenu" id="serviceRequestMenu" data-bs-parent="#sidebarMenu">
-        <ul class="nav flex-column ms-4">
-            <li>
-                <a href="{% url 'add_service_request' %}" class="nav-link">
-                    Add Service Request
-                </a>
-            </li> 
-            <li>
-                <a href="{% url 'service_requests' %}" class="nav-link">
-                    Service Request
-                </a>
-            </li>
-            
-            <li>
-                <a href="{% url 'service_reports' %}" class="nav-link">
-                    Service Reports
-                </a>
-            </li>
-        </ul>
-    </div>
-</li>
+    <!-- ===== HEADER (LOGO + TOGGLE) ===== -->
+    <div class="sidebar-header d-flex align-items-center justify-content-between px-3 py-2">
 
-<!-- FINANCE / PAYMENTS -->
-<li class="sidebar-heading mt-3 text-muted small text-uppercase">Finance</li>
-<li class="nav-item">
-    <a class="nav-link d-flex align-items-center justify-content-between" 
-       data-bs-toggle="collapse" href="#financeMenu">
-        <div class="d-flex align-items-center">
-            <i class="bi bi-cash-coin nav-icon text-danger"></i>
-            <span class="link-text ms-2">Expenses</span>
+        <!-- Logo -->
+        <div class="sidebar-logo d-flex align-items-center">
+            <img src="{% static 'images/logo1.png' %}"
+                class="sidebar-logo-full img-fluid"
+                alt="Zyphora Solar Logo">
+            <img src="{% static 'images/favicon.ico' %}"
+                class="sidebar-logo-mini"
+                alt="Zyphora Icon">
         </div>
-        <i class="bi bi-chevron-down submenu-arrow"></i>
-    </a>
-    <div class="collapse submenu" id="financeMenu" data-bs-parent="#sidebarMenu">
-        <ul class="nav flex-column ms-4">
-            <li>
-                <a href="{% url 'create_expense' %}" class="nav-link">
-                    Create Expense Report
-                </a>
-            </li>
 
-            <li>
-                <a href="{% url 'my_expenses' %}" class="nav-link">
-                    My Expense Reports
-                </a>
-            </li>
-        </ul>
+        <!-- Sidebar Toggle: ONLY on desktop. On mobile, hamburger in topnavbar is used. -->
+        <label for="sidebarToggleCheckbox" class="toggle-btn d-none d-lg-flex">
+            <i class="bi bi-chevron-left arrow-icon"></i>
+        </label>
+
     </div>
-</li>
+
+    <!-- ===== SIDEBAR MENU ===== -->
+    <ul class="nav flex-column px-3" id="sidebarMenu">
+
+        <!-- ================= DASHBOARD ================= -->
+        <li class="nav-item">
+            <a href="{% url 'dashboard' %}"
+               class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+               data-bs-toggle="tooltip"
+               data-bs-placement="right"
+               title="Dashboard">
+                <i class="bi bi-speedometer2 nav-icon text-primary"></i>
+                <span class="link-text ms-2">Dashboard</span>
+            </a>
+        </li>
+
+        <!-- WORK / TASKS -->
+        <li class="sidebar-heading mt-3 text-muted small text-uppercase">Work</li>
+
+        <!-- General Tasks -->
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center justify-content-between"
+               data-bs-toggle="collapse"
+               href="#salesTaskMenu">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-list-check nav-icon text-warning"></i>
+                    <span class="link-text ms-2">
+                        Tasks
+                        {% if task_count %}<span class="badge bg-warning rounded-pill">{{ task_count }}</span>{% endif %}
+                    </span>
+                </div>
+            </a>
+            <div class="collapse submenu" id="salesTaskMenu" data-bs-parent="#sidebarMenu">
+                <ul class="nav flex-column ms-4">
+                    <li><a class="nav-link" href="{% url 'my_tasks' %}?filter=today">
+                        Today's Tasks
+                        {% if todays %}<span class="badge bg-primary rounded-pill">{{ todays }}</span>{% endif %}
+                    </a></li>
+                    <li><a class="nav-link" href="{% url 'my_tasks' %}?filter=pending">
+                        Pending Tasks
+                        {% if pending %}<span class="badge bg-warning rounded-pill">{{ pending }}</span>{% endif %}
+                    </a></li>
+                    <li><a class="nav-link" href="{% url 'my_tasks' %}?filter=overdue">
+                        Overdue Tasks
+                        {% if overdue %}<span class="badge bg-danger rounded-pill">{{ overdue }}</span>{% endif %}
+                    </a></li>
+                    <li><a class="nav-link" href="{% url 'my_tasks' %}?filter=completed">Completed Tasks</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- CLIENT MANAGEMENT / LEADS -->
+        <li class="sidebar-heading mt-3 text-muted small text-uppercase">Client Management</li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center justify-content-between" 
+               data-bs-toggle="collapse" href="#crmMenu">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-person-lines-fill nav-icon text-primary"></i>
+                    <span class="link-text ms-2">
+                        Leads
+                        {% if total_leads %}<span class="badge bg-primary rounded-pill">{{ total_leads }}</span>{% endif %}
+                    </span>
+                </div>
+            </a>
+            <div class="collapse submenu" id="crmMenu" data-bs-parent="#sidebarMenu">
+                <ul class="nav flex-column ms-4">
+                    <li><a href="{% url 'lead_list' %}" class="nav-link">All Leads</a></li>
+                    <li><a href="{% url 'add_lead' %}" class="nav-link">Add Lead</a></li>
+                    <li><a href="{% url 'followups' %}" class="nav-link">Follow-ups</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- SERVICE REQUESTS -->
+        <li class="sidebar-heading mt-3 text-muted small text-uppercase">Service Requests</li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center justify-content-between" 
+               data-bs-toggle="collapse" href="#serviceRequestMenu">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-tools nav-icon text-success"></i>
+                    <span class="link-text ms-2">Service Requests</span>
+                </div>
+            </a>
+            <div class="collapse submenu" id="serviceRequestMenu" data-bs-parent="#sidebarMenu">
+                <ul class="nav flex-column ms-4">
+                    <li><a href="{% url 'add_service_request' %}" class="nav-link">Add Service Request</a></li> 
+                    <li><a href="{% url 'service_requests' %}" class="nav-link">Service Request</a></li>
+                    <li><a href="{% url 'service_reports' %}" class="nav-link">Service Reports</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- FINANCE / PAYMENTS -->
+        <li class="sidebar-heading mt-3 text-muted small text-uppercase">Finance</li>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center justify-content-between" 
+               data-bs-toggle="collapse" href="#financeMenu">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-cash-coin nav-icon text-danger"></i>
+                    <span class="link-text ms-2">Expenses</span>
+                </div>
+            </a>
+            <div class="collapse submenu" id="financeMenu" data-bs-parent="#sidebarMenu">
+                <ul class="nav flex-column ms-4">
+                    <li><a href="{% url 'create_expense' %}" class="nav-link">Create Expense Report</a></li>
+                    <li><a href="{% url 'my_expenses' %}" class="nav-link">My Expense Reports</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <li class="sidebar-heading mt-3 text-muted small text-uppercase">System</li>
+        <!-- ================= NOTIFICATIONS ================= -->
+        <li class="nav-item mt-3">
+            <a href="{% url 'notifications' %}" class="nav-link d-flex align-items-center">
+                <i class="bi bi-bell nav-icon text-danger"></i>
+                <span class="link-text ms-2">Notifications</span>
+            </a>
+        </li>
+
+        <!-- ================= PROFILE ================= -->        
+        <li class="nav-item mt-3">
+            <a href="{% url 'profile' %}" class="nav-link d-flex align-items-center">
+                <i class="bi bi-person-circle nav-icon text-primary"></i>
+                <span class="link-text ms-2">My Profile</span>
+            </a>
+        </li>
+
+        <!-- ================= SETTINGS ================= -->
+        <li class="nav-item mt-3">
+            <a href="#" class="nav-link d-flex align-items-center"
+               data-bs-toggle="tooltip"
+               data-bs-placement="right"
+               title="Settings">
+                <i class="bi bi-gear nav-icon"></i>
+                <span class="link-text ms-2">Settings</span>
+            </a>
+        </li>
+
+    </ul>
+
+</nav>
+
+<!-- ================= TOOLTIP SCRIPT ================= -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var tooltipTriggerList = [].slice.call(
+        document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>

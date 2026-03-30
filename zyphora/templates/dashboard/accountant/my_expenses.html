@@ -3,47 +3,81 @@
 {% block content %}
 <div class="container mt-4">
 
-    <h4>My Expense Reports</h4>
+        <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">My Expenses</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="mb-4">
+        <h4 class="text-primary d-flex align-items-center mb-0">
+            <i class="bi bi-cash-stack me-2 text-primary"></i>
+            My Expense Reports
+        </h4>
+        <p class="text-muted">
+            Review all your submitted expense reports, items, receipts, and status.
+        </p>
+    </div>
 
     {% for exp in expenses %}
-        <div class="card mb-3 p-3">
+        <div class="card shadow-sm mb-3 p-3 ">
 
-            <h5>{{ exp.project }} | {{ exp.expense_date }}</h5>
+            <!-- Project Title & Date -->
+            <h5 class="d-flex align-items-center mb-2">
+                <i class="bi bi-building me-2 "></i>
+                {{ exp.project }} | {{ exp.expense_date|date:"d M Y" }}
+            </h5>
 
-            <p><strong>Status:</strong>
-                <span class="badge 
+            <!-- Status Badge -->
+            <p class="mb-2"><strong>Status:</strong>
+                <span class="badge px-3 py-2
                     {% if exp.status == 'approved' %}bg-success
                     {% elif exp.status == 'rejected' %}bg-danger
-                    {% else %}bg-warning{% endif %}">
-                    {{ exp.status }}
+                    {% else %}bg-warning text-dark{% endif %}">
+                    {{ exp.status|title }}
                 </span>
             </p>
 
             <!-- ITEMS -->
-            <h6>Items</h6>
-            <ul>
+            <h6 class="d-flex align-items-center mb-1">
+                <i class="bi bi-list-task me-2 {% if request.user.is_dark_mode %}text-light-75{% else %}text-secondary{% endif %}"></i>
+                Items
+            </h6>
+            <ul class="mb-2">
                 {% for item in exp.items.all %}
                     <li>{{ item.description }} - ₹{{ item.amount }}</li>
                 {% endfor %}
             </ul>
 
             <!-- RECEIPTS -->
-            <h6>Receipts</h6>
-            <ul>
+            <h6 class="d-flex align-items-center mb-1">
+                <i class="bi bi-receipt me-2 {% if request.user.is_dark_mode %}text-light-75{% else %}text-secondary{% endif %}"></i>
+                Receipts
+            </h6>
+            <ul class="mb-2">
                 {% for r in exp.receipts.all %}
                     <li>
-                        <a href="{{ r.file.url }}" target="_blank">
+                        <a href="{{ r.file.url }}" target="_blank" class="{% if request.user.is_dark_mode %}text-light-50{% else %}text-primary{% endif %}">
                             View Receipt
                         </a>
                     </li>
                 {% endfor %}
             </ul>
 
+            <!-- Total -->
             <strong>Total: ₹{{ exp.total_amount }}</strong>
 
         </div>
     {% empty %}
-        <p>No expense reports found</p>
+        <div class="text-center p-5 {% if request.user.is_dark_mode %}text-light-50{% else %}text-muted{% endif %}">
+            <i class="bi bi-journal-text fs-1"></i>
+            <p class="mt-3 mb-0">No expense reports found</p>
+        </div>
     {% endfor %}
 
 </div>

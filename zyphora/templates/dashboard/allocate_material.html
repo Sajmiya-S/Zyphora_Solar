@@ -2,73 +2,137 @@
 {% load static %}
 
 {% block content %}
-<!-- Breadcrumbs -->
-<nav aria-label="breadcrumb" class="mb-3">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'allocation_list' %}">Material Allocation</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Allocate Material</li>
-    </ol>
-</nav>
 
-<div class="main-content">
-    <div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="{% url request.user.role %}">
+                    {{ request.user.role|title }} Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'allocation_list' %}">
+                    Material Allocation
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                Allocate Material
+            </li>
+        </ol>
+    </nav>
+    
+<div class="container mt-4">
 
-        <h4 class="mb-3">
-            <i class="bi bi-box-arrow-up-right"></i>
+    <!-- Header -->
+    <div class="mb-3">
+        <h4 class="fw-bold text-primary">
+            <i class="bi bi-box-arrow-up-right me-2"></i>
             Allocate Material
         </h4>
+        <p class="text-muted mb-0">
+            Assign materials from inventory to a specific project
+        </p>
+    </div>
 
 
-        <div class="card shadow-sm">
-            <div class="card-body">
 
-                <form method="POST">
-                    {% csrf_token %}
+    <!-- Card -->
+    <div class="card shadow-sm border-0">
 
-                    <div class="row g-3">
+        <div class="card-body">
 
-                        <div class="col-md-6">
-                            <label class="form-label">Project</label>
-                            {{ form.project }}
-                        </div>
+            <form method="POST">
+                {% csrf_token %}
 
-                        <div class="col-md-6">
-                            <label class="form-label">Material</label>
-                            {{ form.material }}
-                        </div>
+                <h6 class="text-muted mb-3">Allocation Details</h6>
 
-                        <div class="col-md-6">
-                            <label class="form-label">Quantity</label>
-                            {{ form.quantity }}
-                        </div>
+                <div class="row g-3">
 
-                        <div class="col-md-6">
-                            <label class="form-label">Allocated By</label>
-                            {{ form.allocated_by }}
-                        </div>
-
+                    <!-- Project -->
+                    <div class="col-md-6">
+                        <label class="form-label">Project</label>
+                        {{ form.project }}
+                        {% for error in form.project.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
                     </div>
 
-                    <div class="mt-4">
+                    <!-- Material -->
+                    <div class="col-md-6">
+                        <label class="form-label">Material</label>
+                        {{ form.material }}
 
-                        <button class="btn btn-primary">
-                            <i class="bi bi-check-lg"></i>
-                            Allocate Material
-                        </button>
+                        <!-- 🔥 Live Stock -->
+                        <small id="stock-info" class="text-muted d-block mt-1">
+                            Select material to view stock
+                        </small>
 
-                        <a href="{% url 'allocation_list' %}" class="btn btn-outline-secondary">
-                            Cancel
-                        </a>
-
+                        {% for error in form.material.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
                     </div>
 
-                </form>
+                    <!-- Quantity -->
+                    <div class="col-md-6">
+                        <label class="form-label">Quantity</label>
+                        {{ form.quantity }}
 
-            </div>
+                        {% for error in form.quantity.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex justify-content-end gap-2 mt-4">
+
+                    <a href="{% url 'allocation_list' %}" class="btn btn-light border">
+                        Cancel
+                    </a>
+
+                    <button class="btn btn-primary px-4">
+                        <i class="bi bi-check-circle me-1"></i>
+                        Allocate Material
+                    </button>
+
+                </div>
+
+            </form>
+
         </div>
 
     </div>
+
 </div>
+
+<!-- 🔥 STOCK SCRIPT -->
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    const materialSelect = document.getElementById("id_material");
+    const stockInfo = document.getElementById("stock-info");
+
+    materialSelect.addEventListener("change", function(){
+
+        const materialId = this.value;
+
+        if(materialId){
+
+            fetch(`/material-stock/${materialId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    stockInfo.innerHTML = "Available Stock: <strong>" + data.stock + "</strong>";
+                });
+
+        } else {
+            stockInfo.innerHTML = "Select material to view stock";
+        }
+
+    });
+
+});
+</script>
 
 {% endblock %}

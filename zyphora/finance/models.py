@@ -1,5 +1,7 @@
 from django.db import models
 from django.db.models import Sum
+from decimal import Decimal
+from django.utils import timezone
 from projects.models import Project
 from users.models import Employee,CustomUser
 
@@ -162,48 +164,117 @@ class ExpenseReceipt(models.Model):
     file = models.FileField(upload_to="expense_receipts/")
 
 
-class ProjectCosting(models.Model):
+class DesignCosting(models.Model):
+
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    )
+
     project = models.OneToOneField(
         Project,
         on_delete=models.CASCADE,
-        related_name='costing'
+        related_name='design_costing' 
     )
-    estimated_cost = models.DecimalField(
+
+    cost = models.DecimalField(max_digits=12, decimal_places=2)
+    design_file = models.FileField(upload_to='design_costs/', null=True, blank=True)
+    
+    entered_by = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Design Cost - {self.project.title}"
+    
+
+
+
+
+class ProjectCosting(models.Model):
+
+    project = models.OneToOneField(
+        Project,
+        on_delete=models.CASCADE,
+        related_name='project_costing'
+    )
+
+    design_costing = models.OneToOneField(
+        DesignCosting,
+        on_delete=models.CASCADE,
+        related_name='project_costing',
+        null=True
+    )
+
+    system_costing = models.DecimalField(max_digits=12, decimal_places=2)
+
+    kseb_cost = models.DecimalField(   
         max_digits=12,
-        decimal_places=2
+        decimal_places=2,
+        default=0
     )
 
     entered_by = models.ForeignKey(
-                CustomUser,
-                on_delete=models.SET_NULL,
-                null=True,
-                blank=True
-            )
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    proposal_sent = models.BooleanField(default=False)
+    client_approved = models.BooleanField(default=False)
+    approved_at = models.DateTimeField(null=True, blank=True)
+
     last_updated = models.DateTimeField(auto_now=True)
 
-    def actual_cost(self):
-        """
-        Sum of all expense items linked to this project via ExpenseReport.
-        """
-        return self.project.expense_reports.aggregate(
-            total=Sum('items__amount')
-        )['total'] or 0
+    # ✅ TOTAL COST
+    @property
+    def estimated_cost(self):
+        design = self.design_costing.cost if self.design_costing else Decimal('0')
+        system = self.system_costing or Decimal('0')
+        kseb = self.kseb_cost or Decimal('0')
+        return design + system + kseb
 
+    # ✅ ACTUAL COST
+    @property
+    def actual_cost(self):
+        total = self.project.expense_reports.aggregate(
+            total=Sum('items__amount')
+        )['total']
+        return total or Decimal('0')
+
+    # ✅ REVENUE
+    @property
     def revenue(self):
-        """
-        Sum of all paid invoices for this project.
-        """
-        return self.project.invoices.filter(
+        total = self.project.invoices.filter(
             status='paid'
         ).aggregate(
             total=Sum('total_amount')
-        )['total'] or 0
+        )['total']
+        return total or Decimal('0')
 
+    # ✅ PROFIT
+    @property
     def profit(self):
-        """
-        Profit = revenue - actual_cost
-        """
-        return self.revenue() - self.actual_cost()
+        return self.revenue - self.actual_cost
+
+    # ✅ APPROVAL METHOD
+    def mark_client_approved(self):
+        self.client_approved = True
+        self.approved_at = timezone.now()
+        self.save()
 
     def __str__(self):
         return f"Costing - {self.project.title}"

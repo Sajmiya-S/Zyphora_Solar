@@ -14,7 +14,10 @@
 
     <!-- Title & Subtitle -->
     <div class="mb-4">
-        <h2>Follow-Ups</h2>
+        <h3 class="fw-bold text-primary">
+            <i class="bi bi-calendar-check-fill"></i>
+            Follow-Ups
+        </h3>
         <p class="text-muted">Check your scheduled follow-ups for today, upcoming, overdue, and completed.</p>
     </div>
 
@@ -50,8 +53,7 @@
             {% if overdue %}
                 <div class="list-group">
                     {% for f in overdue %}
-                        <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start mb-2 p-3 shadow-sm rounded
-                                    bg-danger bg-opacity-25 text-danger">
+                        <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start mb-2 p-3 shadow-sm rounded">
                             <div class="me-3 flex-fill">
                                 <h5>{{ f.lead.name }} {% if f.project %}({{ f.project.title }}){% endif %}</h5>
                                 <p><strong>Date:</strong> {{ f.scheduled_date }}</p>
@@ -62,9 +64,9 @@
                                 {% endif %}
                             </div>
                             <div class="text-end ms-md-3 d-flex flex-column align-items-end gap-2">
-                                <span class="badge bg-danger">Pending</span>
+                                <span class="badge bg-secondary">Pending</span>
                                 <div class="d-flex flex-wrap gap-1 mt-1">
-                                    <form method="post" action="{% url 'mark_site_followup_done' f.id %}">
+                                    <form method="post" action="{% url 'mark_followup_done' f.id %}">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-sm btn-success">Mark Done</button>
                                     </form>
@@ -84,8 +86,7 @@
             {% if todays %}
                 <div class="list-group">
                     {% for f in todays %}
-                        <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start mb-2 p-3 shadow-sm rounded
-                                    bg-warning bg-opacity-25 text-warning">
+                        <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start mb-2 p-3 shadow-sm rounded">
                             <div class="me-3 flex-fill">
                                 <h5>{{ f.lead.name }} {% if f.project %}({{ f.project.title }}){% endif %}</h5>
                                 <p><strong>Date:</strong> {{ f.scheduled_date }}</p>
@@ -96,9 +97,9 @@
                                 {% endif %}
                             </div>
                             <div class="text-end ms-md-3 d-flex flex-column align-items-end gap-2">
-                                <span class="badge bg-warning text-dark">Pending</span>
+                                <span class="badge bg-secondary">Pending</span>
                                 <div class="d-flex flex-wrap gap-1 mt-1">
-                                    <form method="post" action="{% url 'mark_site_followup_done' f.id %}">
+                                    <form method="post" action="{% url 'mark_followup_done' f.id %}">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-sm btn-success">Mark Done</button>
                                     </form>
@@ -118,8 +119,7 @@
             {% if upcoming %}
                 <div class="list-group">
                     {% for f in upcoming %}
-                        <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start mb-2 p-3 shadow-sm rounded
-                                    bg-success bg-opacity-25 text-success">
+                        <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start mb-2 p-3 shadow-sm rounded">
                             <div class="me-3 flex-fill">
                                 <h5>{{ f.lead.name }} {% if f.project %}({{ f.project.title }}){% endif %}</h5>
                                 <p><strong>Date:</strong> {{ f.scheduled_date }}</p>
@@ -130,7 +130,7 @@
                                 {% endif %}
                             </div>
                             <div class="text-end ms-md-3 d-flex flex-column align-items-end gap-2">
-                                <span class="badge bg-success">Pending</span>
+                                <span class="badge bg-secondary">Pending</span>
                                 <div class="d-flex flex-wrap gap-1 mt-1">
                                     <form method="post" action="{% url 'mark_followup_done' f.id %}">
                                         {% csrf_token %}
@@ -162,7 +162,7 @@
                                 {% endif %}
                             </div>
                             <div class="text-end ms-md-3">
-                                <span class="badge bg-success">Done</span>
+                                <span class="badge bg-secondary">Done</span>
                             </div>
                             <div class="d-flex flex-wrap gap-1 mt-1">
                                 <a href="{% url 'edit_followup' f.id %}" class="btn btn-sm btn-primary">Edit</a>

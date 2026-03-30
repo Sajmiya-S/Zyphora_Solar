@@ -3,11 +3,11 @@
 
 {% block content %}
 
-<!-- Breadcrumbs above the container -->
+<!-- Breadcrumbs -->
 <nav aria-label="breadcrumb" class="mb-3">
     <div class="container-fluid">
         <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a></li>
             <li class="breadcrumb-item active" aria-current="page">Purchase Orders</li>
         </ol>
     </div>
@@ -17,15 +17,10 @@
     <div class="container-fluid">
 
         <!-- Page Header -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4>
-                <i class="bi bi-receipt"></i>
-                Purchase Orders
-            </h4>
-
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+            <h4 class="mb-2 mb-md-0 text-primary"><i class="bi bi-receipt me-1"></i> Purchase Orders</h4>
             <a href="{% url 'create_purchase_order' %}" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i>
-                New Purchase Order
+                <i class="bi bi-plus-lg me-1"></i> New Purchase Order
             </a>
         </div>
 
@@ -33,27 +28,17 @@
         <div class="card shadow-sm mb-3">
             <div class="card-body">
                 <form method="get" class="row g-2">
-
                     <div class="col-md-4">
-                        <input type="text"
-                               name="q"
-                               class="form-control"
-                               placeholder="Search PO or Vendor..."
-                               value="{{ request.GET.q }}">
+                        <input type="text" name="q" class="form-control" placeholder="Search PO or Vendor..." value="{{ request.GET.q }}">
                     </div>
-
                     <div class="col-md-auto">
-                        <button class="btn btn-outline-primary">
-                            <i class="bi bi-search"></i>
-                            Search
-                        </button>
+                        <button class="btn btn-outline-primary"><i class="bi bi-search me-1"></i> Search</button>
                     </div>
-
                 </form>
             </div>
         </div>
 
-        <!-- Table -->
+        <!-- Purchase Orders Table -->
         <div class="card shadow-sm">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -75,11 +60,9 @@
                                     <!-- PO Number + Overdue Badge -->
                                     <td>
                                         <strong>PO-{{ po.id }}</strong>
-                                        
                                         {% if po.overdue_days > 0 %}
-                                            <span class="badge bg-danger ms-2" 
-                                                data-bs-toggle="tooltip" 
-                                                title="{{ po.overdue_days }} day{% if po.overdue_days > 1 %}s{% endif %} overdue">
+                                            <span class="badge bg-danger ms-2" data-bs-toggle="tooltip" 
+                                                  title="{{ po.overdue_days }} day{% if po.overdue_days > 1 %}s{% endif %} overdue">
                                                 ⚠ {{ po.overdue_days }}d overdue
                                             </span>
                                         {% endif %}
@@ -88,7 +71,7 @@
                                     <!-- Vendor -->
                                     <td>{{ po.vendor.name }}</td>
 
-                                    <!-- Status -->
+                                    <!-- Status Badge -->
                                     <td>
                                         {% if po.status == "pending" %}
                                             <span class="badge bg-warning text-dark">Pending</span>
@@ -98,41 +81,42 @@
                                             <span class="badge bg-success">Received</span>
                                         {% elif po.status == "cancelled" %}
                                             <span class="badge bg-danger">Cancelled</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ po.status|capfirst }}</span>
                                         {% endif %}
                                     </td>
 
                                     <!-- Total -->
-                                    <td>₹{{ po.total_amount }}</td>
+                                    <td>₹{{ po.total_amount|floatformat:2 }}</td>
 
                                     <!-- Order Date -->
-                                    <td>{{ po.order_date }}</td>
+                                    <td>{{ po.order_date|date:"d M Y" }}</td>
 
-                                    <!-- Expected Delivery with tooltip -->
+                                    <!-- Expected Delivery -->
                                     <td>
                                         {% if po.expected_delivery %}
                                             <span {% if po.overdue_days > 0 %}class="text-danger fw-bold"{% endif %}>
-                                                {{ po.expected_delivery }}
+                                                {{ po.expected_delivery|date:"d M Y" }}
                                             </span>
-                                        {% else %}
-                                            -
-                                        {% endif %}
+                                        {% else %}-{% endif %}
                                     </td>
 
                                     <!-- Actions -->
-                                    <td class="text-end">
-                                        <a href="{% url 'purchase_order_detail' po.id %}" class="btn btn-sm btn-outline-primary">
-                                            View
-                                        </a>
+                                    <td class="text-end d-flex gap-1 justify-content-end">
+                                        {% if po.status == 'received'%}
+                                        <a href="{% url 'download_report' 'purchase' po.id %}" class="btn btn-sm btn-outline-primary">Download</a>
+                                        {% endif %}
+                                        
+                                        <a href="{% url 'purchase_order_detail' po.id %}" class="btn btn-sm btn-outline-primary">View</a>
 
-                                        {% if purchase_order.status == 'received' or purchase_order.status == 'pending' %}
+                                        {% if po.status != 'received' and po.status != 'cancelled' %}
                                             <a href="{% url 'add_goods_received' %}?po={{ po.id }}" 
-                                            class="btn btn-sm btn-outline-success 
-                                            {% if po.overdue_days > 0 %}fw-bold border border-danger{% endif %}">
+                                               class="btn btn-sm btn-outline-success {% if po.overdue_days > 0 %}fw-bold border border-danger{% endif %}">
                                                 Receive
                                             </a>
 
                                             <a href="{% url 'cancel_purchase_order' po.id %}" class="btn btn-sm btn-outline-danger" 
-                                            onclick="return confirm('Are you sure you want to cancel this purchase order?');">
+                                               onclick="return confirm('Are you sure you want to cancel this purchase order?');">
                                                 Cancel
                                             </a>
                                         {% endif %}
@@ -154,13 +138,14 @@
     </div>
 </div>
 
-
+<!-- Bootstrap Tooltip Initialization -->
 <script>
+document.addEventListener('DOMContentLoaded', function () {
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
+    });
+});
 </script>
-
 
 {% endblock %}

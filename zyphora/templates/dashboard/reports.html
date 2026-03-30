@@ -2,36 +2,77 @@
 
 {% block content %}
 
-<nav aria-label="breadcrumb" class="mb-3">
-    <div class="container-fluid">
-        <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Financial Reports</li>
+<div class="container-fluid mt-3">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0 align-items-center">
+            <li class="breadcrumb-item">
+                <a href="{% url 'dashboard' %}" class="d-flex align-items-center">
+                    <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item active d-flex align-items-center">
+                <i class="bi bi-bar-chart-line me-1"></i> Financial Reports
+            </li>
         </ol>
-    </div>
-</nav>
+    </nav>
 
-<h4>Financial Reports</h4>
+    <!-- Header -->
+    <div class="mb-4">
+        <h4 class="fw-bold d-flex align-items-center text-primary mb-1">
+            <i class="bi bi-bar-chart-line me-2"></i>
+            Financial Reports
+        </h4>
+        <p class="{% if request.user.is_dark_mode %}text-light-50{% else %}text-muted{% endif %}">
+            Overview of invoices, payments, and expenses across your business.
+        </p>
+    </div>
 
-<div class="row">
-    <div class="col-md-4">
-        <div class="card p-3 mb-3">
-            <h6>Total Invoices</h6>
-            <h3>{{ invoice_count }}</h3>
+    <!-- Summary Cards -->
+    <div class="row">
+
+        <!-- Invoices -->
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 mb-3 {% if request.user.is_dark_mode %}bg-dark text-light{% endif %}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Invoices</h6>
+                        <h3 class="fw-bold">{{ invoice_count }}</h3>
+                    </div>
+                    <i class="bi bi-receipt fs-2 text-primary"></i>
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card p-3 mb-3">
-            <h6>Total Payments</h6>
-            <h3>{{ payment_count }}</h3>
+
+        <!-- Payments -->
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Payments</h6>
+                        <h3 class="fw-bold">{{ payment_count }}</h3>
+                    </div>
+                    <i class="bi bi-credit-card fs-2 text-success"></i>
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card p-3 mb-3">
-            <h6>Total Expenses</h6>
-            <h3>{{ expense_count }}</h3>
+
+        <!-- Expenses -->
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Expenses</h6>
+                        <h3 class="fw-bold">{{ expense_count }}</h3>
+                    </div>
+                    <i class="bi bi-cash-stack fs-2 text-danger"></i>
+                </div>
+            </div>
         </div>
+
     </div>
+
 </div>
 
 {% endblock %}

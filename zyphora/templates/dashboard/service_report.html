@@ -2,24 +2,80 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h3>Submit Service Report for: "{{ service_request.title }}"</h3>
-    <div class="card mt-3 p-3 shadow-sm">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb mb-0 align-items-center">
+        <li class="breadcrumb-item">
+            <a href="{% url request.user.role %}" class="d-flex align-items-center">
+                {{ request.user.role|title }} Dashboard
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'assigned_service_requests' %}">
+                Service Requests
+            </a>
+        </li>
+        <li class="breadcrumb-item active d-flex align-items-center">
+            Submit Report
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="mb-4">
+        <h4 class="fw-bold d-flex align-items-center text-primary mb-1">
+            <i class="bi bi-file-earmark-text me-2"></i>
+            Submit Service Report
+        </h4>
+        <p class="text-muted">
+            Submit your service completion report and upload supporting images.
+        </p>
+    </div>
+
+    <!-- Card -->
+    <div class="card shadow-sm p-3">
+
+        <!-- Service Title -->
+        <div class="mb-3">
+            <h6 class="fw-semibold d-flex align-items-center">
+                <i class="bi bi-wrench-adjustable me-2"></i>
+                {{ service_request.title }}
+            </h6>
+        </div>
+
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
+            <!-- Report Text -->
             <div class="mb-3">
-                {{ form.report_text.label_tag }}
+                <label class="form-label">Report Details</label>
                 {{ form.report_text }}
             </div>
 
+            <!-- Images -->
             <div class="mb-3">
-                {{ form.images.label_tag }}
+                <label class="form-label">Upload Images</label>
                 {{ form.images }}
+                <small class="text-muted">
+                    You can upload multiple images if supported.
+                </small>
             </div>
 
-            <button type="submit" class="btn btn-primary">Submit & Complete Service</button>
-            <a href="{% url 'assigned_service_requests' %}" class="btn btn-secondary ms-2">Cancel</a>
+            <!-- Actions -->
+            <div class="d-flex justify-content-end gap-2 mt-3">
+                <a href="{% url 'assigned_service_requests' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Cancel
+                </a>
+
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Submit & Complete
+                </button>
+            </div>
+
         </form>
     </div>
+
 </div>
 {% endblock %}

@@ -173,25 +173,6 @@
 
                     <div class="review-actions">
 
-                        {% if not review.is_approved %}
-
-                            <a href="{% url 'approve_review' review.id %}"
-                               class="btn btn-success btn-sm">
-
-                                <i class="fa-solid fa-check"></i>
-                                Approve
-
-                            </a>
-
-                        {% else %}
-
-                            <span class="badge bg-success">
-                                Approved
-                            </span>
-
-                        {% endif %}
-
-
                         <a href="{% url 'delete_review' review.id %}"
                            class="btn btn-danger btn-sm"
                            onclick="return confirm('Delete this review?');">

@@ -3,8 +3,15 @@ from .models import *
 
 
 admin.site.register(Invoice)
+
 admin.site.register(Payment)
+
 admin.site.register(ExpenseReport)
+
 admin.site.register(ExpenseItem)
+
 admin.site.register(ExpenseReceipt)
+
+admin.site.register(DesignCosting)
+
 admin.site.register(ProjectCosting)

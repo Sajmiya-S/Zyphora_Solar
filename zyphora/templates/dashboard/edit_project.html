@@ -2,299 +2,218 @@
 {% load static %}
 
 {% block link %}
-    <link rel="stylesheet" href="{% static 'css/dashboard/edit_project.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard/edit_project.css' %}">
 {% endblock %}
 
 {% block content %}
 
-    <!-- BREADCRUMB -->
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb mb-3">
-            <li class="breadcrumb-item">
-                <a href="{% url request.user.role %}">{{request.user.role|title}} Dashboard</a>
-            </li>
-            <li class="breadcrumb-item">
-                <a href="{% url 'project_list' %}">Projects</a>
-            </li>
-            <li class="breadcrumb-item">
-                <a href="{% url 'project_detail' project.id %}">
-                    {{ project.title }}
-                </a>
-            </li>
-            <li class="breadcrumb-item active">
-                Edit Project
-            </li>
-        </ol>
-    </nav>
+<!-- BREADCRUMB -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-3">
+        <li class="breadcrumb-item">
+            <a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'project_list' %}">Projects</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'project_detail' project.id %}">{{ project.title }}</a>
+        </li>
+        <li class="breadcrumb-item active">Edit Project</li>
+    </ol>
+</nav>
 
-    <div class="container-fluid">
+<div class="container-fluid">
 
-        <!-- PAGE HEADER -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="mb-0">Edit Project</h4>
+    <!-- PAGE HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">Edit Project</h4>
+        <a href="{% url 'project_detail' project.id %}" class="btn btn-outline-secondary">View Project</a>
+    </div>
 
-            <a href="{% url 'project_detail' project.id %}" class="btn btn-outline-secondary">
-                View Project
-            </a>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- PROJECT PROGRESS -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="mb-3">Project Progress</h5>
+                <div class="progress mb-4" style="height:10px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ progress_percent }}%"></div>
+                </div>
+                <div class="row text-center">
+                    {% for step in status_order %}
+                        <div class="col">
+                            {% if project.status == step %}
+                                <span class="badge bg-success">{{ step|title }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ step|title }}</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
 
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
+        <!-- PROJECT DETAILS -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="mb-4">Project Details</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3"><label class="form-label">Title</label>{{ form.title }}</div>
+                    <div class="col-md-6 mb-3"><label class="form-label">Project Type</label>{{ form.project_type }}</div>
+                    <div class="col-md-6 mb-3"><label class="form-label">Location</label>{{ form.location }}</div>
 
-            <!-- PROJECT PROGRESS -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
+                    {% if request.user.role == 'admin' %}
+                        <div class="col-md-6 mb-3"><label class="form-label">Revenue</label>{{ form.revenue }}</div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Engineer</label>{{ form.engineer }}</div>
+                    {% endif %}
 
-                    <h5 class="mb-3">Project Progress</h5>
-
-                    <div class="progress mb-4" style="height:10px;">
-                        <div class="progress-bar bg-success"
-                             role="progressbar"
-                             style="width: {{ progress_percent }}%">
-                        </div>
+                    <div class="col-md-6 mb-3"><label class="form-label">Status</label>{{ form.status }}</div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" name="start_date" id="startDate"
+                            value="{{ form.start_date.value|date:'Y-m-d' }}"
+                            min="{{ today }}"
+                            class="form-control">
                     </div>
 
-                    <div class="row text-center">
-
-                        {% for step in status_order %}
-                            <div class="col">
-
-                                {% if project.status == step %}
-                                    <span class="badge bg-success">
-                                        {{ step|title }}
-                                    </span>
-                                {% else %}
-                                    <span class="badge bg-secondary">
-                                        {{ step|title }}
-                                    </span>
-                                {% endif %}
-
-                            </div>
-                        {% endfor %}
-
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">End Date</label>
+                        <input type="date" name="end_date" id="endDate"
+                            value="{{ form.end_date.value|date:'Y-m-d' }}"
+                            class="form-control">
                     </div>
-
+                    <div class="col-md-12 mb-3"><label class="form-label">Description</label>{{ form.description }}</div>
                 </div>
             </div>
+        </div>
 
-
-            <!-- PROJECT DETAILS -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-
-                    <h5 class="mb-4">Project Details</h5>
-
-                    <div class="row">
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Title</label>
-                            {{ form.title }}
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Project Type</label>
-                            {{ form.project_type }}
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Location</label>
-                            {{ form.location }}
-                        </div>
-
-                        {% if request.user.role == 'admin' %}
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Revenue</label>
-                            {{ form.revenue }}
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Engineer</label>
-                            {{ form.engineer }}
-                        </div>
-
-                        {% endif %}
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Status</label>
-                            {{ form.status }}
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Start Date</label>
-                            {{ form.start_date }}
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">End Date</label>
-                            {{ form.end_date }}
-                        </div>
-
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label">Description</label>
-                            {{ form.description }}
-                        </div>
-
-                    </div>
-
-                </div>
-            </div>
-
-
-            <!-- PROJECT GALLERY -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-
-                    <h5 class="mb-4">Project Gallery</h5>
-
-                    <div class="row">
-
-                        {% for img in images %}
-                            <div class="col-md-3 mb-4 text-center">
-
-                                <img src="{{ img.image.url }}"
-                                     class="img-fluid rounded shadow-sm mb-2"
+        <!-- PROJECT MEDIA GALLERY -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="mb-4">Project Media</h5>
+                <div class="row">
+                    {% for media in media_files %}
+                        <div class="col-md-3 mb-4 text-center">
+                            {% if media.file.url %}
+                                <img src="{{ media.file.url }}" class="img-fluid rounded shadow-sm mb-2"
                                      style="height:180px;object-fit:cover;width:100%;">
-
-                                {% if img.caption %}
-                                    <p class="small text-muted">{{ img.caption }}</p>
-                                {% endif %}
-
-                                
-
-                            </div>
-
-                        {% empty %}
-                            <p class="text-muted">No images uploaded yet.</p>
-                        {% endfor %}
-
-                    </div>
-
+                            {% endif %}
+                            {% if media.caption %}
+                                <p class="small text-muted">{{ media.caption }}</p>
+                            {% endif %}
+                            <span class="badge bg-primary">{{ media.get_category_display }}</span>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted">No media uploaded yet.</p>
+                    {% endfor %}
                 </div>
             </div>
+        </div>
 
+        <!-- UPLOAD MEDIA -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="mb-3">Upload Media</h5>
 
-            <!-- IMAGE UPLOAD -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
+                <!-- Category -->
+                <label>Category</label>
+                <select name="category" class="form-select mb-3">
+                    <option value="installation_photo">Installation Photo</option>
+                    <option value="before_photo">Before Photo</option>
+                    <option value="after_photo">After Photo</option>
+                    <option value="design_document">Design Document</option>
+                    <option value="issue_photo">Issue Photo</option>
+                    <option value="service_report_photo">Service Report Photo</option>
+                </select>
 
-                <h5 class="mb-3">Upload Installation Photos</h5>
-
-                <div class="upload-box text-center p-4 border rounded"
-                    onclick="document.getElementById('imageInput').click()">
-
-                <p class="mb-2">Click here to Select images</p>
-
-                <input type="file"
-                    id="imageInput"
-                    name="images"
-                    multiple
-                    class="d-none">
-
+                <div class="upload-box text-center p-4 border rounded" onclick="document.getElementById('fileInput').click()">
+                    <p class="mb-2">Click here to select files</p>
+                    <input type="file" id="fileInput" name="files" multiple class="d-none">
                 </div>
 
                 <div class="row mt-3" id="previewContainer"></div>
 
+            </div>
+        </div>
+
+        <!-- SUBMIT BUTTON -->
+        <div class="text-end mb-5">
+            <button class="btn btn-success btn-lg px-4">Update Project</button>
+        </div>
+
+    </form>
+</div>
+
+<!-- IMAGE PREVIEW + CAPTION SCRIPT -->
+<script>
+let allFiles = [];
+const input = document.getElementById("fileInput");
+const preview = document.getElementById("previewContainer");
+
+input.addEventListener("change", function(){
+    Array.from(this.files).forEach(file => {
+        allFiles.push(file);
+    });
+    renderFiles();
+});
+
+function renderFiles(){
+    preview.innerHTML = "";
+    allFiles.forEach((file, index) => {
+        let reader = new FileReader();
+        reader.onload = function(e){
+            let col = document.createElement("div");
+            col.className = "col-md-3 mb-4";
+            col.innerHTML = `
+                <div class="card preview-card shadow-sm p-2">
+                    <button type="button" class="remove-img" onclick="removeFile(${index})">×</button>
+                    <img src="${e.target.result}" class="img-fluid rounded mb-2" style="height:150px;object-fit:cover;">
+                    <input type="text" name="captions" class="form-control form-control-sm" placeholder="Caption (optional)">
                 </div>
-            </div>
+            `;
+            preview.appendChild(col);
+        }
+        reader.readAsDataURL(file);
+    });
+    updateFileInput();
+}
 
+function removeFile(index){
+    allFiles.splice(index,1);
+    renderFiles();
+}
 
-            <!-- SUBMIT BUTTON -->
-            <div class="text-end mb-5">
-                <button class="btn btn-success btn-lg px-4">
-                    Update Project
-                </button>
-            </div>
+function updateFileInput(){
+    const dataTransfer = new DataTransfer();
+    allFiles.forEach(file => dataTransfer.items.add(file));
+    input.files = dataTransfer.files;
+}
 
-        </form>
+document.addEventListener("DOMContentLoaded", function(){
 
-    </div>
+    const startInput = document.getElementById("startDate");
+    const endInput = document.getElementById("endDate");
 
-
-    <!-- IMAGE PREVIEW + CAPTION SCRIPT -->
-    <script>
-
-    let allFiles = []
-
-    const input = document.getElementById("imageInput")
-    const preview = document.getElementById("previewContainer")
-
-    input.addEventListener("change", function(){
-
-    Array.from(this.files).forEach(file=>{
-
-    allFiles.push(file)
-
-    renderImages()
-
-    })
-
-    })
-
-    function renderImages(){
-
-    preview.innerHTML=""
-
-    allFiles.forEach((file,index)=>{
-
-    let reader = new FileReader()
-
-    reader.onload=function(e){
-
-    let col = document.createElement("div")
-    col.className="col-md-3 mb-4"
-
-    col.innerHTML = `
-                        <div class="card preview-card shadow-sm p-2">
-
-                        <button type="button"
-                                class="remove-img"
-                                onclick="removeImage(${index})">
-                        ×
-                        </button>
-
-                        <img src="${e.target.result}"
-                            class="img-fluid rounded mb-2"
-                            style="height:150px;object-fit:cover;">
-
-                        <input type="text"
-                            name="captions"
-                            class="form-control form-control-sm"
-                            placeholder="Caption (optional)">
-
-                        </div>
-                    `
-
-    preview.appendChild(col)
-
+    // 🔹 Set min for end date initially
+    if (startInput.value){
+        endInput.min = startInput.value;
     }
 
-    reader.readAsDataURL(file)
+    // 🔹 When start date changes
+    startInput.addEventListener("change", function(){
 
-    })
+        endInput.min = this.value;
 
-    updateFileInput()
+        // Auto-fix end date
+        if (endInput.value && endInput.value < this.value){
+            endInput.value = this.value;
+        }
+    });
 
-    }
+});
 
-    function removeImage(index){
-
-    allFiles.splice(index,1)
-
-    renderImages()
-
-    }
-
-    function updateFileInput(){
-
-    const dataTransfer = new DataTransfer()
-
-    allFiles.forEach(file=>dataTransfer.items.add(file))
-
-    input.files = dataTransfer.files
-
-    }
-
-    </script>
+</script>
 
 {% endblock %}

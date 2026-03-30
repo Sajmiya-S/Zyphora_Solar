@@ -42,4 +42,9 @@ class EmployeeForm(forms.ModelForm):
         elif role in ['sales', 'staff']:
             self.fields['specialization'].widget = forms.HiddenInput()
             self.fields['access_level'].widget = forms.HiddenInput()
+
+        elif role == 'liaison':
+            self.fields['specialization'].widget = forms.HiddenInput()
+            self.fields['access_level'].widget = forms.HiddenInput()
+            self.fields['supervisor'].widget = forms.HiddenInput()
         

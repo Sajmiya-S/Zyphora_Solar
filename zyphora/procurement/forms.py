@@ -100,7 +100,5 @@ class MaterialAllocationRequestForm(forms.ModelForm):
 class MaterialAllocationForm(forms.ModelForm):
     class Meta:
         model = MaterialAllocation
-        fields = ['status']  # only allow status change
-        widgets = {
-            "status": forms.Select(attrs={"class": "form-select"}),
-        }
+        exclude = ['status']  # only allow status change
+        

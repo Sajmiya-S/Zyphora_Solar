@@ -5,6 +5,8 @@ from django.db.models import Q
 from django.utils import timezone
 from django.forms import modelformset_factory
 from django.core.paginator import Paginator
+from django.http import JsonResponse
+from collections import defaultdict
 
 from .models import *
 from .forms import *
@@ -262,6 +264,11 @@ def goods_received_list(request):
         "purchase_order__vendor",
         "received_by"
     ).order_by("-created_at")
+    from datetime import date
+
+    today = date.today()
+    for g in goods:
+        g.days_since_received = (today - g.received_date).days
 
     if q:
         goods = goods.filter(
@@ -315,6 +322,7 @@ def stock_list(request):
 
 
 
+
 @login_required(login_url='/users/login')
 def allocation_list(request):
 
@@ -324,33 +332,66 @@ def allocation_list(request):
         "project",
         "material",
         "allocated_by"
-    ).order_by("-allocated_date")
+    ).order_by("project__title", "-allocated_date")
 
     if q:
         allocations = allocations.filter(
-            Q(project__name__icontains=q) |
+            Q(project__title__icontains=q) |
             Q(material__name__icontains=q)
         )
 
-    return render(request, "dashboard/allocation_list.html", {"allocations": allocations})
+    # 🔥 GROUP BY PROJECT
+    project_allocations = defaultdict(list)
+
+    for a in allocations:
+        project_allocations[a.project].append(a)
+
+    context = {
+        "project_allocations": dict(project_allocations)
+    }
+
+    return render(request, "dashboard/allocation_list.html", context)
 
 
-@login_required(login_url='/users/login')
+
 def allocate_material(request):
+    if request.method == "POST":
+        form = MaterialAllocationForm(request.POST)
 
-    form = MaterialAllocationForm(request.POST or None)
+        if form.is_valid():
+            allocation = form.save(commit=False)
 
-    if form.is_valid():
+            material = allocation.material
+            quantity = allocation.quantity
 
-        form.save()
+            # 🔴 Prevent over allocation
+            if quantity > material.stock.quantity:
+                form.add_error('quantity', 'Not enough stock available.')
+            else:
+                # ✅ Auto assign user
+                allocation.allocated_by = request.user
 
-        messages.success(request, "Material allocated successfully")
+                # ✅ Save allocation
+                allocation.save()
 
-        return redirect("allocation_list")
+                # ✅ Deduct stock
+                material.stock.quantity -= quantity
+                material.stock.save()
 
-    return render(request, "dashboard/allocate_material.html", {"form": form})
+                messages.success(request, "Material allocated successfully.")
+                return redirect('allocation_list')
 
+    else:
+        form = MaterialAllocationForm()
 
+    return render(request, 'dashboard/allocate_material.html', {'form': form})
+
+def get_material_stock(request, material_id):
+    material = get_object_or_404(Material, id=material_id)
+
+    return JsonResponse({
+        'stock': material.stock.quantity
+    })
 
 def request_material(request):
     MaterialFormSet = modelformset_factory(

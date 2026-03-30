@@ -10,6 +10,8 @@ from .forms import *
 from projects.models import Project
 from users.models import Employee, CustomUser
 from users.utils import create_notification
+from django.db.models import Sum
+from django.utils import timezone
 
 # ---------------- INVOICES ---------------- #
 
@@ -297,7 +299,7 @@ def approve_expense(request, pk):
             category="expense"
         )
 
-    return redirect("expense_list")
+    return redirect(all_expenses)
 
 
 @login_required(login_url='/users/login')
@@ -356,12 +358,10 @@ def approved_fund_releases(request):
 
 # ---------------- PROJECT BUDGET ---------------- #
 
-
 @login_required(login_url='/users/login')
 def project_budgets(request):
-    # Prefetch related costing and expense reports/items for efficient access
     projects = Project.objects.prefetch_related(
-        'costing',
+        'project_costing',
         'expense_reports__items',
         'invoices'
     )
@@ -369,15 +369,15 @@ def project_budgets(request):
     project_data = []
 
     for project in projects:
-        costing = getattr(project, 'costing', None)
+        costing = getattr(project, 'project_costing', None)
         estimated = costing.estimated_cost if costing else 0
 
-        # Actual cost: sum of all expense items
         actual = project.expense_reports.aggregate(
             total=Sum('items__amount')
         )['total'] or 0
 
         remaining = estimated - actual
+
         project_data.append({
             'project': project,
             'estimated_cost': estimated,
@@ -387,12 +387,10 @@ def project_budgets(request):
 
     return render(request, "dashboard/accountant/project_budgets.html", {"projects": project_data})
 
-
 @login_required(login_url='/users/login')
 def budget_vs_actual(request):
-    # Prefetch for efficiency
     projects = Project.objects.prefetch_related(
-        'costing',
+        'project_costing',
         'expense_reports__items',
         'invoices'
     )
@@ -400,7 +398,7 @@ def budget_vs_actual(request):
     project_data = []
 
     for project in projects:
-        costing = getattr(project, 'costing', None)
+        costing = getattr(project, 'project_costing', None)
         estimated = costing.estimated_cost if costing else 0
 
         actual = project.expense_reports.aggregate(
@@ -427,16 +425,20 @@ def budget_vs_actual(request):
 @login_required(login_url='/users/login')
 def remaining_budget(request):
     projects = Project.objects.prefetch_related(
-        'costing',
+        'project_costing',
         'expense_reports__items'
     )
 
     project_data = []
 
     for project in projects:
-        costing = getattr(project, 'costing', None)
+        costing = getattr(project, 'project_costing', None)
         estimated = costing.estimated_cost if costing else 0
-        actual = project.expense_reports.aggregate(total=Sum('items__amount'))['total'] or 0
+
+        actual = project.expense_reports.aggregate(
+            total=Sum('items__amount')
+        )['total'] or 0
+
         remaining = estimated - actual
 
         project_data.append({
@@ -446,22 +448,24 @@ def remaining_budget(request):
 
     return render(request, "dashboard/accountant/remaining_budget.html", {"projects": project_data})
 
-
 @login_required(login_url='/users/login')
 def cost_overrun_alerts(request):
     projects = Project.objects.prefetch_related(
-        'costing',
+        'project_costing',
         'expense_reports__items'
     )
 
     overrun_projects = []
 
     for project in projects:
-        costing = getattr(project, 'costing', None)
+        costing = getattr(project, 'project_costing', None)
         if not costing:
             continue
 
-        actual = project.expense_reports.aggregate(total=Sum('items__amount'))['total'] or 0
+        actual = project.expense_reports.aggregate(
+            total=Sum('items__amount')
+        )['total'] or 0
+
         if actual > costing.estimated_cost:
             overrun_projects.append({
                 'project': project,
@@ -477,16 +481,46 @@ def cost_overrun_alerts(request):
 
 
 # ---------------- Monthly Expense Report ---------------- #
-@login_required(login_url='/users/login')
 def monthly_expense_report(request):
-    # Annotate each expense report by month
-    expenses = ExpenseReport.objects.annotate(
-        month=TruncMonth('expense_date')
-    ).values('month').annotate(
-        total_amount=Sum('items__amount')
-    ).order_by('-month')
+    month_input = request.GET.get('month')
+    today = timezone.now()
 
-    return render(request, "dashboard/accountant/monthly_expense_report.html", {"expenses": expenses})
+    today_year = today.year
+    today_month = today.month
+
+    if month_input:
+        year, month = map(int, month_input.split('-'))
+    else:
+        year = today_year
+        month = today_month
+
+    reports = ExpenseReport.objects.filter(
+        expense_date__month=month,
+        expense_date__year=year,
+        status='approved'
+    ).select_related('project').prefetch_related('items')
+
+    total_expense = sum([r.total_amount for r in reports])
+
+    category_data = reports.values('category').annotate(
+        total=Sum('items__amount')
+    )
+
+    project_data = reports.values('project__title').annotate(
+        total=Sum('items__amount')
+    )
+
+    return render(request, 'dashboard/accountant/monthly_expense_report.html', {
+        'reports': reports,
+        'total_expense': total_expense,
+        'category_data': category_data,
+        'project_data': project_data,
+        'month': month,
+        'year': year,
+        'today_year': today_year,
+        'today_month': today_month,
+    })
+
 
 
 # ---------------- Project Profit Report ---------------- #
@@ -495,13 +529,13 @@ def project_profit_report(request):
     projects = Project.objects.prefetch_related(
         'invoices',
         'expense_reports__items',
-        'costing'
+        'project_costing'
     )
     report_data = []
 
     for project in projects:
         # Safely get estimated cost
-        estimated = getattr(project.costing, 'estimated_cost', 0)
+        estimated = getattr(project.project_costing, 'estimated_cost', 0)
 
         # Actual expenses
         actual = project.expense_reports.aggregate(total=Sum('items__amount'))['total'] or 0
@@ -541,29 +575,39 @@ def cash_flow_summary(request):
 @login_required(login_url='/users/login')
 def gst_tax_reports(request):
     gst_rate = Decimal('0.18')  # 18% GST
+    today = timezone.now()
+    today_year = today.year
+    today_month = today.month
 
-    # Safe annotation for DecimalField
-    invoices = Invoice.objects.filter(status='paid').annotate(
-        gst_amount=Cast(
-            F('total_amount') * gst_rate,
-            DecimalField(max_digits=12, decimal_places=2)
-        )
+    # Month filter in YYYY-MM format
+    month_input = request.GET.get('month')
+    if month_input:
+        year, month = map(int, month_input.split('-'))
+    else:
+        year, month = today_year, today_month
+
+    invoices = Invoice.objects.filter(
+        status='paid',
+        issue_date__year=year,
+        issue_date__month=month
+    ).annotate(
+        gst_amount=Cast(F('total_amount') * gst_rate, DecimalField(max_digits=12, decimal_places=2))
     )
 
     total_gst = invoices.aggregate(total=Sum('gst_amount'))['total'] or 0
+    total_amount = invoices.aggregate(total=Sum('total_amount'))['total'] or 0
 
     return render(request, "dashboard/accountant/gst_tax_reports.html", {
         'invoices': invoices,
         'total_gst': total_gst,
-        'gst_rate': gst_rate * 100
+        'total_amount': total_amount,
+        'gst_rate': gst_rate * 100,
+        'year': year,
+        'month': month,
+        'today_year': today_year,
+        'today_month': today_month,
     })
 
-
-
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from .models import ProjectCosting
-from projects.models import Project
 
 @login_required(login_url='/users/login')
 def project_costing(request):
@@ -580,9 +624,9 @@ def project_costing(request):
         costing_data.append({
             "project": project,
             "estimated_cost": costing.estimated_cost,
-            "actual_cost": costing.actual_cost(),
-            "revenue": costing.revenue(),
-            "profit": costing.profit(),
+            "actual_cost": costing.actual_cost,
+            "revenue": costing.revenue,
+            "profit": costing.profit,
         })
 
     context = {

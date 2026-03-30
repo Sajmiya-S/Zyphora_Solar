@@ -2,53 +2,87 @@
 
 {% block content %}
 
-<nav aria-label="breadcrumb" class="mb-3">
-    <div class="container-fluid">
-        <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+<div class="container mt-4">
+
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a>
+            </li>
             <li class="breadcrumb-item active" aria-current="page">Expense List</li>
         </ol>
+    </nav>
+
+    <!-- Header + Add Expense Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="text-primary"><i class="bi bi-wallet2 me-2"></i>Expenses</h4>
+        <a href="{% url 'create_expense' %}" class="btn btn-primary ">
+            <i class="bi bi-plus-lg me-1"></i> Add Expense
+        </a>
     </div>
-</nav>
 
-<div class="d-flex justify-content-between mb-3">
-    <h4>Expenses</h4>
-    <a href="{% url 'create_expense' %}" class="btn btn-primary">Add Expense</a>
+    <!-- Expenses Table -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Project</th>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Submitted By</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in expenses %}
+                        <tr>
+                            <td>{{ e.project }}</td>
+                            <td>{{ e.expense_date|date:"d M Y" }}</td>
+                            <td>{{ e.category }}</td>
+                            <td>{{ e.submitted_by }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if e.status == 'approved' %}bg-success
+                                    {% elif e.status == 'pending' %}bg-warning text-dark
+                                    {% elif e.status == 'rejected' %}bg-danger
+                                    {% endif %}">
+                                    {{ e.status|title }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if e.status == 'approved' %}
+                                <a href="{% url 'download_report' 'expense' e.id %}" class="btn btn-sm btn-outline-primary">Download</a>
+                                {% endif %}
+                                <a href="{% url 'expense_detail' e.id %}" class="btn btn-sm btn-outline-secondary me-1">
+                                    View
+                                </a>
+                                {% if e.status == "pending" %}
+                                <a href="{% url 'approve_expense' e.id %}" class="btn btn-sm btn-success me-1">
+                                    Approve
+                                </a>
+                                <a href="{% url 'reject_expense' e.id %}" class="btn btn-sm btn-danger">
+                                    Reject
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                No expenses found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 </div>
-
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Project</th>
-            <th>Date</th>
-            <th>Category</th>
-            <th>Submitted By</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for e in expenses %}
-        <tr>
-            <td>{{ e.project }}</td>
-            <td>{{ e.expense_date }}</td>
-            <td>{{ e.category }}</td>
-            <td>{{ e.submitted_by }}</td>
-            <td>{{ e.status }}</td>
-            <td>
-                <a href="{% url 'expense_detail' e.id %}" class="btn btn-sm btn-secondary">View</a>
-                {% if e.status == "pending" %}
-                <a href="{% url 'approve_expense' e.id %}" class="btn btn-sm btn-success">Approve</a>
-                <a href="{% url 'reject_expense' e.id %}" class="btn btn-sm btn-danger">Reject</a>
-                {% else %}
-                <span class="badge {% if e.status == 'approved' %}bg-success{% else %}bg-danger{% endif %}">
-                    {{ e.status }}
-                </span>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 
 {% endblock %}

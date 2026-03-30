@@ -1,0 +1,76 @@
+{% extends 'dashboard/dashboard.html' %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+        <a href="{% url request.user.role %}">
+            {{ request.user.role|title }} Dashboard
+        </a>
+    </li>
+    <li class="breadcrumb-item active">Completion Report</li>
+  </ol>
+</nav>
+
+<div class="container mt-4">
+
+    <!-- Header -->
+    <div class="mb-3">
+        <h4 class="fw-bold text-success">
+            <i class="bi bi-flag-fill me-2"></i>
+            Project Completion Report
+        </h4>
+        <p class="text-muted mb-0">
+            Submit final report after project completion
+        </p>
+    </div>
+
+    <!-- Form -->
+    <form method="POST" enctype="multipart/form-data" class="card shadow-sm border-0 p-4">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label">Project</label>
+            <input type="text" class="form-control" value="{{ project.title }}" disabled>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Report Title</label>
+            <input type="text" name="title" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Work Summary</label>
+            <textarea name="description" rows="4" class="form-control" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Issues Faced</label>
+            <textarea name="issues" rows="2" class="form-control"></textarea>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Before Image</label>
+                <input type="file" name="before_image" class="form-control">
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">After Image</label>
+                <input type="file" name="after_image" class="form-control">
+            </div>
+        </div>
+
+        <div class="text-end">
+            <button class="btn btn-success">
+                <i class="bi bi-check-circle me-1"></i>
+                Submit Completion Report
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

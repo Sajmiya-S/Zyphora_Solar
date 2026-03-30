@@ -1,0 +1,174 @@
+{% extends 'dashboard/dashboard.html' %}
+
+{% block content %}
+
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'engineer' %}">Engineer Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'daily_report_list' %}">Daily Work Reports</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Submit Work Report</li>
+      </ol>
+    </nav>
+
+    
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="mb-4">
+        <h4 class="fw-bold text-primary">
+            <i class="bi bi-journal-text me-2"></i> Submit Work Report
+        </h4>
+        <p class="text-muted mb-0">Fill in your daily work details</p>
+    </div>
+
+    <!-- Card -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Errors -->
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    Please fix the errors below.
+                </div>
+                {% endif %}
+
+                <div class="row g-3">
+
+                    <!-- Project -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            Project <span class="text-danger">*</span>
+                        </label>
+                        {{ form.project }}
+                        <div class="text-danger small">{{ form.project.errors }}</div>
+                    </div>
+
+                    <!-- Work Type -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">
+                            Work Type <span class="text-danger">*</span>
+                        </label>
+                        {{ form.work_type }}
+                        <div class="text-danger small">{{ form.work_type.errors }}</div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Status</label>
+                        {{ form.status }}
+                    </div>
+
+                    <!-- Date -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Date</label>
+                        {{ form.date }}
+                    </div>
+
+                    <!-- Description -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">
+                            Description <span class="text-danger">*</span>
+                        </label>
+                        {{ form.description }}
+                        <div class="text-danger small">{{ form.description.errors }}</div>
+                    </div>
+
+                    <!-- Image Section -->
+                    <div class="col-12 mt-3">
+                        <h6 class="fw-bold text-secondary">📸 Work Images</h6>
+                    </div>
+
+                    <!-- Before Image -->
+                    <div class="col-md-6">
+                        <label class="form-label">Before Work</label>
+                        {{ form.before_image }}
+
+                        <!-- Existing Image (Edit Mode) -->
+                        {% if form.instance.before_image %}
+                        <img src="{{ form.instance.before_image.url }}"
+                             class="img-fluid mt-2 rounded"
+                             style="max-height:150px;">
+                        {% endif %}
+
+                        <!-- Preview -->
+                        <img id="beforePreview"
+                             class="img-fluid mt-2 rounded d-none"
+                             style="max-height:150px;">
+                    </div>
+
+                    <!-- After Image -->
+                    <div class="col-md-6">
+                        <label class="form-label">After Work</label>
+                        {{ form.after_image }}
+
+                        <!-- Existing Image -->
+                        {% if form.instance.after_image %}
+                        <img src="{{ form.instance.after_image.url }}"
+                             class="img-fluid mt-2 rounded"
+                             style="max-height:150px;">
+                        {% endif %}
+
+                        <!-- Preview -->
+                        <img id="afterPreview"
+                             class="img-fluid mt-2 rounded d-none"
+                             style="max-height:150px;">
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="col-12 text-end mt-4">
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                            <i class="bi bi-check-circle me-1"></i> Submit Report
+                        </button>
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- ✅ Image Preview Script -->
+<script>
+function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.classList.remove("d-none");
+        };
+
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const beforeInput = document.querySelector("input[name='before_image']");
+    const afterInput = document.querySelector("input[name='after_image']");
+
+    if (beforeInput) {
+        beforeInput.addEventListener("change", function () {
+            previewImage(this, "beforePreview");
+        });
+    }
+
+    if (afterInput) {
+        afterInput.addEventListener("change", function () {
+            previewImage(this, "afterPreview");
+        });
+    }
+
+});
+</script>
+
+{% endblock %}

@@ -1,54 +1,123 @@
 {% extends 'dashboard/dashboard.html' %}
 {% block content %}
-<h3>My Service History</h3>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Service Title</th>
-            <th>Project</th>
-            <th>Status</th>
-            <th>Report</th>
-            <th>Created At</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for request in service_requests %}
-        <tr>
-            <td>{{ request.title }}</td>
-            <td>{{ request.project.title }}</td>
-            <td>
-                {% if request.status == 'pending' %}
-                    <span class="badge bg-warning text-dark">{{ request.get_status_display }}</span>
-                {% elif request.status == 'in_progress' %}
-                    <span class="badge bg-primary">{{ request.get_status_display }}</span>
-                {% elif request.status == 'completed' %}
-                    <span class="badge bg-success">{{ request.get_status_display }}</span>
-                {% else %}
-                    <span class="badge bg-secondary">{{ request.get_status_display }}</span>
-                {% endif %}
-            </td>
-            <td>
-                {% if request.report %}
-                    <span class="badge bg-success">Submitted</span>
-                {% else %}
-                    <span class="badge bg-warning text-dark">Pending</span>
-                {% endif %}
-            </td>
-            <td>{{ request.created_at|date:"d M Y" }}</td>
-            <td>
-                {% if not request.report %}
-                    <a href="{% url 'add_service_report' request.id %}" class="btn btn-sm btn-success">Add Report</a>
-                {% else %}
-                    <a href="{% url 'service_report_detail' request.id %}" class="btn btn-sm btn-secondary">View Report</a>
-                {% endif %}
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="6" class="text-center">No service history available.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+
+<div class="container mt-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb mb-0 align-items-center">
+        <li class="breadcrumb-item">
+            <a href="{% url request.user.role %}" class="d-flex align-items-center">
+                {{ request.user.role|title }} Dashboard
+            </a>
+        </li>
+        <li class="breadcrumb-item active d-flex align-items-center">
+            Service History
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="mb-4">
+        <h4 class="fw-bold d-flex align-items-center text-primary mb-1">
+            <i class="bi bi-clock-history me-2"></i>
+            My Service History
+        </h4>
+        <p class="text-muted">
+            View all completed and ongoing service requests along with reports.
+        </p>
+    </div>
+
+    <!-- Table Card -->
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+
+            <table class="table align-middle mb-0">
+
+                <thead class="table-secondary">
+                    <tr>
+                        <th>Service</th>
+                        <th>Project</th>
+                        <th>Status</th>
+                        <th>Report</th>
+                        <th>Date</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for request in service_requests %}
+                    <tr>
+
+                        <!-- Service Title -->
+                        <td class="fw-semibold">
+                            <i class="bi bi-wrench-adjustable me-1"></i>
+                            {{ request.title }}
+                        </td>
+
+                        <!-- Project -->
+                        <td>{{ request.project.title }}</td>
+
+                        <!-- Status -->
+                        <td>
+                            <span class="badge px-3 py-2
+                                {% if request.status == 'pending' %}bg-warning text-dark
+                                {% elif request.status == 'in_progress' %}bg-primary
+                                {% elif request.status == 'completed' %}bg-success
+                                {% else %}bg-secondary{% endif %}">
+                                {{ request.get_status_display }}
+                            </span>
+                        </td>
+
+                        <!-- Report Status -->
+                        <td>
+                            {% if request.report %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i> Submitted
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-hourglass-split me-1"></i> Pending
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Date -->
+                        <td>{{ request.created_at|date:"d M Y" }}</td>
+
+                        <!-- Action -->
+                        <td class="text-end">
+                            {% if not request.report %}
+                                <a href="{% url 'add_service_report' request.id %}" 
+                                   class="btn btn-sm btn-success d-inline-flex align-items-center">
+                                    <i class="bi bi-file-earmark-plus me-1"></i> Add Report
+                                </a>
+                            {% else %}
+                                <a href="{% url 'service_report_detail' request.id %}" 
+                                   class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center">
+                                    <i class="bi bi-eye me-1"></i> View
+                                </a>
+                                <a href="{% url 'download_report' 'service' request.id %}" class="btn btn-sm btn-outline-primary">Download</a>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <i class="bi bi-inbox fs-3 text-muted"></i>
+                            <p class="mt-2 mb-0 text-muted">No service history available.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+</div>
+
 {% endblock %}

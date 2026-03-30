@@ -2,41 +2,60 @@
 
 {% block content %}
 
-<nav aria-label="breadcrumb" class="mb-3">
-    <div class="container-fluid">
-        <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+<div class="container mt-4">
+
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a></li>
             <li class="breadcrumb-item active" aria-current="page">Payments</li>
         </ol>
+    </nav>
+
+    <!-- Header + Add Payment Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="text-primary"><i class="bi bi-cash-stack me-2"></i>Payments</h4>
+        <a href="{% url 'create_payment' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-lg me-1"></i> Add Payment
+        </a>
     </div>
-</nav>
 
-<div class="d-flex justify-content-between mb-3">
-    <h4>Payments</h4>
-    <a href="{% url 'create_payment' %}" class="btn btn-primary">Add Payment</a>
+    <!-- Payments Table -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Invoice</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Date</th>
+                            <th>Received By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td><strong>{{ payment.invoice }}</strong></td>
+                            <td>₹{{ payment.amount|floatformat:2 }}</td>
+                            <td>{{ payment.method }}</td>
+                            <td>{{ payment.payment_date|date:"d M Y" }}</td>
+                            <td>{{ payment.received_by }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                No payments recorded yet
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 </div>
-
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Invoice</th>
-            <th>Amount</th>
-            <th>Method</th>
-            <th>Date</th>
-            <th>Received By</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for payment in payments %}
-        <tr>
-            <td>{{ payment.invoice }}</td>
-            <td>{{ payment.amount }}</td>
-            <td>{{ payment.method }}</td>
-            <td>{{ payment.payment_date }}</td>
-            <td>{{ payment.received_by }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 
 {% endblock %}

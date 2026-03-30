@@ -1,76 +1,119 @@
-<!-- ================= WORK SECTION ================= -->
+{% load static %}
 
-<li class="sidebar-heading mt-3 text-muted small text-uppercase">Work</li>
+<!-- ================= SIDEBAR ================= -->
+<nav id="sidebar" class="sidebar bg-body-tertiary border-end">
 
-<!-- Tasks -->
+    <div class="sidebar-header d-flex align-items-center justify-content-between px-3 py-2">
 
-<li class="nav-item">
-    <a class="nav-link d-flex align-items-center justify-content-between"
-       data-bs-toggle="collapse"
-       href="#engineerTaskMenu">
+        <!-- Logo -->
+        <div class="sidebar-logo d-flex align-items-center">
+            <img src="{% static 'images/logo1.png' %}"
+                class="sidebar-logo-full img-fluid"
+                alt="Zyphora Solar Logo">
+            <img src="{% static 'images/favicon.ico' %}"
+                class="sidebar-logo-mini"
+                alt="Zyphora Icon">
+        </div>
 
-    <div class="d-flex align-items-center">
-        <i class="bi bi-list-check nav-icon text-warning"></i>
-        <span class="link-text ms-2">
-            Tasks
-            {% if task_count %}
-            <span class="badge bg-warning rounded-pill">{{ task_count }}</span>
-            {% endif %}
-        </span>
+        <!-- Sidebar Toggle: ONLY on desktop. On mobile, hamburger in topnavbar is used. -->
+        <label for="sidebarToggleCheckbox" class="toggle-btn d-none d-lg-flex">
+            <i class="bi bi-chevron-left arrow-icon"></i>
+        </label>
+
     </div>
 
-    <i class="bi bi-chevron-down submenu-arrow"></i>
-</a>
 
-<div class="collapse submenu" id="engineerTaskMenu" data-bs-parent="#sidebarMenu">
-    <ul class="nav flex-column ms-4">
+    <!-- ===== SIDEBAR MENU ===== -->
+    <ul class="nav flex-column px-3" id="sidebarMenu">
 
-        <!-- My Tasks -->
-        <li>
-            <a class="nav-link" href="{% url 'my_tasks' %}?filter=today">
-                Today's Tasks
-                {% if todays %}
-                    <span class="badge bg-primary rounded-pill">{{ todays }}</span>
-                {% endif %}
+        <!-- ================= DASHBOARD ================= -->
+        <li class="nav-item">
+
+            <a href="{% url 'dashboard' %}"
+               class="nav-link d-flex align-items-center {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+               data-bs-toggle="tooltip"
+               data-bs-placement="right"
+               title="Dashboard">
+
+                <i class="bi bi-speedometer2 nav-icon  text-primary "></i>
+                <span class="link-text ms-2">Dashboard</span>
+
             </a>
+
+        </li>      
+      
+      <!-- ================= WORK SECTION ================= -->
+
+        <li class="sidebar-heading mt-3 text-muted small text-uppercase">Work</li>
+
+        <!-- Tasks -->
+
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center justify-content-between"
+            data-bs-toggle="collapse"
+            href="#engineerTaskMenu">
+
+            <div class="d-flex align-items-center">
+                <i class="bi bi-list-check nav-icon text-warning"></i>
+                <span class="link-text ms-2">
+                    Tasks
+                    {% if task_count %}
+                    <span class="badge bg-warning rounded-pill">{{ task_count }}</span>
+                    {% endif %}
+                </span>
+            </div>
+
+            
+        </a>
+
+        <div class="collapse submenu" id="engineerTaskMenu" data-bs-parent="#sidebarMenu">
+            <ul class="nav flex-column ms-4">
+
+                <!-- My Tasks -->
+                <li>
+                    <a class="nav-link" href="{% url 'my_tasks' %}?filter=today">
+                        Today's Tasks
+                        {% if todays %}
+                            <span class="badge bg-primary rounded-pill">{{ todays }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+
+                <li>
+                    <a class="nav-link" href="{% url 'my_tasks' %}?filter=pending">
+                        Pending Tasks
+                        {% if pending %}
+                            <span class="badge bg-warning rounded-pill">{{ pending }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+
+                <li>
+                    <a class="nav-link" href="{% url 'my_tasks' %}?filter=overdue">
+                        Overdue Tasks
+                        {% if overdue %}
+                            <span class="badge bg-danger rounded-pill">{{ overdue }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+
+                <li>
+                    <a class="nav-link" href="{% url 'my_tasks' %}?filter=completed">
+                        Completed Tasks
+                    </a>
+                </li>
+
+                <li class="mt-2">
+                    <a class="nav-link text-info" href="{% url 'assigned_tasks' %}">
+                        Assigned Tasks
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+
+
         </li>
-
-        <li>
-            <a class="nav-link" href="{% url 'my_tasks' %}?filter=pending">
-                Pending Tasks
-                {% if pending %}
-                    <span class="badge bg-warning rounded-pill">{{ pending }}</span>
-                {% endif %}
-            </a>
-        </li>
-
-        <li>
-            <a class="nav-link" href="{% url 'my_tasks' %}?filter=overdue">
-                Overdue Tasks
-                {% if overdue %}
-                    <span class="badge bg-danger rounded-pill">{{ overdue }}</span>
-                {% endif %}
-            </a>
-        </li>
-
-        <li>
-            <a class="nav-link" href="{% url 'my_tasks' %}?filter=completed">
-                Completed Tasks
-            </a>
-        </li>
-
-        <li class="mt-2">
-            <a class="nav-link text-info" href="{% url 'assigned_tasks' %}">
-                <i class="bi bi-person-check me-1"></i>
-                Assigned Tasks
-            </a>
-        </li>
-
-    </ul>
-</div>
-
-
-</li>
 
 
         <!-- ================= PROJECTS SECTION ================= -->
@@ -86,14 +129,15 @@
                     <span class="link-text ms-2">Projects</span>
                 </div>
 
-                <i class="bi bi-chevron-down submenu-arrow"></i>
+                
             </a>
 
             <div class="collapse submenu" id="engineerProjectMenu" data-bs-parent="#sidebarMenu">
                 <ul class="nav flex-column ms-4">
                     <li><a class="nav-link" href="{% url 'project_list' %}">My Projects</a></li>
-                    <li><a class="nav-link" href="{% url 'progress' %}">Installation Progress</a></li>
+                    <li><a class="nav-link" href="{% url 'feasibility_list' %}">Feasibility Study</a></li>
                     <li><a class="nav-link" href="{% url 'design_list' %}">Design Management</a></li>
+                    <li><a class="nav-link" href="{% url 'installation_progress' %}">Installation Progress</a></li>
                     <li><a class="nav-link" href="{% url 'recent_activity' %}">Project Activities</a></li>
                     <li><a class="nav-link" href="{% url 'gallery_projects' %}">Project Gallery</a></li>
                 </ul>
@@ -114,7 +158,7 @@
                     <span class="link-text ms-2">Site Visit</span>
                 </div>
 
-                <i class="bi bi-chevron-down submenu-arrow"></i>
+                
             </a>
 
             <div class="collapse submenu" id="siteVisitMenu" data-bs-parent="#sidebarMenu">
@@ -136,7 +180,7 @@
                     <span class="link-text ms-2">Materials</span>
                 </div>
 
-                <i class="bi bi-chevron-down submenu-arrow"></i>
+                
             </a>
 
             <div class="collapse submenu" id="engineerInventoryMenu" data-bs-parent="#sidebarMenu">
@@ -161,7 +205,7 @@
                         <span class="link-text ms-2">Expenses</span>
                     </div>
 
-                    <i class="bi bi-chevron-down submenu-arrow"></i>
+                    
                 </a>
 
                 <div class="collapse submenu" id="engineerFinanceMenu">
@@ -196,7 +240,7 @@
                     <span class="link-text ms-2">Service Requests</span>
                 </div>
 
-                <i class="bi bi-chevron-down submenu-arrow"></i>
+                
             </a>
 
             <div class="collapse submenu" id="engineerServiceMenu" data-bs-parent="#sidebarMenu">
@@ -206,3 +250,81 @@
                 </ul>
             </div>
         </li>
+
+        
+            <!-- ================= REPORTS ================= -->
+            <li class="sidebar-heading mt-3 text-muted small">REPORTS</li>
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center justify-content-between"
+                   data-bs-toggle="collapse"
+                   href="#workReportsMenu">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-journal-text nav-icon text-info"></i>
+                        <span class="link-text ms-2">
+                            Work Reports
+                        </span>
+                    </div>
+                    
+                </a>
+                <div class="collapse submenu" id="workReportsMenu" data-bs-parent="#sidebarMenu">
+                    <ul class="nav flex-column ms-4">
+                        <li><a class="nav-link" href="{% url 'daily_report_list' %}">Daily Work Report</a></li>
+                        <li><a class="nav-link" href="{% url 'weekly_report_list' %}">Weekly Summary</a></li>
+                        <li><a class="nav-link" href="{% url 'completion_report_list' %}">Work Completion Report</a></li>
+                    </ul>
+                </div>
+            </li>
+
+
+            <li class="sidebar-heading mt-3 text-muted small text-uppercase">System</li>
+        <!-- ================= NOTIFICATIONS ================= -->
+        <li class="nav-item mt-3">
+            <a href="{% url 'notifications' %}" class="nav-link d-flex align-items-center">
+                <i class="bi bi-bell nav-icon text-danger"></i>
+                <span class="link-text ms-2">Notifications</span>
+            </a>
+        </li>
+
+
+        <!-- ================= PROFILE ================= -->        
+        <li class="nav-item mt-3">
+            <a href="{% url 'profile' %}" class="nav-link d-flex align-items-center">
+                <i class="bi bi-person-circle nav-icon text-primary"></i>
+                <span class="link-text ms-2">My Profile</span>
+            </a>
+        </li>
+        <!-- ================= SETTINGS ================= -->
+        <li class="nav-item mt-3">
+
+            <a href="#"
+               class="nav-link d-flex align-items-center"
+               data-bs-toggle="tooltip"
+               data-bs-placement="right"
+               title="Settings">
+
+                <i class="bi bi-gear nav-icon"></i>
+                <span class="link-text ms-2">Settings</span>
+
+            </a>
+
+        </li>
+
+    </ul>
+
+</nav>
+
+
+<!-- ================= TOOLTIP SCRIPT ================= -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    var tooltipTriggerList = [].slice.call(
+        document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+});
+</script>

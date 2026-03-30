@@ -21,7 +21,7 @@
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
         <div>
-            <h1 class="page-title"><i class="bi bi-people-fill"></i> Lead Management</h1>
+            <h1 class="page-title fw-bold text-primary"><i class="bi bi-people-fill"></i> Lead Management</h1>
             <p class="page-subtitle">Track and manage potential customers through your sales pipeline.</p>
         </div>
         <a href="{% url 'add_lead' %}" class="add-lead-btn text-center"><i class="fa-solid fa-plus"></i> Add Lead</a>
@@ -39,7 +39,7 @@
             </select>
         </div>
         <div class="col-12 col-md-3">
-            <input type="text" name="q" class="form-control" placeholder="Search lead (name, phone...)" value="{{ request.GET.q }}">
+            <input type="text" name="q" class="form-control" placeholder="Search lead (name, phone...)" value="{{ query }}">
         </div>
         <div class="col-12 col-md-auto">
             <button class="btn btn-primary w-100"><i class="bi bi-search"></i> Apply</button>
@@ -51,7 +51,7 @@
     <nav class="mb-3">
         <ul class="pagination justify-content-center flex-wrap">
             {% if page_obj.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&status={{ status }}&q={{ request.GET.q|default_if_none:'' }}">Previous</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ querystring }}">Previous</a></li>
             {% else %}
                 <li class="page-item disabled"><span class="page-link">Previous</span></li>
             {% endif %}
@@ -60,12 +60,12 @@
                 {% if page_obj.number == num %}
                     <li class="page-item active"><span class="page-link">{{ num }}</span></li>
                 {% else %}
-                    <li class="page-item"><a class="page-link" href="?page={{ num }}&status={{ status }}&q={{ request.GET.q|default_if_none:'' }}">{{ num }}</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}&{{ querystring }}">{{ num }}</a></li>
                 {% endif %}
             {% endfor %}
 
             {% if page_obj.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&status={{ status }}&q={{ request.GET.q|default_if_none:'' }}">Next</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ querystring }}">Next</a></li>
             {% else %}
                 <li class="page-item disabled"><span class="page-link">Next</span></li>
             {% endif %}
@@ -97,7 +97,7 @@
                             <td>
                                 <strong>{{ lead.name }}</strong>
                                 {% if lead.follow_up_date %}
-                                    <div class="follow-up">Follow-up: {{ lead.follow_up_date|date:"M d" }}</div>
+                                    <div class="follow-up">Follow-up: {{ lead.follow_up_date|date:"M d, Y" }}</div>
                                 {% endif %}
                             </td>
                             <td><a href="tel:{{ lead.phone }}">{{ lead.phone }}</a></td>
@@ -143,7 +143,7 @@
     <nav class="mt-3">
         <ul class="pagination justify-content-center flex-wrap">
             {% if page_obj.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&status={{ status }}&q={{ request.GET.q|default_if_none:'' }}">Previous</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ querystring }}">Previous</a></li>
             {% else %}
                 <li class="page-item disabled"><span class="page-link">Previous</span></li>
             {% endif %}
@@ -152,12 +152,12 @@
                 {% if page_obj.number == num %}
                     <li class="page-item active"><span class="page-link">{{ num }}</span></li>
                 {% else %}
-                    <li class="page-item"><a class="page-link" href="?page={{ num }}&status={{ status }}&q={{ request.GET.q|default_if_none:'' }}">{{ num }}</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}&{{ querystring }}">{{ num }}</a></li>
                 {% endif %}
             {% endfor %}
 
             {% if page_obj.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&status={{ status }}&q={{ request.GET.q|default_if_none:'' }}">Next</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ querystring }}">Next</a></li>
             {% else %}
                 <li class="page-item disabled"><span class="page-link">Next</span></li>
             {% endif %}

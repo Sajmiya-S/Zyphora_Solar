@@ -1,0 +1,64 @@
+
+{% load static %}
+
+<!-- ================= SIDEBAR ================= -->
+<nav id="sidebar" class="sidebar bg-body-tertiary border-end">
+
+    <!-- ===== HEADER (LOGO + TOGGLE) ===== -->
+    <div class="sidebar-header d-flex align-items-center justify-content-between px-3 py-2">
+
+        <!-- Logo -->
+        <div class="sidebar-logo d-flex align-items-center">
+            <img src="{% static 'images/logo1.png' %}"
+                class="sidebar-logo-full img-fluid"
+                alt="Zyphora Solar Logo">
+            <img src="{% static 'images/favicon.ico' %}"
+                class="sidebar-logo-mini"
+                alt="Zyphora Icon">
+        </div>
+
+        <!-- Sidebar Toggle: ONLY on desktop. On mobile, hamburger in topnavbar is used. -->
+        <label for="sidebarToggleCheckbox" class="toggle-btn d-none d-lg-flex">
+            <i class="bi bi-chevron-left arrow-icon"></i>
+        </label>
+
+    </div>
+
+    <!-- ===== SIDEBAR MENU ===== -->
+    <ul class="nav flex-column px-3">
+
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a href="{% url 'dashboard' %}" class="nav-link">
+                <i class="bi bi-speedometer2"></i>
+                <span class="ms-2">Dashboard</span>
+            </a>
+        </li>
+
+        <!-- Licensing -->
+        <li class="nav-item mt-3">
+            <a href="{% url 'licensing_list' %}" class="nav-link">
+                <i class="bi bi-file-earmark-text text-success"></i>
+                <span class="ms-2">Licensing</span>
+            </a>
+        </li>
+
+        <!-- My Projects  -->
+        <li class="nav-item mt-2">
+            <a href="{% url 'project_list' %}" class="nav-link">
+                <i class="bi bi-folder"></i>
+                <span class="ms-2">Projects</span>
+            </a>
+        </li>
+
+        <!-- Notifications -->
+        <li class="nav-item mt-3">
+            <a href="{% url 'notifications' %}" class="nav-link">
+                <i class="bi bi-bell text-danger"></i>
+                <span class="ms-2">Notifications</span>
+            </a>
+        </li>
+
+    </ul>
+
+</nav>
