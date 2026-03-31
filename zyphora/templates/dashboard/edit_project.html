@@ -97,9 +97,21 @@
                     {% for media in media_files %}
                         <div class="col-md-3 mb-4 text-center">
                             {% if media.file.url %}
-                                <img src="{{ media.file.url }}" class="img-fluid rounded shadow-sm mb-2"
-                                     style="height:180px;object-fit:cover;width:100%;">
+
+                                {% if media.is_video %}
+                                    <video class="w-100 rounded shadow-sm mb-2"
+                                        style="height:180px; object-fit:cover;"
+                                        controls>
+                                        <source src="{{ media.file.url }}" type="video/mp4">
+                                    </video>
+                                {% else %}
+                                    <img src="{{ media.file.url }}"
+                                        class="img-fluid rounded shadow-sm mb-2"
+                                        style="height:180px;object-fit:cover;width:100%;">
+                                {% endif %}
+
                             {% endif %}
+                            
                             {% if media.caption %}
                                 <p class="small text-muted">{{ media.caption }}</p>
                             {% endif %}
@@ -161,22 +173,65 @@ input.addEventListener("change", function(){
 
 function renderFiles(){
     preview.innerHTML = "";
+
     allFiles.forEach((file, index) => {
-        let reader = new FileReader();
-        reader.onload = function(e){
-            let col = document.createElement("div");
-            col.className = "col-md-3 mb-4";
-            col.innerHTML = `
-                <div class="card preview-card shadow-sm p-2">
-                    <button type="button" class="remove-img" onclick="removeFile(${index})">×</button>
-                    <img src="${e.target.result}" class="img-fluid rounded mb-2" style="height:150px;object-fit:cover;">
-                    <input type="text" name="captions" class="form-control form-control-sm" placeholder="Caption (optional)">
+
+        let col = document.createElement("div");
+        col.className = "col-md-3 mb-4";
+
+        let fileURL = URL.createObjectURL(file);
+
+        let mediaPreview = "";
+
+        if(file.type.startsWith("video")){
+            mediaPreview = `
+                <div style="position:relative;">
+                    <video class="img-fluid rounded mb-2"
+                           style="height:150px;object-fit:cover;width:100%; pointer-events:none;">
+                        <source src="${fileURL}">
+                    </video>
+
                 </div>
             `;
-            preview.appendChild(col);
+        } else {
+            mediaPreview = `
+                <img src="${fileURL}"
+                     class="img-fluid rounded mb-2"
+                     style="height:150px;object-fit:cover;width:100%;">
+            `;
         }
-        reader.readAsDataURL(file);
+
+        col.innerHTML = `
+            <div class="card preview-card shadow-sm p-2 position-relative">
+
+                <!-- REMOVE BUTTON (NOW ALWAYS WORKS) -->
+                <button type="button"
+                        class="remove-img"
+                        onclick="removeFile(${index})"
+                        style="
+                            position:absolute;
+                            top:5px;
+                            right:5px;
+                            z-index:10;
+                            background:red;
+                            color:white;
+                            border:none;
+                            border-radius:50%;
+                            width:25px;
+                            height:25px;
+                        ">×</button>
+
+                ${mediaPreview}
+
+                <input type="text" name="captions"
+                       class="form-control form-control-sm"
+                       placeholder="Caption (optional)">
+            </div>
+        `;
+
+        preview.appendChild(col);
     });
+
     updateFileInput();
 }
 

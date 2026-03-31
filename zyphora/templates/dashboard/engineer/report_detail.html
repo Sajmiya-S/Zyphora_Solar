@@ -1,31 +1,128 @@
 {% extends 'dashboard/dashboard.html' %}
-
 {% block content %}
-<div class="container-fluid">
 
-    <h4 class="mb-3">Report Details</h4>
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0 align-items-center">
+    <li class="breadcrumb-item">
+        <a href="{% url request.user.role %}" class="d-flex align-items-center">
+            {{ request.user.role|title }} Dashboard
+        </a>
+    </li>
+    <li class="breadcrumb-item active d-flex align-items-center">
+        View Work Report
+    </li>
+  </ol>
+</nav>
 
-    <div class="card shadow-sm p-3">
+<div class="container my-5">
 
-        <p><strong>Project:</strong> {{ report.project.name }}</p>
-        <p><strong>Date:</strong> {{ report.date }}</p>
-        <p><strong>Work Type:</strong> {{ report.get_work_type_display }}</p>
-        <p><strong>Status:</strong> {{ report.status }}</p>
-        <p><strong>Description:</strong><br>{{ report.description }}</p>
+    <!-- 🔷 HEADER -->
+    <div class="text-center mb-4">
+        <h2 class="fw-bold">Zyphora Solar Work Report</h2>
+        <p class="text-muted mb-0">Report ID: WR-{{ report.id }}</p>
+        <p class="text-muted">Date: {{ report.date|date:"d M Y" }}</p>
+        <p class="text-muted">Type: {{ report.get_report_type_display }}</p>
+        <hr>
+    </div>
 
-        {% if report.before_image %}
-            <p><strong>Before:</strong><br>
-                <img src="{{ report.before_image.url }}" width="200">
-            </p>
+    <!-- 🔷 PROJECT & REPORT INFO -->
+    <div class="section mb-4">
+        <h5 class="fw-bold">Project Information</h5>
+        <table class="table table-bordered">
+            <tbody>
+                <tr>
+                    <th style="width:200px;">Project</th>
+                    <td>{{ report.project.title }}</td>
+                </tr>
+                <tr>
+                    <th>Assigned Engineer</th>
+                    <td>{{ report.user.employee.name }}</td>
+                </tr>
+                <tr>
+                    <th>Report Type</th>
+                    <td>{{ report.get_report_type_display }}</td>
+                </tr>
+                <tr>
+                    <th>Status</th>
+                    <td>{{ report.status|capfirst }}</td>
+                </tr>
+                <tr>
+                    <th>Progress</th>
+                    <td>{{ report.progress }}%</td>
+                </tr>
+                {% if report.is_approved %}
+                <tr>
+                    <th>Approved By</th>
+                    <td>{{ report.approved_by.name }}</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 🔷 WORK DETAILS -->
+    <div class="section mb-4">
+        <h5 class="fw-bold">Work Details</h5>
+        <table class="table table-bordered">
+            <tbody>
+                <tr>
+                    <th>Work Type</th>
+                    <td>{{ report.get_work_type_display }}</td>
+                </tr>
+                <tr>
+                    <th>Title / Task</th>
+                    <td>{{ report.title|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <th>Description</th>
+                    <td style="white-space: pre-line;">{{ report.description }}</td>
+                </tr>
+                {% if report.issues %}
+                <tr>
+                    <th>Notes / Issues</th>
+                    <td style="white-space: pre-line;">{{ report.issues }}</td>
+                </tr>
+                {% endif %}
+                {% if report.start_time and report.end_time %}
+                <tr>
+                    <th>Work Hours</th>
+                    <td>{{ report.start_time }} - {{ report.end_time }}</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 🔷 IMAGES -->
+    <div class="section mb-4">
+        <h5 class="fw-bold">Attached Images</h5>
+        {% if report.before_image or report.after_image %}
+            <div class="row g-3">
+                {% if report.before_image %}
+                <div class="col-md-4 col-sm-6">
+                    <label>Before Work:</label>
+                    <img src="{{ report.before_image.url }}" class="img-fluid border rounded" alt="Before Work Image">
+                </div>
+                {% endif %}
+                {% if report.after_image %}
+                <div class="col-md-4 col-sm-6">
+                    <label>After Work:</label>
+                    <img src="{{ report.after_image.url }}" class="img-fluid border rounded" alt="After Work Image">
+                </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <p class="text-muted"><em>No images attached.</em></p>
         {% endif %}
+    </div>
 
-        {% if report.after_image %}
-            <p><strong>After:</strong><br>
-                <img src="{{ report.after_image.url }}" width="200">
-            </p>
-        {% endif %}
-
+    <!-- 🔷 ACTION BUTTONS -->
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'download_report' 'work' report.id %}" class="btn btn-primary">Download PDF</a>
+        <a href="{% url 'daily_report_list' %}" class="btn btn-secondary">Back to Work Reports</a>
     </div>
 
 </div>
+
 {% endblock %}

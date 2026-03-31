@@ -17,7 +17,6 @@ from django.views.decorators.http import require_POST
 from datetime import date
 
 
-
 from .utils import generate_temp_password, create_notification
 from .models import *
 from .forms import *
@@ -62,8 +61,6 @@ def login_page(request):
                             message='You logged in to Lumora Solar CRM successfully.',
                             )
             return redirect(dashboard)
-        else:
-            messages.error(request,'Invalid Username or Password!!!')
     
     return render(request,'public_view/login.html')
 
@@ -301,6 +298,7 @@ def accountant_dashboard(request):
 
     return render(request, 'dashboard/accountant/accountant.html', context)
 
+
 @login_required(login_url='/users/login')
 def sales_dashboard(request):
 
@@ -351,8 +349,6 @@ def sales_dashboard(request):
     drop_visit = contacted_count - visit_count
     drop_conversion = visit_count - converted_count
 
-    # ================= CONTEXT =================
-
     context = {
         "total_leads": total_leads,
         "open_leads": open_leads,
@@ -362,7 +358,7 @@ def sales_dashboard(request):
         "top_leads": leads.order_by('-score')[:5],
         "profile": profile,
 
-        "funnel_data": funnel_data,
+        "funnel_data": json.dumps(funnel_data),
         "conversion_rate": round(conversion_rate, 1),
 
         "drop_contact": drop_contact,
@@ -393,7 +389,7 @@ def staff_dashboard(request):
     profile = get_object_or_404(Employee, user=request.user)
 
     # Tasks assigned to this staff user
-    tasks = Task.objects.filter(assigned_to=request.user).order_by('due_date')
+    tasks = InstallationTask.objects.filter(assigned_to=request.user).order_by('due_date')
 
     # Task KPIs
     total_tasks = tasks.count()
@@ -435,14 +431,6 @@ def staff_dashboard(request):
     return render(request, 'dashboard/staff/staff.html', context)
 
 
-@login_required(login_url='/users/login')
-def liaison_dashboard(request):
-    user = request.user
-
-    tasks = LicensingTask.objects.filter(assigned_to=user)
-
-    from django.utils.timezone import now
-from django.db.models import Count
 
 @login_required(login_url='/users/login')
 def liaison_dashboard(request):
@@ -494,7 +482,23 @@ class ChangePassword(PasswordChangeView):
         return super().form_valid(form)
 
 
+@login_required
+def admin_profile(request):
+    user = request.user
+    
+    if request.method == 'POST':
+        form = AdminProfileForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_profile')
+    else:
+        form = AdminProfileForm(instance=user)
 
+    context = {
+        'form': form
+    }
+    
+    return render(request, 'dashboard/admin/admin_profile.html', context)
 
 # ======================================================
 #               EMPLOYEE MANAGEMENT
@@ -575,7 +579,6 @@ def add_employee(request):
                         sender=None,
                         link=reverse('dashboard')
                     )
-                    messages.success(request, "Employee created successfully")
                     return redirect(all_employees)
 
             except Exception as e:
@@ -749,7 +752,6 @@ def edit_post(request, bid):
             post.content = html_content
             post.save()
 
-            messages.success(request, 'Post updated successfully')
             return redirect(view_post, id=post.id)
 
     else:
@@ -763,7 +765,6 @@ def edit_post(request, bid):
 def delete_post(request,bid):
     post = BlogPost.objects.get(id=bid)
     post.delete()
-    messages.warning(request,'Post deleted')
     return redirect(blog_list)
 
 
@@ -837,7 +838,6 @@ def add_post(request):
 
             post.save()
 
-            messages.success(request, "Blog post added successfully!")
 
             return redirect('blogposts')
 
@@ -1082,7 +1082,6 @@ def notifyEmployee(request,id):
             message=message,
             category="admin"
         )
-        messages.success(request,"Message send successfully")
 
         return redirect(notifyEmployee,id=id)
     return render(request,'dashboard/notify.html',{'emp': emp})

@@ -267,7 +267,7 @@
         <h5><i class="bi bi-calculator me-2"></i>Project Costing</h5>
 
         <p><strong>Design Cost:</strong> ₹{{ project.design_costing.cost }}</p>
-        {% if not project.project_costing %}
+        {% if not project.project_costing.system_costing %}
         <form method="POST">
             {% csrf_token %}
 

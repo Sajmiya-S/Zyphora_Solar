@@ -137,7 +137,11 @@
                 </a>
 
                 <ul class="dropdown-menu dropdown-menu-end">
+                    {% if request.user.role == 'admin' %}
+                    <li><a class="dropdown-item" href="{% url 'admin_profile' %}">Profile</a></li>
+                    {% else %}
                     <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
+                    {% endif %}
                     <li><a class="dropdown-item" href="{% url 'password' %}">Change Password</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li>

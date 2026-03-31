@@ -108,10 +108,12 @@ class Lead(models.Model):
 
         # --- Create project if converted ---
         if self.status == 'converted' and old_status != 'converted':
-            from projects.models import Project
+
+            from projects.models import Project, ProjectMedia
 
             if not self.projects.exists():
-                Project.objects.create(
+
+                project = Project.objects.create(
                     title=f"{self.name} {self.service} Project",
                     lead=self,
                     project_type=self.service or 'leakproof',
@@ -119,6 +121,29 @@ class Lead(models.Model):
                     status='lead'
                 )
 
+                # ✅ 1. LINK SITE VISITS
+                visits = self.site_visits.all()
+                visits.update(project=project)
+
+                # ✅ 2. MOVE PHOTOS TO PROJECT MEDIA
+                for visit in visits:
+                    for photo in visit.photos.all():
+
+                        # جلوگیری duplicates
+                        exists = ProjectMedia.objects.filter(
+                            project=project,
+                            site_photo=photo
+                        ).exists()
+
+                        if not exists:
+                            ProjectMedia.objects.create(
+                                project=project,
+                                uploaded_by=photo.uploaded_by,
+                                file=photo.photo,  # 🔥 SAME FILE (no duplication)
+                                caption="Site Visit Photo",
+                                category='before_photo',
+                                site_photo=photo
+                            )
     def __str__(self):
         return f"{self.name} ({self.location})" if self.location else self.name
     

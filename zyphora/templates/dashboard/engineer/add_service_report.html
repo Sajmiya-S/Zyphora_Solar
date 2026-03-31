@@ -1,0 +1,149 @@
+{% extends 'dashboard/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+        <a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active">Add Service Report</li>
+  </ol>
+</nav>
+
+<div class="container mt-4">
+
+    <!-- Header -->
+    <div class="mb-4">
+        <h4 class="fw-bold text-success">
+            <i class="bi bi-flag-fill me-2"></i>{{ service_request.title }}
+        </h4>
+        <p class="text-muted mb-0">Status: {{ service_request.get_status_display }}</p>
+        <p class="text-muted mb-0">
+            Requested By: {% if service_request.requested_by %} {{ service_request.requested_by.name }} {% else %} N/A {% endif %}
+        </p>
+        <p class="text-muted mb-0">
+            Assigned Technician: {% if service_request.assigned_to %} {{ service_request.assigned_to.name }} {% else %} Pending {% endif %}
+        </p>
+        <p class="text-muted mb-0">
+            Request Date: {{ service_request.created_at|date:"d-M-Y" }}
+        </p>
+    </div>
+
+    <!-- Service Request Full Info -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>Service Request Details</strong>
+        </div>
+        <div class="card-body">
+
+            <div class="row mb-2">
+                <div class="col-md-3"><strong>Request ID:</strong></div>
+                <div class="col-md-3">SR-{{ service_request.id }}</div>
+
+                <div class="col-md-3"><strong>Priority Level:</strong></div>
+                <div class="col-md-3">{{ service_request.get_status_display|title }}</div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-md-3"><strong>Customer Name:</strong></div>
+                <div class="col-md-3">{% if service_request.requested_by %} {{ service_request.requested_by.name }} {% else %} N/A {% endif %}</div>
+
+                <div class="col-md-3"><strong>Customer Contact:</strong></div>
+                <div class="col-md-3">{% if service_request.requested_by %} {{ service_request.requested_by.phone }} {% else %} N/A {% endif %}</div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-md-3"><strong>Email:</strong></div>
+                <div class="col-md-3">{% if service_request.requested_by %} {{ service_request.requested_by.email }} {% else %} N/A {% endif %}</div>
+
+                <div class="col-md-3"><strong>Location:</strong></div>
+                <div class="col-md-3">{% if service_request.requested_by %} {{ service_request.requested_by.location }} {% else %} N/A {% endif %}</div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-md-3"><strong>System Type:</strong></div>
+                <div class="col-md-3">{% if service_request.project %} {{ service_request.project.get_project_type_display }} {% else %} N/A {% endif %}</div>
+
+                <div class="col-md-3"><strong>Installation Date:</strong></div>
+                <div class="col-md-3">{% if service_request.project %} {{ service_request.project.start_date|date:"d-M-Y" }} {% else %} N/A {% endif %}</div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-md-3"><strong>System Capacity:</strong></div>
+                <div class="col-md-3">{% if service_request.project and service_request.project.feasibility %} {{ service_request.project.feasibility.suggested_capacity }} kW {% else %} N/A {% endif %}</div>
+
+                <div class="col-md-3"><strong>Requested Service Type:</strong></div>
+                <div class="col-md-3">{{ service_request.title }}</div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-md-3"><strong>Preferred Appointment Date:</strong></div>
+                <div class="col-md-3">{% if service_request.created_at %} {{ service_request.created_at|date:"d-M-Y" }} {% else %} N/A {% endif %}</div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-md-3"><strong>Issue Reported:</strong></div>
+                <div class="col-md-9">{{ service_request.description|linebreaks }}</div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Service Report Form -->
+    <div class="card">
+        <div class="card-header ">
+            <strong>Add Service Report</strong>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Report Text -->
+                <div class="mb-3">
+                    <label for="{{ form.report_text.id_for_label }}" class="form-label">Report Details</label>
+                    {{ form.report_text }}
+                    {% for error in form.report_text.errors %}
+                        <div class="text-danger mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Image Upload -->
+                <div class="mb-3">
+                    <label for="{{ form.images.id_for_label }}" class="form-label">Upload Image (optional)</label>
+                    {{ form.images }}
+                    {% for error in form.images.errors %}
+                        <div class="text-danger mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle me-1"></i> Submit Report
+                </button>
+
+                <!-- If report already exists, show download PDF -->
+                {% if service_request.report %}
+                    <a href="{% url 'service_report_pdf' service_request.report.id %}" class="btn btn-primary ms-2">
+                        <i class="bi bi-download me-1"></i> Download PDF
+                    </a>
+                {% endif %}
+
+            </form>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,30 +1,27 @@
 {% extends 'dashboard/dashboard.html' %}
 {% block content %}
-
 <div class="container mt-4">
 
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
-      <ol class="breadcrumb mb-0 align-items-center">
-        <li class="breadcrumb-item">
-            <a href="{% url request.user.role %}" class="d-flex align-items-center">
-                {{ request.user.role|title }} Dashboard
-            </a>
-        </li>
-        <li class="breadcrumb-item">Work Progress</li>
-        <li class="breadcrumb-item active">Upload Photo</li>
-      </ol>
+        <ol class="breadcrumb mb-0 align-items-center">
+            <li class="breadcrumb-item">
+                <a href="{% url request.user.role %}" class="d-flex align-items-center">
+                    {{ request.user.role|title }} Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item">Work Progress</li>
+            <li class="breadcrumb-item active">Upload Media</li>
+        </ol>
     </nav>
 
     <!-- Header -->
     <div class="mb-4">
-        <h4 class="fw-bold text-primary">
-            <i class="bi bi-image me-2"></i> Upload Project Photos
-        </h4>
-        <p class="text-muted">Select project, category, upload photos, and add captions</p>
+        <h4 class="fw-bold text-primary"><i class="bi bi-image me-2"></i> Upload Project Media</h4>
+        <p class="text-muted">Select project, category, upload files, and add captions</p>
     </div>
 
-    <!-- Upload Form -->
+    <!-- Form -->
     <form method="POST" enctype="multipart/form-data" class="card shadow-sm border-0 p-4">
         {% csrf_token %}
 
@@ -47,13 +44,11 @@
             {{ form.category }}
         </div>
 
-        <!-- Installation Task -->
+        <!-- Conditional Fields -->
         <div class="mb-3" id="div-installation-task">
             <label class="form-label fw-semibold">Installation Task</label>
             {{ form.installation_task }}
         </div>
-
-        <!-- Issue -->
         <div class="mb-3" id="div-issue">
             <label class="form-label fw-semibold">Issue</label>
             {{ form.issue }}
@@ -67,76 +62,65 @@
 
         <!-- File Input -->
         <div class="mb-3">
-            <label class="form-label fw-semibold">Upload Photos</label>
+            <label class="form-label fw-semibold">Upload Files</label>
             <input type="file" name="files" id="file-input" multiple class="form-control">
         </div>
 
-        <!-- Preview Selected Images -->
+        <!-- Preview -->
         <div class="mb-3 d-flex flex-wrap gap-2" id="preview-container"></div>
 
         <!-- Actions -->
         <div class="d-flex justify-content-between">
-            <a href="{% url 'update_work_progress' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Back
-            </a>
-            <button type="submit" class="btn btn-success">
-                <i class="bi bi-cloud-upload me-1"></i> Upload
-            </button>
+            <a href="{% url 'update_work_progress' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back</a>
+            <button type="submit" class="btn btn-success"><i class="bi bi-cloud-upload me-1"></i> Upload</button>
         </div>
 
     </form>
 </div>
 
-<!-- JS -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-
-    // Elements
     const categoryField = document.getElementById('id_category');
     const installationTaskDiv = document.getElementById('div-installation-task');
     const issueDiv = document.getElementById('div-issue');
     const fileInput = document.getElementById('file-input');
     const previewContainer = document.getElementById('preview-container');
 
-    // 🔹 Show/hide fields based on category
+    // Show/hide fields
     function toggleFields() {
         const value = categoryField.value;
-        if (value === 'installation_photo') {
-            installationTaskDiv.style.display = 'block';
-            issueDiv.style.display = 'none';
-        } else if (value === 'issue_photo') {
-            installationTaskDiv.style.display = 'none';
-            issueDiv.style.display = 'block';
-        } else {
-            installationTaskDiv.style.display = 'none';
-            issueDiv.style.display = 'none';
-        }
+        installationTaskDiv.style.display = value === 'installation_photo' ? 'block' : 'none';
+        issueDiv.style.display = value === 'issue_photo' ? 'block' : 'none';
     }
-
     categoryField.addEventListener('change', toggleFields);
-    toggleFields(); // initial run
+    toggleFields();
 
-    // 🔹 Preview multiple images
+    // Preview multiple files
     fileInput.addEventListener('change', function(e) {
-        previewContainer.innerHTML = ''; // clear previous previews
-        const files = e.target.files;
-
-        Array.from(files).forEach(file => {
+        previewContainer.innerHTML = '';
+        Array.from(e.target.files).forEach(file => {
             const reader = new FileReader();
             reader.onload = function(event) {
-                const img = document.createElement('img');
-                img.src = event.target.result;
-                img.classList.add('rounded', 'border', 'shadow-sm');
-                img.style.width = '120px';
-                img.style.height = '100px';
-                img.style.objectFit = 'cover';
-                previewContainer.appendChild(img);
+                let el;
+                if (file.type.startsWith('image/')) {
+                    el = document.createElement('img');
+                    el.src = event.target.result;
+                    el.style.width = '120px';
+                    el.style.height = '100px';
+                    el.style.objectFit = 'cover';
+                } else if (file.type.startsWith('video/')) {
+                    el = document.createElement('video');
+                    el.src = event.target.result;
+                    el.controls = true;
+                    el.style.width = '120px';
+                    el.style.height = '100px';
+                }
+                el.classList.add('rounded', 'border', 'shadow-sm');
+                previewContainer.appendChild(el);
             };
             reader.readAsDataURL(file);
         });
     });
-
 });
 </script>
-
 {% endblock %}

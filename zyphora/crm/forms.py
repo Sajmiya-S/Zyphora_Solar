@@ -83,6 +83,12 @@ class LeadUpdateForm(forms.ModelForm):
                 'placeholder':'Add internal notes...'
             })
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # 🔹 Filter only sales users
+        self.fields['assigned_to'].queryset = CustomUser.objects.filter(role='sales')
 
 
 class SiteVisitForm(forms.ModelForm):
@@ -102,6 +108,12 @@ class SiteVisitForm(forms.ModelForm):
             }),
             'engineer': forms.Select(attrs={'class':'form-select'}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # 🔹 Filter only sales users
+        self.fields['engineer'].queryset = CustomUser.objects.filter(role='engineer')
 
 class UpdateVisitForm(forms.ModelForm):
     class Meta:

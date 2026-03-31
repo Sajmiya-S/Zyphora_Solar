@@ -51,7 +51,16 @@
                 <div class="lead-info mb-3"><strong>Lead</strong><p>{{ project.lead.name|default:"N/A" }}</p></div>
                 <div class="lead-info mb-3"><strong>Location</strong><p>{{ project.location|default:"N/A" }}</p></div>
                 <div class="lead-info mb-3"><strong>Start Date</strong><p>{{ project.start_date|default:"N/A" }}</p></div>
-                <div class="lead-info mb-3"><strong>End Date</strong><p>{{ project.end_date|default:"N/A" }}</p></div>
+                <div class="lead-info mb-3">
+                    <strong>End Date</strong>
+                    <p>
+                        {% if project.status != "completed" %}
+                            {{ project.end_date|default:"N/A" }}
+                        {% else %}
+                            {{ project.updated_at|date:"M d, Y" }}
+                        {% endif %}
+                    </p>
+                </div>
                 {% if request.user.role == 'admin' %}
                 <div class="lead-info mb-3"><strong>Engineer</strong><p>{{ project.engineer.name|default:"Unassigned" }}</p></div>
                 <div class="lead-info"><strong>Revenue</strong><p>{{ project.revenue|default:"N/A" }}</p></div>
@@ -60,97 +69,38 @@
         </div>
 
         <!-- RIGHT SIDE: Gallery Preview -->
-        <!-- RIGHT SIDE: Gallery Preview -->
-<div class="col-lg-7">
-    <div class="card shadow-sm p-4">
-        <h5 class="mb-3">Gallery</h5>
+        <div class="col-lg-7">
+            <div class="card shadow-sm p-4">
+                <h5>Gallery</h5>
 
-        {% with images=project.media.all %}
-        {% with total=images|length %}
-        <div class="row g-2">
-            {% for image in images|slice:":4" %}
-            <div class="col-6 position-relative gallery-item">
-                <a href="#" data-bs-toggle="modal" data-bs-target="#galleryModal">
-                    <img src="{{ image.file.url }}" class="img-fluid rounded gallery-preview">
-                    {% if forloop.counter == 4 and total > 4 %}
-                    <div class="gallery-overlay">
-                        +{{ total|add:"-4" }} more
-                    </div>
-                    {% endif %}
-                </a>
-            </div>
-            {% endfor %}
-        </div>
-        {% if total == 0 %}
-        <p class="text-muted">No media uploaded.</p>
-        {% endif %}
-        {% endwith %}
-        {% endwith %}
+                <div class="row g-2">
+                    {% for file in project.media.all|slice:":4" %}
+                    <div class="col-6">
 
-    </div>
-</div>
+                        <div class="media-item" data-index="{{ forloop.counter0 }}">
 
-<!-- Gallery Modal -->
-<div class="modal fade" id="galleryModal" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content">
+                            {% if file.is_video %}
+                                <video class="w-100 rounded gallery-preview"
+                                       style="pointer-events:none;"
+                                       muted>
+                                    <source src="{{ file.file.url }}" type="video/mp4">
+                                </video>
+                            {% else %}
+                                <img src="{{ file.file.url }}" class="w-100 rounded gallery-preview">
+                            {% endif %}
 
-            <div class="modal-header">
-                <h5 class="modal-title">Project Gallery</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body">
-                <div class="row g-3">
-                    {% for file in project.media.all %}
-                    <div class="col-md-4">
-                        <div class="card shadow-sm">
-                            <img src="{{ file.file.url }}" class="img-fluid rounded-top" style="height:200px;object-fit:cover;">
-                            <div class="p-2">
-                                <small class="text-muted">{{ file.caption|default:"No caption" }}</small>
-                                {% if request.user.role in 'admin engineer' %}
-                                <div class="mt-2 d-flex justify-content-between">
-                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#captionModal{{ file.id }}">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <a href="{% url 'delete_media' file.id %}" class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </div>
-                                {% endif %}
-                            </div>
                         </div>
-                    </div>
 
-                    <!-- Caption Modal -->
-                    <div class="modal fade" id="captionModal{{ file.id }}" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <form method="POST" action="{% url 'update_caption' file.id %}">
-                                    {% csrf_token %}
-                                    <div class="modal-header">
-                                        <h5 class="modal-title"><i class="bi bi-pencil-square me-1"></i> Update Caption</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <input type="text" name="caption" class="form-control" value="{{ file.caption }}" placeholder="Enter caption">
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button class="btn btn-primary">Update</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
                     </div>
-
                     {% endfor %}
                 </div>
-            </div>
 
+                <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#galleryModal">
+                    View All
+                </button>
+
+            </div>
         </div>
-    </div>
-</div>
     </div>
 
     <!-- Project Stage Tracker -->
@@ -201,70 +151,142 @@
 
 </div>
 
-<!-- Gallery Modal -->
-<div class="modal fade" id="galleryModal" tabindex="-1">
+<!-- GALLERY MODAL -->
+<div class="modal fade" id="galleryModal">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
 
             <div class="modal-header">
-                <h5 class="modal-title">Project Gallery</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5>Project Gallery</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
             <div class="modal-body">
                 <div class="row g-3">
+
                     {% for file in project.media.all %}
                     <div class="col-md-4">
+
                         <div class="card shadow-sm">
-                            <img src="{{ file.file.url }}" class="img-fluid rounded-top" style="height:200px;object-fit:cover;">
-                            <div class="p-2">
-                                <small class="text-muted">{{ file.caption|default:"No caption" }}</small>
-                                <span class="badge bg-primary">{{ file.get_category_display }}</span>
 
-                                {% if request.user.role in 'admin engineer' %}
-                                <div class="mt-2 d-flex justify-content-between">
-                                    <!-- Update caption -->
-                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#captionModal{{ file.id }}">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <!-- Delete media -->
-                                    <a href="{% url 'delete_media' file.id %}" class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </div>
+                            <!-- CLICK FIX -->
+                            <div class="media-item"
+                                 data-index="{{ forloop.counter0 }}"
+                                 data-bs-dismiss="modal">
+
+                                {% if file.is_video %}
+                                    <video class="w-100"
+                                           style="height:200px;object-fit:cover;pointer-events:none;"
+                                           muted>
+                                        <source src="{{ file.file.url }}">
+                                    </video>
+                                {% else %}
+                                    <img src="{{ file.file.url }}"
+                                         class="w-100"
+                                         style="height:200px;object-fit:cover;">
                                 {% endif %}
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Caption Modal -->
-                    <div class="modal fade" id="captionModal{{ file.id }}" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <form method="POST" action="{% url 'update_caption' file.id %}">
-                                    {% csrf_token %}
-                                    <div class="modal-header">
-                                        <h5 class="modal-title"><i class="bi bi-pencil-square me-1"></i> Update Caption</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <input type="text" name="caption" class="form-control" value="{{ file.caption }}" placeholder="Enter caption">
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button class="btn btn-primary">Update</button>
-                                    </div>
-                                </form>
                             </div>
-                        </div>
-                    </div>
 
+                            <div class="p-2">
+                                <small>{{ file.caption|default:"No caption" }}</small>
+                            </div>
+
+                        </div>
+
+                    </div>
                     {% endfor %}
+
                 </div>
             </div>
 
         </div>
     </div>
 </div>
+
+<!-- FULLSCREEN VIEWER -->
+<div id="mediaViewer" class="media-viewer d-none">
+
+    <span onclick="closeViewer()" style="position:absolute;top:20px;right:30px;font-size:35px;color:white;cursor:pointer;">×</span>
+
+    <span onclick="prevMedia()" style="position:absolute;left:20px;top:50%;font-size:40px;color:white;cursor:pointer;">❮</span>
+
+    <span onclick="nextMedia()" style="position:absolute;right:20px;top:50%;font-size:40px;color:white;cursor:pointer;">❯</span>
+
+    <div id="viewerContent"></div>
+
+</div>
+
+<!-- DATA -->
+<script>
+const mediaFiles = [
+    {% for file in project.media.all %}
+    {
+        url: "{{ file.file.url }}",
+        isVideo: {{ file.is_video|yesno:"true,false" }}
+    },
+    {% endfor %}
+];
+</script>
+
+<!-- SCRIPT -->
+<script>
+let currentIndex = 0;
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".media-item").forEach(item => {
+        item.addEventListener("click", function () {
+            let index = this.getAttribute("data-index");
+
+            // allow modal to close first
+            setTimeout(() => {
+                openViewer(parseInt(index));
+            }, 200);
+        });
+    });
+});
+
+function openViewer(index){
+    currentIndex = index;
+    document.getElementById("mediaViewer").classList.remove("d-none");
+    renderViewer();
+}
+
+function closeViewer(){
+    document.getElementById("mediaViewer").classList.add("d-none");
+    document.getElementById("viewerContent").innerHTML = "";
+}
+
+function renderViewer(){
+    let media = mediaFiles[currentIndex];
+    let container = document.getElementById("viewerContent");
+
+    if(media.isVideo){
+        container.innerHTML = `
+            <video controls autoplay>
+                <source src="${media.url}" type="video/mp4">
+            </video>
+        `;
+    } else {
+        container.innerHTML = `<img src="${media.url}">`;
+    }
+}
+
+function nextMedia(){
+    currentIndex = (currentIndex + 1) % mediaFiles.length;
+    renderViewer();
+}
+
+function prevMedia(){
+    currentIndex = (currentIndex - 1 + mediaFiles.length) % mediaFiles.length;
+    renderViewer();
+}
+
+document.addEventListener("keydown", function(e){
+    if(e.key === "Escape") closeViewer();
+    if(e.key === "ArrowRight") nextMedia();
+    if(e.key === "ArrowLeft") prevMedia();
+});
+</script>
 
 {% endblock %}

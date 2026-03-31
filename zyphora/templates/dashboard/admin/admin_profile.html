@@ -1,0 +1,90 @@
+{% extends "dashboard/dashboard.html" %}
+{% block content %}
+
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item">
+        <a href="{% url request.user.role %}">
+            {{ request.user.role|title }} Dashboard
+        </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">
+        My Profile
+    </li>
+  </ol>
+</nav>
+
+
+<div class="container-fluid">
+
+<div class="row">
+
+<!-- Profile Card -->
+<div class="col-md-4">
+<div class="card shadow-sm">
+<div class="card-body text-center">
+
+<h4>{{ request.user.get_full_name }}</h4>
+<p class="text-muted">{{ request.user.role|title }}</p>
+
+<hr>
+
+<p><strong>Email:</strong> {{ request.user.email }}</p>
+<p><strong>Username:</strong> {{ request.user.username }}</p>
+<p><strong>Date Joined:</strong> {{ request.user.date_joined|date:"M d, Y" }}</p>
+<p><strong>Last Login:</strong> {{ request.user.last_login|date:"M d, Y H:i" }}</p>
+
+</div>
+</div>
+</div>
+
+
+<!-- Edit Profile -->
+<div class="col-md-8">
+<div class="card shadow-sm">
+<div class="card-header">
+<h5>Edit Profile</h5>
+</div>
+
+<div class="card-body">
+
+<form method="POST">
+{% csrf_token %}
+
+<div class="row">
+
+<div class="col-md-6 mb-3">
+<label>First Name</label>
+{{ form.first_name }}
+</div>
+
+<div class="col-md-6 mb-3">
+<label>Last Name</label>
+{{ form.last_name }}
+</div>
+
+<div class="col-md-6 mb-3">
+<label>Username</label>
+{{ form.username }}
+</div>
+
+<div class="col-md-6 mb-3">
+<label>Email</label>
+{{ form.email }}
+</div>
+
+</div>
+
+<button class="btn btn-primary">
+Update Profile
+</button>
+
+</form>
+
+</div>
+</div>
+
+<div class="card-body">
+{% endblock %}

@@ -227,7 +227,6 @@
                 <input type="date" 
                     name="discussion_date" 
                     class="form-control w-auto mb-2" 
-                    required
                     min="{{ today|date:'Y-m-d' }}">
             </div>
 
@@ -299,7 +298,7 @@
 
 <!-- ================= PROJECT COST SUMMARY ================= -->
 
-{% if project.project_costing %}
+{% if project.project_costing.system_costing %}
 <div class="card shadow-sm mb-4">
     <div class="card-body">
         <h5><i class="bi bi-calculator me-2"></i>Final Project Cost</h5>

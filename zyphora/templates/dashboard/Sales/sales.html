@@ -148,22 +148,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+
 let charts = {};
-
-/* ================= HELPERS ================= */
-
-function hasData(data){
-    return data && data.length > 0;
-}
-
-function mapData(data){
-    return {
-        labels: data.map(d => d.status || d.project_type || 'Unknown'),
-        values: data.map(d => d.count)
-    };
-}
-
-/* ================= MAIN RENDER ================= */
 
 function renderCharts(){
 
@@ -172,41 +158,41 @@ function renderCharts(){
     const textColor = isDark ? "#e5e7eb" : "#212529";
     const gridColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
 
-    /* 🔥 IMPORTANT: ensure valid JSON from Django */
-    const funnelData = JSON.parse('{{ funnel_data|escapejs }}');
+    const funnelData = JSON.parse('{{ funnel_data|safe }}');
 
-    /* Destroy old charts */
     Object.values(charts).forEach(c => c.destroy());
     charts = {};
 
-    /* ================= LEAD FUNNEL ================= */
+    /* Check if data exists */
+    const hasData = funnelData.some(item => item.count > 0);
 
-    if(hasData(funnelData)){
+    if(hasData){
 
         document.getElementById("funnelEmpty").style.display = "none";
 
         const ctx = document.getElementById("leadFunnelChart").getContext("2d");
 
-        const mapped = mapData(funnelData);
-
         charts.funnel = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: mapped.labels,
+                labels: funnelData.map(d => d.status),
                 datasets: [{
-                    data: mapped.values,
-                    backgroundColor: '#0d6efd',
+                    data: funnelData.map(d => d.count),
+                    backgroundColor: [
+                        "#0d6efd",
+                        "#ffc107",
+                        "#20c997",
+                        "#198754"
+                    ],
                     borderRadius: 10
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-
                 plugins: {
                     legend: { display: false }
                 },
-
                 scales: {
                     y: {
                         beginAtZero: true,
@@ -222,26 +208,29 @@ function renderCharts(){
         });
 
     } else {
+
         document.getElementById("funnelEmpty").style.display = "block";
+
     }
 }
 
-/* ================= INIT ================= */
+/* Init */
 
 document.addEventListener("DOMContentLoaded", () => {
-    setTimeout(renderCharts, 50);
+    setTimeout(renderCharts, 100);
 });
 
-/* ================= THEME CHANGE DETECTION ================= */
+/* Dark mode listener */
 
 const observer = new MutationObserver(() => {
-    setTimeout(renderCharts, 100); // slight delay for smooth transition
+    setTimeout(renderCharts, 100);
 });
 
 observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ['data-bs-theme']
 });
+
 </script>
 
 {% endblock %}

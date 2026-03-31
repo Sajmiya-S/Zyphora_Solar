@@ -3,7 +3,7 @@ from users.models import Employee, CustomUser
 from users.utils import create_notification
 from django.urls import reverse
 from django.utils import timezone
-
+import os
 
 # -------------------------------
 # Project
@@ -148,13 +148,14 @@ class Project(models.Model):
 # Unified Project Media
 # -------------------------------
 class ProjectMedia(models.Model):
+
     CATEGORY_CHOICES = (
-        ('before_photo', 'Before Photo (Site Visit / Before Work)'),
-        ('after_photo', 'After Photo (Installation / Service Completion)'),
-        ('design_document', 'Design Document'),
-        ('installation_photo', 'Installation Progress Photo'),
-        ('issue_photo', 'Issue Photo'),
-        ('service_report_photo', 'Service Report Photo'),
+        ('before_photo', 'Before Media (Photo / Video)'),
+        ('after_photo', 'After Media (Photo / Video)'),
+        ('design_document', 'Design File'),
+        ('installation_photo', 'Installation Media'),
+        ('issue_photo', 'Issue Media'),
+        ('service_report_photo', 'Service Report Media'),
     )
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='media')
@@ -163,7 +164,6 @@ class ProjectMedia(models.Model):
     caption = models.CharField(max_length=255, blank=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
 
-    # Optional links to original objects
     site_photo = models.ForeignKey('crm.SitePhoto', on_delete=models.SET_NULL, null=True, blank=True)
     work_report = models.ForeignKey('WorkReport', on_delete=models.SET_NULL, null=True, blank=True)
     service_report = models.ForeignKey('ServiceReport', on_delete=models.SET_NULL, null=True, blank=True)
@@ -177,6 +177,16 @@ class ProjectMedia(models.Model):
 
     def __str__(self):
         return f"{self.project.title} - {self.get_category_display()} ({self.caption or self.id})"
+
+    # ✅ NEW METHODS
+    def file_extension(self):
+        return os.path.splitext(self.file.name)[1].lower()
+
+    def is_image(self):
+        return self.file_extension() in ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+
+    def is_video(self):
+        return self.file_extension() in ['.mp4', '.webm', '.ogg', '.mov']
 
 
 # -------------------------------

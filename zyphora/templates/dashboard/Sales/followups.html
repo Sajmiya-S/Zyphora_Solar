@@ -161,11 +161,11 @@
                                     <p><strong>Notes:</strong> {{ f.note|linebreaks }}</p>
                                 {% endif %}
                             </div>
-                            <div class="text-end ms-md-3">
-                                <span class="badge bg-secondary">Done</span>
-                            </div>
-                            <div class="d-flex flex-wrap gap-1 mt-1">
-                                <a href="{% url 'edit_followup' f.id %}" class="btn btn-sm btn-primary">Edit</a>
+                            <div class="text-end ms-md-3 d-flex flex-column align-items-end gap-2">
+                                <span class="badge bg-success">Done</span>
+                                <div class="d-flex flex-wrap gap-1 mt-1">
+                                    <a href="{% url 'edit_followup' f.id %}" class="btn btn-sm btn-primary">Edit</a>
+                                </div>
                             </div>
                         </div>
                     {% endfor %}

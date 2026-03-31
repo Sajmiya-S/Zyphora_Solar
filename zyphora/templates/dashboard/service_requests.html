@@ -72,7 +72,7 @@
                         </td>
 
                         <!-- Requested By -->
-                        <td>{{ request.requested_by.name }}</td>
+                        <td>{{ request.project.lead.name|title }}</td>
 
                         <!-- Date -->
                         <td>{{ request.created_at|date:"d M Y" }}</td>

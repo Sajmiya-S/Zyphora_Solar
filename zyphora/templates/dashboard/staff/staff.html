@@ -81,7 +81,7 @@
             <div class="card-body">
                 {% for task in tasks %}
                     <div class="mb-3 p-3 border rounded">
-                        <h6>{{ task.title }}</h6>
+                        <h6>{{ task.get_step_display }}({{ task.project.title }})</h6>
 
                         <p class="mb-1">
                             Due: {{ task.due_date }}

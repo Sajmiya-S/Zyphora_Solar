@@ -29,3 +29,5 @@ admin.site.register(WorkReport)
 admin.site.register(LicensingTask)
 
 admin.site.register(LicensingDocument)
+
+admin.site.register(FeasibilityReport)

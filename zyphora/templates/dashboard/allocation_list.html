@@ -80,7 +80,7 @@
                                 <tr>
                                     <td>{{ a.material.name }}</td>
                                     <td class="fw-bold">{{ a.quantity }}</td>
-                                    <td>{{ a.allocated_by.name|default:a.allocated_by.user.username }}</td>
+                                    <td>{{ a.allocated_by.name|default:a.allocated_by.username }}</td>
                                     <td>{{ a.allocated_date|date:"d M Y" }}</td>
                                 </tr>
                             {% endfor %}

@@ -48,3 +48,13 @@ class EmployeeForm(forms.ModelForm):
             self.fields['access_level'].widget = forms.HiddenInput()
             self.fields['supervisor'].widget = forms.HiddenInput()
         
+
+class AdminProfileForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = [
+            'first_name',
+            'last_name',
+            'username',
+            'email'
+        ]

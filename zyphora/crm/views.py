@@ -134,11 +134,16 @@ def add_lead(request):
         if form.is_valid():
             lead = form.save(commit=False)
             lead.notes = notes
+
+            if request.user.role != 'admin':
+                lead.assigned_to = request.user
+
             lead.save()
+
             LeadActivity.objects.create(
                 lead=lead,
                 title="Lead Created",
-                description="Lead added manually by admin",
+                description=f"Lead added manually by {{request.user.username}}",
                 created_by=request.user
             )
             admin = CustomUser.objects.get(role='admin')
@@ -173,13 +178,37 @@ def delete_lead(request, lid):
 def mark_followup_done(request, fid):
 
     followup = get_object_or_404(FollowUp, id=fid)
+    lead = followup.lead
 
     followup.mark_done(user=request.user)
 
+    # =====================================
+    # ✅ AUTO COMPLETE TASK
+    # =====================================
+    task = Task.objects.filter(
+        title=f"Follow-up - {lead.name} ({followup.scheduled_date})",
+        assigned_to=lead.assigned_to,
+        status__in=['new', 'in_progress']
+    ).first()
+
+    if task:
+        task.status = 'completed'
+        task.save()
+
+        LeadActivity.objects.create(
+            lead=lead,
+            title="Task Auto Completed",
+            description=f"Task '{task.title}' auto-completed after follow-up",
+            created_by=request.user
+        )
+
+    # =====================================
+    # ✅ ACTIVITY LOG
+    # =====================================
     LeadActivity.objects.create(
-        lead=followup.lead,
+        lead=lead,
         title="Follow-up Completed",
-        description=f"Follow-up completed on {followup.completed_date}",
+        description=f"Follow-up on {followup.scheduled_date} marked as done",
         created_by=request.user
     )
 
@@ -190,13 +219,38 @@ def mark_followup_done(request, fid):
 def mark_site_visit_done(request, vid):
 
     visit = get_object_or_404(SiteVisit, id=vid)
-
+    lead = visit.lead
+    
     visit.mark_done(user=request.user)
 
+        # =====================================
+    # ✅ AUTO COMPLETE RELATED TASK
+    # =====================================
+    task = Task.objects.filter(
+        title=f"Site Visit - {lead.name} ({visit.scheduled_date})",
+        assigned_to=visit.engineer,
+        status__in=['new', 'in_progress']
+    ).first()
+
+    if task:
+        task.status = 'completed'
+        task.save()
+
+        # 🟢 Activity log (task)
+        LeadActivity.objects.create(
+            lead=lead,
+            title="Task Auto Completed",
+            description=f"Task '{task.title}' auto-completed after site visit",
+            created_by=request.user
+        )
+
+    # =====================================
+    # ✅ ACTIVITY LOG (visit)
+    # =====================================
     LeadActivity.objects.create(
-        lead=visit.lead,
+        lead=lead,
         title="Site Visit Completed",
-        description=f"Site visit completed on {visit.completed_date}",
+        description=f"Site visit on {visit.scheduled_date} marked as done",
         created_by=request.user
     )
 
@@ -294,15 +348,17 @@ def update_lead(request, lid):
                     # CREATE TASK FOR ENGINEER
                     if visit.engineer:
 
-                        task, created = Task.objects.get_or_create(
-                            title=f"Site Visit - {lead.name}",
-                            assigned_to=visit.engineer,
-                            due_date=visit.scheduled_date,
-                            defaults={
-                                "description": f"Site visit for {lead.name} on {visit.scheduled_date}",
-                                "assigned_by": request.user
-                            }
-                        )
+                        if visit.engineer:
+
+                            task, created = Task.objects.get_or_create(
+                                title=f"Site Visit - {lead.name} ({visit.scheduled_date})",
+                                assigned_to=visit.engineer,
+                                due_date=visit.scheduled_date,
+                                defaults={
+                                    "description": f"Site visit for {lead.name} on {visit.scheduled_date}",
+                                    "assigned_by": request.user
+                                }
+                            )
 
                     # NOTIFY ADMINS + ENGINEER
                     notify_admins_and_assigned(
@@ -342,7 +398,7 @@ def update_lead(request, lid):
                     if lead.assigned_to:
 
                         task, created = Task.objects.get_or_create(
-                            title=f"Follow-up - {lead.name}",
+                            title=f"Follow-up - {lead.name} ({followup.scheduled_date})",
                             assigned_to=lead.assigned_to,
                             due_date=followup.scheduled_date,
                             defaults={

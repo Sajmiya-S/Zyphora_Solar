@@ -4,48 +4,62 @@
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb" class="mb-3">
   <ol class="breadcrumb mb-0 align-items-center">
-    
     <li class="breadcrumb-item">
         <a href="{% url request.user.role %}" class="d-flex align-items-center">
             {{ request.user.role|title }} Dashboard
         </a>
     </li>
-
     <li class="breadcrumb-item active d-flex align-items-center">
         View Service Report
     </li>
-
   </ol>
 </nav>
 
 <div class="container my-5">
 
-    <!-- Report Header -->
+    <!-- 🔷 HEADER -->
     <div class="text-center mb-4">
-        <h2 class="fw-bold">Service Report</h2>
-        <p class="text-muted mb-0">Report ID: {{ report.id }}</p>
+        <h2 class="fw-bold">Zyphora Solar Service Report</h2>
+        <p class="text-muted mb-0">Report ID: SR-{{ report.id }}</p>
         <p class="text-muted">Date: {{ report.created_at|date:"d M Y, H:i" }}</p>
         <hr>
     </div>
 
-    <!-- Service Request & Project Info -->
-    <div class="mb-4">
-        <table class="table table-borderless">
+    <!-- 🔷 SERVICE REQUEST & PROJECT INFO -->
+    <div class="section mb-4">
+        <h5 class="fw-bold">Service Information</h5>
+        <table class="table table-bordered">
             <tbody>
                 <tr>
-                    <th scope="row" style="width:200px;">Service Request:</th>
+                    <th style="width:200px;">Service Request</th>
                     <td>{{ report.service_request.title }}</td>
                 </tr>
                 <tr>
-                    <th scope="row">Project:</th>
+                    <th>Project</th>
                     <td>{{ report.service_request.project.title }}</td>
                 </tr>
                 <tr>
-                    <th scope="row">Reported By:</th>
+                    <th>Customer Name</th>
+                    <td>{{ report.service_request.project.lead.name }}</td>
+                </tr>
+                <tr>
+                    <th>Customer Contact</th>
+                    <td>{{ report.service_request.project.lead.phone }}</td>
+                </tr>
+                <tr>
+                    <th>Customer Email</th>
+                    <td>{{ report.service_request.project.lead.email|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <th>Location</th>
+                    <td>{{ report.service_request.project.lead.location|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <th>Reported By</th>
                     <td>{{ report.report_by.name }}</td>
                 </tr>
                 <tr>
-                    <th scope="row">Assigned Engineer:</th>
+                    <th>Assigned Engineer</th>
                     <td>
                         {% if report.service_request.assigned_to %}
                             {{ report.service_request.assigned_to.name }}
@@ -55,39 +69,41 @@
                     </td>
                 </tr>
                 <tr>
-                    <th scope="row">Status:</th>
+                    <th>Status</th>
                     <td>{{ report.service_request.status|capfirst }}</td>
                 </tr>
             </tbody>
         </table>
     </div>
 
-    <!-- Report Text -->
-    <div class="mb-4">
+    <!-- 🔷 REPORT DETAILS -->
+    <div class="section mb-4">
         <h5 class="fw-bold">Report Details</h5>
-        <p class="border rounded p-3">{{ report.report_text }}</p>
+        <div class="border rounded p-3" style="white-space: pre-line;">
+            {{ report.report_text }}
+        </div>
     </div>
 
-    <!-- Images Section -->
-    <div class="mb-4">
+    <!-- 🔷 IMAGES -->
+    <div class="section mb-4">
         <h5 class="fw-bold">Attached Images</h5>
         {% if report.images %}
             <div class="row g-3">
                 <div class="col-md-4 col-sm-6">
-                    <img src="{{ report.images.url }}" class="img-fluid border rounded" alt="Report Image">
+                    <img src="{{ report.images.url }}" class="img-fluid border rounded" alt="Service Image">
                 </div>
             </div>
         {% else %}
             <p class="text-muted"><em>No images attached.</em></p>
         {% endif %}
     </div>
-    
-    <a href="{% url 'download_report' 'service' report.id %}" class="btn btn-sm btn-primary">Download</a>
-    
-    <!-- Back Button -->
-    <div class="text-end">
+
+    <!-- 🔷 ACTION BUTTONS -->
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'download_report' 'service' report.id %}" class="btn btn-primary">Download PDF</a>
         <a href="{% url 'service_reports' %}" class="btn btn-secondary">Back to Service Reports</a>
     </div>
 
 </div>
+
 {% endblock %}

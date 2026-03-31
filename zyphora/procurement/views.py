@@ -190,7 +190,7 @@ def receive_purchase_order(request, oid):
         po.status = 'received'
         po.save()
 
-    return redirect('purchase_orders_list')
+    return redirect(purchase_order_list)
 
 
 @login_required(login_url='/users/login/')
@@ -201,7 +201,7 @@ def cancel_purchase_order(request,oid):
         po.status = 'cancelled'
         po.save()
 
-    return redirect('purchase_orders_list')
+    return redirect('purchase_order_list')
 
 
 @login_required(login_url='/users/login')
@@ -298,7 +298,7 @@ def add_goods_received(request):
             po = goods.purchase_order
             po.status = 'received'
             po.save()
-            return redirect('purchase_orders_list')
+            return redirect('purchase_order_list')
     else:
         form = GoodsReceivedForm(initial=initial_data)
 

@@ -35,10 +35,13 @@ class ProjectActivityForm(forms.ModelForm):
         }
 
 
+from django import forms
+from .models import ProjectMedia, InstallationTask, WorkReport, ServiceReport, InstallationIssue
+
 class ProjectMediaForm(forms.ModelForm):
     class Meta:
         model = ProjectMedia
-        fields = ['project','file', 'caption', 'category', 'installation_task', 'work_report', 'service_report', 'issue']
+        fields = ['project', 'caption', 'category', 'installation_task', 'work_report', 'service_report', 'issue']
         widgets = {
             'project': forms.Select(attrs={'class': 'form-select'}),
             'caption': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter a caption'}),
@@ -53,12 +56,7 @@ class ProjectMediaForm(forms.ModelForm):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        # Get project from form data (POST) or initial value
-        project_id = None
-        if 'project' in self.data:
-            project_id = self.data.get('project')
-        elif 'project' in self.initial:
-            project_id = self.initial.get('project')
+        project_id = self.data.get('project') or self.initial.get('project')
 
         if self.user and 'installation_task' in self.fields:
             qs = self.fields['installation_task'].queryset.filter(assigned_to=self.user)
@@ -66,7 +64,7 @@ class ProjectMediaForm(forms.ModelForm):
                 qs = qs.filter(project_id=project_id)
             self.fields['installation_task'].queryset = qs
 
-        category = self.initial.get('category') or self.data.get('category')
+        category = self.data.get('category') or self.initial.get('category')
         self.hide_fields_for_category(category)
 
     def hide_fields_for_category(self, category):
@@ -107,12 +105,13 @@ class TaskForm(forms.ModelForm):
 class ServiceRequestForm(forms.ModelForm):
     class Meta:
         model = ServiceRequest
-        fields = ['project', 'title', 'description', 'assigned_to']
+        fields = ['project', 'title', 'description', 'requested_by', 'assigned_to',]
         widgets = {
             'project': forms.Select(attrs={'class': 'form-select'}),
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Service Title'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Describe the service'}),
             'assigned_to': forms.Select(attrs={'class': 'form-select'}),
+            'requested_by': forms.Select(attrs={'class': 'form-select'}),
         }
 
 

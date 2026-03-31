@@ -26,7 +26,7 @@ from procurement.models import *
 from finance.models import *
 
 
-from crm.models import Lead
+from crm.models import *
 
 
 
@@ -56,7 +56,7 @@ def all_projects(request):
     if request.user.role == "liaison":
         employee = Employee.objects.filter(user=request.user).first()
         if employee:
-            projects = projects.filter(status__in =['structure','electrical'])
+            projects = projects.filter(status__in =['structure','electrical','liasoning','energisation','completed'])
 
     if request.user.role == 'staff':
         employee = Employee.objects.filter(user=request.user).first()
@@ -535,9 +535,50 @@ def create_task(request):
 @login_required(login_url='/users/login')
 def complete_task(request, id):
     task = get_object_or_404(Task, id=id)
-    task.status = 'completed'
-    task.save()
-    return redirect(my_tasks)
+    if task.status != 'completed':
+        task.status = 'completed'
+        task.save()
+
+        # =====================================
+        # ✅ FOLLOW-UP TASK
+        # =====================================
+        if 'follow' in task.title.lower():
+
+            followup = FollowUp.objects.filter(
+                status='pending'
+            ).order_by('scheduled_date').first()
+
+            if followup:
+                followup.mark_done(user=request.user, note="Completed via task")
+
+                # 🟢 Activity Log
+                LeadActivity.objects.create(
+                    lead=followup.lead,
+                    title="Follow-up Completed",
+                    description=f"Follow-up on {followup.scheduled_date} marked as done via task '{task.title}'",
+                    created_by=request.user
+                )
+
+        # =====================================
+        # ✅ SITE VISIT TASK
+        # =====================================
+        elif 'site' in task.title.lower():
+
+            visit = SiteVisit.objects.filter(
+                status='pending'
+            ).order_by('scheduled_date').first()
+
+            if visit:
+                visit.mark_done(user=request.user, note="Completed via task")
+
+                # 🟢 Activity Log
+                LeadActivity.objects.create(
+                    lead=visit.lead,
+                    title="Site Visit Completed",
+                    description=f"Site visit on {visit.scheduled_date} completed via task '{task.title}'",
+                    created_by=request.user
+                )
+    return redirect('my_tasks')
 
 
 @login_required(login_url='/users/login')
@@ -590,11 +631,6 @@ def edit_task(request, id):
         "task": task
     })
 
-
-
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from .models import Project, FeasibilityReport, Employee
 
 @login_required(login_url='/users/login')
 def feasibility_list(request):
@@ -844,6 +880,7 @@ def design_detail(request, pid):
             link=reverse('design_detail',kwargs={'pid':project.id})
         )
         messages.success(request, "Notification sent to engineer!")
+
     # =========================================================
     # 🔷 PHASE LOGIC
     # =========================================================
@@ -854,10 +891,7 @@ def design_detail(request, pid):
         current_phase = "correction"
 
     elif docs.filter(discussion_date__isnull=True).exists():
-        current_phase = "preparation"   # 🔥 stay in preparation until date fixed
-
-    elif docs.filter(needs_correction=True).exists():
-        current_phase = "correction"
+        current_phase = "preparation"
 
     elif docs.filter(approved=False).exists():
         current_phase = "discussion"
@@ -868,17 +902,11 @@ def design_detail(request, pid):
     elif design_costing.status == "pending":
         current_phase = "design_costing_review"
 
-    elif design_costing.status == "approved" and not project_costing:
-        current_phase = "project_costing"
-
-    elif project_costing and not project_costing.proposal_sent:
-        current_phase = "project_costing"
-
     elif project_costing and project_costing.proposal_sent and not project_costing.client_approved:
-        current_phase = "client_approval"
+        current_phase = "client_approval"  # ✅ check this BEFORE project_costing
 
-    elif project_costing and project_costing.client_approved:
-        current_phase = "completed"
+    elif design_costing.status == "approved" and project_costing and (project_costing.system_costing is not None):
+        current_phase = "project_costing"
 
     else:
         current_phase = "project_costing"
@@ -1022,7 +1050,7 @@ def design_detail(request, pid):
                     project.save()
 
             elif current_phase == "client_approval":
-
+                print('approval')
                 if "client_approve" in request.POST:
 
                     start_date = request.POST.get("start_date")
@@ -1231,7 +1259,7 @@ def add_service_report(request,rid):
     else:
         form = ServiceReportForm()
 
-    return render(request, 'dashboard/add_service_report.html', {
+    return render(request, 'dashboard/engineer/add_service_report.html', {
         'form': form,
         'service_request': service_request
     })
@@ -1496,28 +1524,42 @@ def update_work_progress(request):
 def upload_photos(request):
     if request.method == 'POST':
         form = ProjectMediaForm(request.POST, user=request.user)
-        files = request.FILES.getlist('files')  # get all uploaded files
+        files = request.FILES.getlist('files')  # Multiple files
 
         if form.is_valid():
+            project = form.cleaned_data['project']
             category = form.cleaned_data['category']
+            caption = form.cleaned_data.get('caption', '')
 
-            for f in files:
-                ProjectMedia.objects.create(
-                    project=form.cleaned_data['project'],
-                    uploaded_by=request.user,
-                    file=f,
-                    category=category,
-                    caption=form.cleaned_data.get('caption', ''),
-                    installation_task=form.cleaned_data.get('installation_task') if category=='installation_photo' else None,
-                    issue=form.cleaned_data.get('issue') if category=='issue_photo' else None,
-                    work_report=form.cleaned_data.get('work_report') if category=='work_report' else None,
-                    service_report=form.cleaned_data.get('service_report') if category=='service_report' else None,
-                )
-            return redirect('upload_photos')
+            installation_task = form.cleaned_data.get('installation_task') if category == 'installation_photo' else None
+            issue = form.cleaned_data.get('issue') if category == 'issue_photo' else None
+            work_report = form.cleaned_data.get('work_report')
+            service_report = form.cleaned_data.get('service_report')
+
+            if not files:
+                messages.error(request, "Please select at least one file to upload.")
+            else:
+                for f in files:
+                    ProjectMedia.objects.create(
+                        project=project,
+                        uploaded_by=request.user,
+                        file=f,
+                        category=category,
+                        caption=caption,
+                        installation_task=installation_task,
+                        issue=issue,
+                        work_report=work_report,
+                        service_report=service_report,
+                    )
+                messages.success(request, f"{len(files)} file(s) uploaded successfully!")
+                return redirect('upload_photos')
+        else:
+            messages.error(request, "Please fix the errors below.")
     else:
         form = ProjectMediaForm(user=request.user)
 
     return render(request, 'dashboard/staff/upload_photos.html', {'form': form})
+
 
 @login_required(login_url='/users/login')
 def get_project_photos(request):
@@ -1615,28 +1657,22 @@ def daily_report_detail(request, pk):
 
 @login_required(login_url='/users/login')
 def weekly_report_list(request):
+    reports = WorkReport.objects.filter(report_type='weekly').order_by('-date')
 
-    reports = WorkReport.objects.filter(
-        user=request.user,
-        report_type='weekly'
-    ).select_related('project').order_by('-date')
+    # Optional: Filtering
+    filters = {
+        'date': request.GET.get('date', ''),
+        'project': request.GET.get('project', '')
+    }
 
-    # Filters
-    project = request.GET.get('project')
-    date = request.GET.get('date')
-
-    if project:
-        reports = reports.filter(project_id=project)
-
-    if date:
-        reports = reports.filter(date=date)
+    if filters['date']:
+        reports = reports.filter(date=filters['date'])
+    if filters['project']:
+        reports = reports.filter(project_id=filters['project'])
 
     return render(request, 'dashboard/engineer/weekly_report_list.html', {
         'reports': reports,
-        'filters': {
-            'project': project,
-            'date': date,
-        }
+        'filters': filters
     })
 
 
@@ -1765,15 +1801,13 @@ def completion_report_list(request):
 
 
 
-
 @login_required(login_url='/users/login')
 def download_report(request, type, id=None):
-
     context = {}
     template = ""
 
     # 🔹 EXPENSE REPORT
-    if type == "expense":
+    if type == "expense" and id:
         report = ExpenseReport.objects.get(id=id)
         template = "dashboard/expense_pdf.html"
         context = {
@@ -1785,25 +1819,19 @@ def download_report(request, type, id=None):
     # 🔹 MONTHLY EXPENSE REPORT
     elif type == "monthly_expense":
         month_input = request.GET.get('month')
-
         today = timezone.now()
-
         if month_input:
-            year, month = month_input.split('-')
-            year = int(year)
-            month = int(month)
+            year, month = map(int, month_input.split('-'))
         else:
             month = today.month
             year = today.year
-
         reports = ExpenseReport.objects.filter(
             expense_date__month=month,
             expense_date__year=year,
             status='approved'
         ).select_related('project').prefetch_related('items')
-
         total_expense = sum([r.total_amount for r in reports])
-
+        template = "dashboard/monthly_expense_pdf.html"
         context = {
             "reports": reports,
             "total_expense": total_expense,
@@ -1811,55 +1839,68 @@ def download_report(request, type, id=None):
             "year": year,
         }
 
-        template = "dashboard/monthly_expense_pdf.html"
-
-
     # 🔹 FEASIBILITY REPORT
     elif type == "feasibility" and id:
         report = FeasibilityReport.objects.select_related("project", "submitted_by").get(id=id)
-
         template = "dashboard/feasibility_pdf.html"
-
         context = {
             "report": report,
             "project": report.project,
-            "client": report.project.lead, 
+            "client": report.project.lead,
+        }
+
+    # 🔹 WORK REPORTS (daily, weekly, completion)
+    elif type == "work":
+        try:
+            report = WorkReport.objects.get(id=id, user=request.user)
+        except WorkReport.DoesNotExist:
+            return HttpResponse("Report not found", status=404)
+
+        # Build absolute image URLs for PDF
+        before_image_url = request.build_absolute_uri(report.before_image.url) if report.before_image else None
+        after_image_url = request.build_absolute_uri(report.after_image.url) if report.after_image else None
+
+        template = "dashboard/work_pdf.html"
+        context = {
+            "report": report,
+            "before_image_url": before_image_url,
+            "after_image_url": after_image_url,
         }
 
 
-    # 🔹 WORK REPORT
-    elif type == "work":
-        data = WorkReport.objects.filter(user=request.user)
-        template = "dashboard/work_pdf.html"
-        context = {"reports": data}
-
     # 🔹 SERVICE REPORT
-    elif type == "service":
-        data = ServiceReport.objects.get(id=id)
+    elif type == "service" and id:
+        report = ServiceReport.objects.get(id=id)
         template = "dashboard/service_pdf.html"
-        context = {"report": data}
+        report_image_url = request.build_absolute_uri(report.images.url) if report.images else None
+        context = {
+            "report": report,
+            "report_image_url": report_image_url,
+            "engineer_name": report.report_by.name if report.report_by else "N/A",
+        }
 
-    # 🔹 INVOICE (single)
+    # 🔹 INVOICE
     elif type == "invoice" and id:
         invoice = Invoice.objects.get(id=id)
         template = "dashboard/invoice_pdf.html"
         context = {
-        "invoice": invoice,
-        "payments": invoice.payments.all(),
-        "total_paid": sum(p.amount for p in invoice.payments.all()),
-        "balance": invoice.total_amount - sum(p.amount for p in invoice.payments.all())
-    }
+            "invoice": invoice,
+            "payments": invoice.payments.all(),
+            "total_paid": sum(p.amount for p in invoice.payments.all()),
+            "balance": invoice.total_amount - sum(p.amount for p in invoice.payments.all())
+        }
 
     # 🔹 PURCHASE ORDER
     elif type == "purchase" and id:
         po = PurchaseOrder.objects.get(id=id)
         template = "dashboard/purchase_pdf.html"
         context = {
-        "po": po,
-        "items": po.items.all(),
-        "total": po.total_amount
-    }
+            "po": po,
+            "items": po.items.all(),
+            "total": po.total_amount
+        }
 
+    # 🔹 COSTING REPORT
     elif type == "costing" and id:
         costing = ProjectCosting.objects.get(id=id)
         template = "dashboard/costing_pdf.html"
@@ -1872,7 +1913,6 @@ def download_report(request, type, id=None):
             "profit": costing.profit,
         }
 
-        
     else:
         return HttpResponse("Invalid report", status=400)
 
@@ -1880,11 +1920,18 @@ def download_report(request, type, id=None):
     html = render_to_string(template, context)
     pdf = HTML(string=html).write_pdf()
 
+    # File name logic
+    filename = type
+    if type == "work":
+        filename += f"_{context.get('report_type', 'daily')}_{timezone.now().date()}"
+    elif type in ['service', 'expense', 'feasibility', 'invoice', 'purchase', 'costing'] and id:
+        filename += f"_{id}_{timezone.now().date()}"
+
     return HttpResponse(
         pdf,
-        content_type='application/pdf',
+        content_type="application/pdf",
         headers={
-            'Content-Disposition': f'attachment; filename="{type}_report.pdf"'
+            "Content-Disposition": f'attachment; filename="{filename}.pdf"'
         }
     )
 
@@ -1914,12 +1961,7 @@ def project_layout_detail(request, pid):
 def licensing_list(request):
     user = request.user
 
-    tasks = LicensingTask.objects.filter(
-        assigned_to=user
-    ).exclude(status='completed')
-
-
-    projects = Project.objects.filter(status__in = ['structure','electrical'])
+    projects = Project.objects.filter(status__in = ['structure','electrical','licensing'])
 
     # 🔥 ADD EXTRA DATA
     project_data = []

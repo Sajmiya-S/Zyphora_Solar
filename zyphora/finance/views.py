@@ -618,7 +618,7 @@ def project_costing(request):
     for project in projects:
         costing, created = ProjectCosting.objects.get_or_create(
             project=project,
-            defaults={"estimated_cost": 0}
+            defaults={"system_costing": 0}
         )
 
         costing_data.append({

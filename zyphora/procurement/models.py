@@ -256,7 +256,7 @@ class MaterialAllocation(models.Model):
     quantity = models.IntegerField()
 
     allocated_by = models.ForeignKey(
-        'users.Employee',
+        'users.CustomUser',
         on_delete=models.SET_NULL,
         null=True
     )
