@@ -75,8 +75,20 @@ def contact_page(request):
     return render(request,'public_view/contact.html',{'form':form})
 
 def projects_page(request):
-    projects = Project.objects.filter(status='completed').prefetch_related('media')[:3]
+    projects = Project.objects.filter(status='completed')
+    count = projects.count()
+    capacity = 0
 
+    for project in projects:
+        capacity += project.feasibility.suggested_capacity
+
+    if capacity >= 1000:
+        capacity = round(capacity/1000,2)
+        unit = 'MW'
+    else:
+        capacity = capacity
+        unit = 'kW'
+    projects = projects.prefetch_related('media')[:3]
     project_data = []
 
     for project in projects:
@@ -87,7 +99,10 @@ def projects_page(request):
         })
 
     return render(request,'public_view/projects.html',{
-        'project_data': project_data
+        'project_data': project_data,
+        'count': count,
+        'capacity': capacity,
+        'unit': unit,
     })
 
 def savings_calculator(request):
