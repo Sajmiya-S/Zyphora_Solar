@@ -23,23 +23,24 @@
         </div>
 
         <div class="row g-4">
-            {% for project in projects %}
-            <!-- Project Card -->
+            {% for item in project_data %}
             <div class="col-md-4">
                 <div class="card project-card shadow-sm border-0">
-                    <img src="{% static 'images/project1.jpg' %}" class="card-img-top" alt="Residential Solar Project">
+                    {% if item.photo %}
+                        <img src="{{ item.photo.file.url }}" class="card-img-top">
+                    {% endif %}
+
                     <div class="card-body">
-                        <h5 class="card-title">{{project.title}}</h5>
+                        <h5 class="card-title">{{ item.project.title }}</h5>
                         <p class="card-text text-muted">
-                            Location: {{project.location}}<br>
-                            Type: {{project.project_type}}<br>
+                            Location: {{ item.project.location }}<br>
+                            Type: {{ item.project.get_project_type_display }}
                         </p>
                     </div>
+
                 </div>
             </div>
             {% endfor %}
-
-            <!-- Repeat Cards -->
             
         </div>
     </div>

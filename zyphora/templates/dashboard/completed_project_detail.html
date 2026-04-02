@@ -66,8 +66,7 @@
 
 <p><strong>Completed Stages:</strong></p>
 <ul>
-    {% for stage in project.get_completed_stages_56555+
-         %}
+    {% for stage in project.completed_stages%}
     <li>{{ stage|title }}</li>
     {% endfor %}
 </ul>

@@ -48,7 +48,7 @@
                         <td>{{ project.title }}</td>
                         <td>{{ project.lead.name }}</td>
                         <td>{{ project.location }}</td>
-                        <td>{{ project.feasibility.capacity }}</td>
+                        <td>{{ project.feasibility.suggested_capacity }} kW</td>
 
                         <td class="text-end">
                             <form method="POST" action="{% url 'completed_project_detail' project.id %}">

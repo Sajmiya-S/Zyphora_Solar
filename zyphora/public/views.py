@@ -15,6 +15,17 @@ from users.models import Notification,CustomUser
 
 def home_page(request):
     reviews = Review.objects.order_by('-created_at')[:8]
+    projects = Project.objects.filter(status='completed').prefetch_related('media')
+
+    project_data = []
+
+    for project in projects:
+        after_photo = project.media.filter(category='after_photo').first()
+        project_data.append({
+            'project': project,
+            'photo': after_photo
+        })
+
     if request.method == "POST":
         form = ReviewForm(request.POST)
         rating = request.POST.get('rating') 
@@ -32,7 +43,7 @@ def home_page(request):
                 category='crm'
                 )
     form = ReviewForm()
-    return render(request,'public_view/home.html',{'reviews':reviews,'form':form})
+    return render(request,'public_view/home.html',{'reviews':reviews,'form':form,'project_data':project_data})
 
 def about_page(request):
     return render(request,'public_view/about.html')
@@ -64,8 +75,20 @@ def contact_page(request):
     return render(request,'public_view/contact.html',{'form':form})
 
 def projects_page(request):
-    projects = Project.objects.filter(status='completed')
-    return render(request,'public_view/projects.html',{'projects':projects})
+    projects = Project.objects.filter(status='completed').prefetch_related('media')[:3]
+
+    project_data = []
+
+    for project in projects:
+        after_photo = project.media.filter(category='after_photo').first()
+        project_data.append({
+            'project': project,
+            'photo': after_photo
+        })
+
+    return render(request,'public_view/projects.html',{
+        'project_data': project_data
+    })
 
 def savings_calculator(request):
     default_tariff = 7  # Kerala average ₹/kWh

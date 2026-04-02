@@ -84,27 +84,20 @@
     <h1>Recent Projects</h1>
     <p class="text-muted">Our successful Solar Installations</p>
     <div class="card-list">
+        {% for item in project_data %}
         <div class="card">
-            <img src="/static/images/home.png" class="card-img-top" >
+            {% if item.photo %}
+                <img src="{{ item.photo.file.url }}">
+            {% endif %}
+
             <div class="card-body">
-                <h5 class="card-title">Residential Solar</h5>
-                <p class="card-text text-muted">Solar solutions for your home to reduce energy bills.</p>
+                <h5 class="card-title">{{ item.project.title }}</h5>
+                <p class="card-text">
+                    {{ item.project.location }}
+                </p>
             </div>
         </div>
-        <div class="card">
-            <img src="/static/images/com.png" class="card-img-top" >
-            <div class="card-body">
-                <h5 class="card-title">Commercial Solar</h5>
-                <p class="card-text text-muted">Efficient Solar power for business and industries.</p>
-            </div>
-        </div>
-        <div class="card">
-            <img src="/static/images/service.jpg" class="card-img-top" >
-            <div class="card-body">
-                <h5 class="card-title">Solar Maintainance</h5>
-                <p class="card-text text-muted">Ongoing support to keep your system running smoothly.</p>
-            </div>
-        </div>
+        {% endfor %}
     </div>
     <a href="{% url 'projects' %}">
         <button>View All Projects</button>
