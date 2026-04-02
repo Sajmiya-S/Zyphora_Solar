@@ -35,7 +35,8 @@ from users.utils import create_notification
 
 from finance.models import *
 
-from groq import Groq
+
+from ollama import chat
 import calendar
 import json
 
@@ -710,40 +711,39 @@ def view_post(request,id):
 @login_required(login_url='/users/login')
 def edit_post(request, bid):
     post = BlogPost.objects.get(id=bid)
-    client = Groq(api_key=settings.GROQ_API_KEY)
 
     if request.method == 'POST':
 
         plain_content = request.POST.get('content')
 
-        response = client.chat.completions.create(
+        response = chat(
+            model='llama3.2',
             messages=[
                 {
-                    "role": "user",
-                    "content": f"""
-You are a professional SEO blog writer.
+                    'role': 'user',
+                    'content': f"""
+                                You are a professional SEO blog writer.
 
-Convert the following blog content into clean HTML format.
+                                Convert the following blog content into clean HTML format.
 
-Title: {post.title}
-Content: {plain_content}
+                                Title: {post.title}
+                                Content: {plain_content}
 
-Formatting rules:
-- Use <p> for paragraphs
-- Use <h3> for sections
-- Use <h4> for subsections
-- Use <ul> and <li> for lists
-- Use <strong> for important text
+                                Formatting rules:
+                                - Use <p> for paragraphs
+                                - Use <h3> for sections
+                                - Use <h4> for subsections
+                                - Use <ul> and <li> for lists
+                                - Use <strong> for important text
 
-Return ONLY HTML.
-"""
+                                Return ONLY HTML.
+                                """
                 }
             ],
-            model="llama-3.3-70b-versatile",
-            temperature=0.6
+            options={'temperature': 0.6}
         )
 
-        html_content = response.choices[0].message.content
+        html_content = response.message.content
 
         form = BlogPostForm(request.POST, request.FILES, instance=post)
 
@@ -771,7 +771,6 @@ def delete_post(request,bid):
 
 @login_required(login_url='/users/login')
 def add_post(request):
-    client = Groq(api_key=settings.GROQ_API_KEY)
 
     if request.method == 'POST':
         form = BlogPostForm(request.POST, request.FILES)
@@ -781,62 +780,64 @@ def add_post(request):
 
             plain_content = post.content
 
-            response = client.chat.completions.create(
+            response = chat(
+                model='llama3.2',
                 messages=[
                     {
-                        "role": "user",
-                        "content": f"""
-You are a professional SEO blog writer.
+                        'role': 'user',
+                        'content': f"""
+                                    You are a professional SEO blog writer.
 
-Convert the following blog content into clean structured HTML suitable for a blog article.
+                                    Convert the following blog content into clean structured HTML suitable for a blog article.
 
-Title: {post.title}
-Content: {plain_content}
+                                    Title: {post.title}
+                                    Content: {plain_content}
 
-Formatting rules:
+                                    Formatting rules:
 
-- Use <p> for paragraphs
-- Use <h3> for section headings
-- Use <h4> for subheadings
-- Use <ul> and <li> for lists
-- Use <strong> for important phrases
-- Use <table> for comparisons if needed
+                                    - Use <p> for paragraphs
+                                    - Use <h3> for section headings
+                                    - Use <h4> for subheadings
+                                    - Use <ul> and <li> for lists
+                                    - Use <strong> for important phrases
+                                    - Use <table> for comparisons if needed
 
-Return ONLY valid HTML.
-Do not include explanations.
-"""
+                                    Return ONLY valid HTML.
+                                    Do not include explanations.
+                                    """
                     }
                 ],
-                model="llama-3.3-70b-versatile",
-                temperature=0.6
+                options={
+                    'temperature': 0.6
+                }
             )
 
-            post.content = response.choices[0].message.content
-
+            post.content = response.message.content
 
             if not post.summary:
 
-                response = client.chat.completions.create(
+                response = chat(
+                    model='llama3.2',
                     messages=[
                         {
-                            "role": "user",
-                            "content": f"""
-You are a professional content writer. Write a blog excerpt.
+                            'role': 'user',
+                            'content': f"""
+                                        You are a professional content writer. Write a blog excerpt.
 
-Blog Post Title: {post.title}
-Blog Post Content: {plain_content}
+                                        Blog Post Title: {post.title}
+                                        Blog Post Content: {plain_content}
 
-Keep it under 30 words.
-"""
+                                        Keep it under 30 words.
+                                        """
                         }
                     ],
-                    model="llama-3.3-70b-versatile",
-                    temperature=0.7
+                    options={'temperature': 0.7}
                 )
 
-                post.summary = response.choices[0].message.content
+                post.summary = response.message.content
 
             post.save()
+
 
             return redirect('blogposts')
 
