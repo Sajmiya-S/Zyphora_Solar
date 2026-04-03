@@ -115,7 +115,7 @@ class ExpenseReport(models.Model):
     )
 
     submitted_by = models.ForeignKey(
-        Employee,
+        CustomUser,
         on_delete=models.SET_NULL,
         null=True
     )
@@ -250,10 +250,10 @@ class ProjectCosting(models.Model):
     # ✅ ACTUAL COST
     @property
     def actual_cost(self):
-        total = self.project.expense_reports.aggregate(
+        expenses_total = self.project.expense_reports.aggregate(
             total=Sum('items__amount')
         )['total']
-        return total or Decimal('0')
+        return expenses_total + (self.kseb_cost or Decimal('0'))
 
     # ✅ REVENUE
     @property

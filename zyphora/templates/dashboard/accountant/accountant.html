@@ -131,7 +131,7 @@
                             <td>{{ forloop.counter }}</td>
                             <td>{{ report.project.title }}</td>
                             <td>{{ report.category|capfirst }}</td>
-                            <td>{{ report.submitted_by.get_full_name }}</td>
+                            <td>{{ report.submitted_by.username }}</td>
                             <td>
                                 <span class="badge 
                                     {% if report.status == 'approved' %}bg-success

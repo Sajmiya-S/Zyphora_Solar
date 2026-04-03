@@ -164,22 +164,46 @@ def create_payment(request):
 @login_required(login_url='/users/login')
 def all_expenses(request):
     expenses = ExpenseReport.objects.all()
-    return render(request, "dashboard/accountant/expenses.html", {"expenses": expenses})
+    all_pending = expenses.exists() and all(e.status == "pending" for e in expenses)
+    return render(
+        request,
+        "dashboard/accountant/expenses.html",
+        {"expenses": expenses, "all_pending": all_pending}
+    )
+
 
 @login_required(login_url='/users/login')
 def pending_expenses(request):
     expenses = ExpenseReport.objects.filter(status='pending')
-    return render(request, "dashboard/accountant/expenses.html", {"expenses": expenses})
+    all_pending = expenses.exists() and all(e.status == "pending" for e in expenses)
+    return render(
+        request,
+        "dashboard/accountant/expenses.html",
+        {"expenses": expenses, "all_pending": all_pending}
+    )
+
 
 @login_required(login_url='/users/login')
 def approved_expenses(request):
     expenses = ExpenseReport.objects.filter(status='approved')
-    return render(request, "dashboard/accountant/expenses.html", {"expenses": expenses})
+    all_pending = expenses.exists() and all(e.status == "pending" for e in expenses)
+    return render(
+        request,
+        "dashboard/accountant/expenses.html",
+        {"expenses": expenses, "all_pending": all_pending}
+    )
+
 
 @login_required(login_url='/users/login')
 def rejected_expenses(request):
     expenses = ExpenseReport.objects.filter(status='rejected')
-    return render(request, "dashboard/accountant/expenses.html", {"expenses": expenses})
+    all_pending = expenses.exists() and all(e.status == "pending" for e in expenses)
+    return render(
+        request,
+        "dashboard/accountant/expenses.html",
+        {"expenses": expenses, "all_pending": all_pending}
+    )
+
 
 # ---------------- EXPENSE ACTIONS ---------------- #
 
@@ -278,7 +302,7 @@ def approve_expense(request, pk):
     # ---------------- NOTIFICATIONS ---------------- #
     # Notify submitting user
     create_notification(
-        recipient=expense.submitted_by.user,
+        recipient=expense.submitted_by,
         title="Expense Report Approved ✅",
         message=f"Your expense report of ₹{expense.total_amount} has been approved.",
         sender=request.user,
@@ -293,13 +317,55 @@ def approve_expense(request, pk):
         create_notification(
             recipient=user,
             title="Expense Report Approved",
-            message=f"{expense.submitted_by.user.get_full_name()}'s expense report has been approved by {request.user.get_full_name()}.",
+            message=f"{expense.submitted_by}'s expense report has been approved by {request.user.get_full_name()}.",
             sender=request.user,
             link=reverse("expense_detail", args=[expense.id]),
             category="expense"
         )
 
     return redirect(all_expenses)
+
+@login_required(login_url='/users/login')
+def approve_all_expenses(request):
+    # Fetch all pending expenses
+    pending_expenses = ExpenseReport.objects.filter(status="pending")
+
+    if not pending_expenses.exists():
+        return redirect('all_expenses')  # nothing to approve
+
+    admins = list(CustomUser.objects.filter(role='admin'))
+    accountants = list(CustomUser.objects.filter(role='accountant'))
+    notify_users = admins + accountants
+
+    for expense in pending_expenses:
+        # Approve expense
+        expense.status = "approved"
+        expense.save()
+
+        # Notify submitting user if exists
+        if expense.submitted_by:
+            create_notification(
+                recipient=expense.submitted_by,
+                title="Expense Report Approved ✅",
+                message=f"Your expense report of ₹{expense.total_amount} has been approved.",
+                sender=request.user,
+                link=reverse("expense_detail", args=[expense.id]),
+                category="expense"
+            )
+
+        # Notify admins and accountants
+        for user in notify_users:
+            if user:  # safety check
+                create_notification(
+                    recipient=user,
+                    title="Expense Report Approved",
+                    message=f"{expense.submitted_by.get_full_name() if expense.submitted_by else 'A user'}'s expense report has been approved by {request.user.get_full_name()}.",
+                    sender=request.user,
+                    link=reverse("expense_detail", args=[expense.id]),
+                    category="expense"
+                )
+
+    return redirect('all_expenses')
 
 
 @login_required(login_url='/users/login')

@@ -501,7 +501,6 @@ def edit_site_visit(request,vid):
         form = UpdateVisitForm(request.POST, instance=visit)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Site Visit updated successfully.')
 
             admin = CustomUser.objects.get(role='admin')
             create_notification(

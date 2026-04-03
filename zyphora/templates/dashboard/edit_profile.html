@@ -57,10 +57,20 @@
                                 {{ form.date_joined.label_tag }}
                                 {{ form.date_joined }}
                             </div>
-                            {% if form.specialization %}
+                            {% if request.user.role == 'engineer' %}
                             <div class="mb-3">
                                 {{ form.specialization.label_tag }}
                                 {{ form.specialization }}
+                            </div>
+                            {% elif request.user.role == 'accountant' %}
+                            <div class="mb-3">
+                                {{ form.access_level.label_tag }}
+                                {{ form.access_level }}
+                            </div>
+                            {% elif request.user.role == 'staff' or request.user.role == 'sales' %}
+                            <div class="mb-3">
+                                {{ form.supervisor.label_tag }}
+                                {{ form.supervisor }}
                             </div>
                             {% endif %}
                         </div>

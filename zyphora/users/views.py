@@ -12,7 +12,8 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.db import transaction
 from django.core.paginator import Paginator
-from django.db.models import Q,Sum,Count, Avg
+from django.db.models import Q,Sum,Count, Avg, F, Value, DecimalField
+from django.db.models.functions import Coalesce
 from django.views.decorators.http import require_POST
 from datetime import date
 
@@ -104,17 +105,19 @@ def admin_dashboard(request):
     revenue = sum([pc.revenue for pc in ProjectCosting.objects.all()])
 
     pending_payments = Invoice.objects.annotate(
-        paid_amount=Sum('payments__amount')
+        paid_amount=Coalesce(Sum('payments__amount'), Value(0), output_field=DecimalField()),
+        pending=F('total_amount') - F('paid_amount')
     ).aggregate(
-        total_pending=Sum('total_amount') - Sum('paid_amount')
-    )['total_pending'] or 0
+        total_pending=Coalesce(Sum('pending'), Value(0), output_field=DecimalField())
+    )['total_pending']
 
     # ---- Project Type Distribution ----
     project_types = ['on-grid','off-grid','hybrid','leakproof','commercial']
     project_counts = [Project.objects.filter(project_type=ptype).count() for ptype in project_types]
 
     # ---- Project Status Distribution ----
-    statuses = ['site_visit', 'design', 'installation', 'electrical', 'energisation']
+    statuses = [choice[0] for choice in Project.STATUS_CHOICES if choice[0] != 'completed']  # exclude completed if needed
+    status_labels = [choice[1] for choice in Project.STATUS_CHOICES if choice[0] != 'completed']
     status_counts = [Project.objects.filter(status=status).count() for status in statuses]
 
     # ---- Context ----
@@ -128,7 +131,7 @@ def admin_dashboard(request):
         "pending_payments": pending_payments,
         "project_types": project_types,
         "project_counts": project_counts,
-        "statuses": statuses,
+        "statuses": status_labels,
         "status_counts": status_counts
     }
 

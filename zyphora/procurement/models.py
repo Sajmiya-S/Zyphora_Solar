@@ -1,4 +1,6 @@
 from django.db import models,transaction
+from finance.models import ExpenseReport, ExpenseItem
+from datetime import date
 
 
 # ===============================
@@ -27,6 +29,8 @@ class Material(models.Model):
     brand = models.CharField(max_length=150, blank=True, null=True)
 
     unit = models.CharField(max_length=50)
+
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     description = models.TextField(blank=True)
 
@@ -276,16 +280,48 @@ class MaterialAllocation(models.Model):
     )
 
 
-    def approve(self):
-        """Call this method to approve request and update stock"""
-        if self.status != 'approved':
+
+
+    def approve(self, user=None):
+        """Approve allocation, reduce stock, and create expense"""
+
+        if self.status == 'approved':
+            return
+
+        with transaction.atomic():
+
+            # 🟢 Reduce stock
             stock = Stock.objects.get(material=self.material)
             if stock.quantity < self.quantity:
                 raise ValueError(f"Not enough stock for {self.material.name}")
+
             stock.quantity -= self.quantity
             stock.save()
+
+            # 🟢 Mark approved
             self.status = 'approved'
             self.save(update_fields=['status'])
+
+            # 🟢 Calculate cost
+            total_cost = self.quantity * self.material.unit_price
+
+            # 🟢 Create Expense Report
+            report, created = ExpenseReport.objects.get_or_create(
+                project=self.project,
+                expense_date=date.today(),
+                category='materials',
+                defaults={
+                    "submitted_by": user,
+                    "notes": "Auto material allocation expenses"
+                }
+            )
+
+            # 🟢 Create Expense Item
+            ExpenseItem.objects.create(
+                report=report,
+                description=f"{self.material.name} x {self.quantity}",
+                amount=total_cost
+            )
 
     def reject(self):
         """Call this method to reject request"""

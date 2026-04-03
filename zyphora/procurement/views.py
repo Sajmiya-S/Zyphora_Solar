@@ -452,11 +452,16 @@ def my_requests(request):
 
 
 def admin_material_requests(request):
-    pending_requests = MaterialAllocation.objects.filter(status='pending').order_by('-id')
 
-    history_list = MaterialAllocation.objects.exclude(status='pending').order_by('-id')
+    pending_requests = MaterialAllocation.objects.filter(
+        status='pending'
+    ).order_by('-id')
 
-    paginator = Paginator(history_list, 10)  # 10 per page
+    history_list = MaterialAllocation.objects.exclude(
+        status='pending'
+    ).order_by('-id')
+
+    paginator = Paginator(history_list, 10)
     page_number = request.GET.get('page')
     history = paginator.get_page(page_number)
 
@@ -467,23 +472,66 @@ def admin_material_requests(request):
         req = get_object_or_404(MaterialAllocation, id=req_id)
 
         admin_user = request.user
-        requester = req.allocated_by.user
+        requester = req.allocated_by.user if req.allocated_by else None
+
+        # ✅ SAFELY GET EMPLOYEE
+        employee = getattr(request.user, "employee", None)
 
         if action == "approve":
             try:
-                req.approve()
+                with transaction.atomic():
 
-                create_notification(
-                    recipient=requester,
-                    sender=admin_user,
-                    title="Material Request Approved",
-                    message=f"{req.material.name} ({req.quantity}) approved for {req.project.title}.",
-                    category="material"
-                )
+                    # 🔹 STOCK CHECK & DEDUCT
+                    stock = req.material.stock
+                    if stock.quantity < req.quantity:
+                        raise ValueError(f"Not enough stock for {req.material.name}")
+
+                    stock.quantity -= req.quantity
+                    stock.save()
+
+                    # 🔹 UPDATE STATUS
+                    req.status = "approved"
+                    req.save(update_fields=["status"])
+
+                    # 🔹 CALCULATE COST
+                    if not req.material.unit_price:
+                        raise ValueError(f"Price not set for {req.material.name}")
+
+                    total_cost = req.quantity * req.material.unit_price
+
+                    # 🔹 CREATE / GET EXPENSE REPORT
+                    report, created = ExpenseReport.objects.get_or_create(
+                        project=req.project,
+                        expense_date=date.today(),
+                        category='materials',
+                        defaults={
+                            "submitted_by": employee,
+                            "notes": f"Material allocation expenses for {req.project.title}"
+                        }
+                    )
+
+                    # 🔹 ADD EXPENSE ITEM
+                    ExpenseItem.objects.create(
+                        report=report,
+                        description=f"{req.material.name} ({req.quantity} {req.material.unit})",
+                        amount=total_cost
+                    )
+
+                # 🔹 NOTIFICATION (SUCCESS)
+                if requester:
+                    create_notification(
+                        recipient=requester,
+                        sender=admin_user,
+                        title="Material Request Approved",
+                        message=f"{req.material.name} ({req.quantity}) approved for {req.project.title}.",
+                        category="material"
+                    )
 
                 return redirect('admin_material_requests')
 
             except ValueError as e:
+
+                # 🔹 NOTIFICATION (ERROR)
                 create_notification(
                     recipient=admin_user,
                     sender=admin_user,
@@ -492,7 +540,6 @@ def admin_material_requests(request):
                     category="error"
                 )
 
-                # 🔥 stay on same page
                 return render(request, "dashboard/admin/material_requests.html", {
                     "pending_requests": pending_requests,
                     "history": history,
@@ -500,15 +547,18 @@ def admin_material_requests(request):
                 })
 
         elif action == "reject":
-            req.reject()
 
-            create_notification(
-                recipient=requester,
-                sender=admin_user,
-                title="Material Request Rejected",
-                message=f"{req.material.name} ({req.quantity}) rejected for {req.project.title}.",
-                category="material"
-            )
+            req.status = "rejected"
+            req.save(update_fields=["status"])
+
+            if requester:
+                create_notification(
+                    recipient=requester,
+                    sender=admin_user,
+                    title="Material Request Rejected",
+                    message=f"{req.material.name} ({req.quantity}) rejected for {req.project.title}.",
+                    category="material"
+                )
 
             return redirect('admin_material_requests')
 
@@ -516,4 +566,3 @@ def admin_material_requests(request):
         "pending_requests": pending_requests,
         "history": history
     })
-

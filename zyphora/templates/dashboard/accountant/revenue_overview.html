@@ -56,22 +56,22 @@
 
                         <!-- Estimated -->
                         <td>
-                            ₹{{ project.costing.estimated_cost|default:"0.00" }}
+                            ₹{{ project.project_costing.estimated_cost|default:"0.00" }}
                         </td>
 
                         <!-- Actual -->
                         <td>
-                            ₹{{ project.costing.actual_cost|default:"0.00" }}
+                            ₹{{ project.project_costing.actual_cost|default:"0.00" }}
                         </td>
 
                         <!-- Revenue -->
                         <td>
-                            ₹{{ project.costing.revenue|default:"0.00" }}
+                            ₹{{ project.project_costing.revenue|default:"0.00" }}
                         </td>
 
                         <!-- Profit -->
                         <td>
-                            {% with profit=project.costing.profit %}
+                            {% with profit=project.project_costing.profit %}
                                 <span class="badge px-3 py-2
                                     {% if profit > 0 %}bg-success
                                     {% elif profit < 0 %}bg-danger

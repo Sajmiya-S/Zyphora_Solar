@@ -30,6 +30,7 @@ urlpatterns = [
     path("create-expense/",create_expense,name='create_expense'),
     path("expense-detail/<int:expense_id>/", expense_detail, name="expense_detail"),
     path("approve-expense/<int:pk>/", approve_expense, name="approve_expense"),
+    path("approve-all-expenses/", approve_all_expenses, name="approve_all"),
     path("reject-expense/<int:pk>/", reject_expense, name="reject_expense"),
 
     # FUND RELEASE

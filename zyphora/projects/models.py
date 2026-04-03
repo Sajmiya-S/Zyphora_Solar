@@ -36,7 +36,6 @@ class Project(models.Model):
     description = models.TextField(blank=True, null=True)
     lead = models.ForeignKey('crm.Lead', on_delete=models.SET_NULL, null=True, blank=True, related_name='projects')
     engineer = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True)
-    revenue = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
     location = models.CharField(max_length=100, blank=True, null=True)
@@ -222,11 +221,9 @@ class FeasibilityReport(models.Model):
         ('tile', 'Tile'),
     ])
     roof_area = models.FloatField(help_text="Area in sq.ft")
-    location_notes = models.TextField(blank=True)
 
     # 🟢 2. Structural & Practical Feasibility
     structure_feasibility = models.BooleanField(default=True)
-    mounting_feasibility_notes = models.TextField(blank=True)
     accessibility_for_maintenance = models.BooleanField(default=True)
 
     # 🟢 3. Shadow & Orientation
@@ -257,7 +254,6 @@ class FeasibilityReport(models.Model):
         ('hybrid', 'Hybrid'),
     ])
     inverter_type = models.CharField(max_length=100, blank=True)
-    special_design_notes = models.TextField(blank=True)
 
     # 🟢 6. Engineer Remarks
     remarks = models.TextField(blank=True)

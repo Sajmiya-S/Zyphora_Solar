@@ -189,11 +189,14 @@ new Chart(document.getElementById('projectTypeChart'), {
 new Chart(document.getElementById('statusChart'), {
     type: 'pie',
     data: {
-        labels: projectStatuses,
+        labels: {{ statuses|safe }},
         datasets: [{
-            data: statusCounts,
-            backgroundColor: ['#ffc107','#17a2b8','#007bff','#6f42c1','#28a745']
+            data: {{ status_counts|safe }},
+            backgroundColor: ['#ffc107','#17a2b8','#007bff','#6f42c1','#28a745','#6c757d','#fd7e14','#0dcaf0','#198754','#dc3545']
         }]
+    },
+    options: {
+        plugins: { legend: { position: 'bottom' } }
     }
 });
 

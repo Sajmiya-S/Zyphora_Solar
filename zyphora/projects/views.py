@@ -1940,6 +1940,11 @@ def download_report(request, type, id=None):
 @login_required(login_url='/users/login')
 def view_project_layouts(request):
     projects = Project.objects.filter(installation_tasks__assigned_to=request.user).distinct()
+
+    for project in projects:
+        project.total_tasks = project.installation_tasks.count()
+        project.completed_tasks = project.installation_tasks.filter(status='completed').count()
+
     return render(request,'dashboard/staff/layouts.html',{'projects':projects})
 
 
@@ -2094,7 +2099,7 @@ def licensing_dashboard(request, id):
                     recipient=officer,
                     sender=request.user,
                     title=f"Message from Admin",
-                    message=f"Please speed up the task '{task.name}' in project '{project.title}'.",
+                    message=f"Please speed up the task '{task.step}' in project '{project.title}'.",
                     link=reverse("licensing_dashboard", kwargs={'id': project.id}),
                     category="admin"
                 )

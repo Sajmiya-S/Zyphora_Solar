@@ -15,7 +15,7 @@ from users.models import Notification,CustomUser
 
 def home_page(request):
     reviews = Review.objects.order_by('-created_at')[:8]
-    projects = Project.objects.filter(status='completed').prefetch_related('media')
+    projects = Project.objects.filter(status='completed').prefetch_related('media')[:3]
 
     project_data = []
 
@@ -88,7 +88,7 @@ def projects_page(request):
     else:
         capacity = capacity
         unit = 'kW'
-    projects = projects.prefetch_related('media')[:3]
+    projects = projects.prefetch_related('media')
     project_data = []
 
     for project in projects:

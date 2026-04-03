@@ -63,7 +63,6 @@
                 </div>
                 {% if request.user.role == 'admin' %}
                 <div class="lead-info mb-3"><strong>Engineer</strong><p>{{ project.engineer.name|default:"Unassigned" }}</p></div>
-                <div class="lead-info"><strong>Revenue</strong><p>{{ project.revenue|default:"N/A" }}</p></div>
                 {% endif %}
             </div>
         </div>

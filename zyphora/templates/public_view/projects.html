@@ -31,10 +31,13 @@
                     {% endif %}
 
                     <div class="card-body">
-                        <h5 class="card-title">{{ item.project.title }}</h5>
+                        <h5 class="card-title">
+                            {{ item.project.feasibility.suggested_capacity|floatformat:0 }}kW {{ item.project.get_project_type_display }} - {{item.project.location}} 
+                        </h5>
                         <p class="card-text text-muted">
                             Location: {{ item.project.location }}<br>
-                            Type: {{ item.project.get_project_type_display }}
+                            Type: {{ item.project.get_project_type_display }} <br>
+                            Capacity: {{ item.project.feasibility.suggested_capacity }}kW
                         </p>
                     </div>
 
@@ -72,7 +75,7 @@
                 <p>Projects Completed</p>
             </div>
             <div class="col-md-3">
-                <h2 class="fw-bold">{{capacity}}{{unit}}+</h2>
+                <h2 class="fw-bold">{{ capacity|floatformat:0 }}{{unit}}+</h2>
                 <p>Installed Capacity</p>
             </div>
             <div class="col-md-3">

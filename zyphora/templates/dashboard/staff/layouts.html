@@ -47,14 +47,14 @@
                     </small>
 
                     <!-- Task Count & Status -->
-                    {% if project.user_task_count %}
+                    {% if project.total_tasks > 0 %}
                         <div class="mb-3">
                             <span class="badge bg-info me-1">
-                                {{ project.user_task_count }} task{{ project.user_task_count|pluralize }}
+                                {{ project.total_tasks }} task{{ project.total_tasks|pluralize }}
                             </span>
-                            {% if project.completed_task_count %}
+                            {% if project.completed_tasks > 0 %}
                                 <span class="badge bg-success">
-                                    {{ project.completed_task_count }} completed
+                                    {{ project.completed_tasks }} completed
                                 </span>
                             {% endif %}
                         </div>

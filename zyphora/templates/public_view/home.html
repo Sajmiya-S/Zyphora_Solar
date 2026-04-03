@@ -91,10 +91,9 @@
             {% endif %}
 
             <div class="card-body">
-                <h5 class="card-title">{{ item.project.title }}</h5>
-                <p class="card-text">
-                    {{ item.project.location }}
-                </p>
+                <h5 class="card-title">
+                    {{ item.project.feasibility.suggested_capacity|floatformat:0 }}kW {{ item.project.get_project_type_display }} - {{item.project.location}} 
+                </h5>
             </div>
         </div>
         {% endfor %}
