@@ -112,7 +112,7 @@ def admin_dashboard(request):
     )['total_pending']
 
     # ---- Project Type Distribution ----
-    project_types = ['on-grid','off-grid','hybrid','leakproof','commercial']
+    project_types = ['ongrid','offgrid','hybrid','leakproof','commercial']
     project_counts = [Project.objects.filter(project_type=ptype).count() for ptype in project_types]
 
     # ---- Project Status Distribution ----

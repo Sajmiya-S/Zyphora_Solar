@@ -97,20 +97,19 @@ class Lead(models.Model):
 
         old_status = None
         if not is_new:
-            old_status = Lead.objects.get(pk=self.pk).status
+            old_status = Lead.objects.filter(pk=self.pk).values_list('status', flat=True).first()
 
-        # First save (so PK exists)
+        # ✅ Calculate score BEFORE saving
+        self.score = self.calculate_score()
+
         super().save(*args, **kwargs)
 
-        # calculate score
-        self.score = self.calculate_score()
-        super().save(update_fields=['score'])
-
-        # --- Create project if converted ---
+        # ✅ Convert to project (ONLY once)
         if self.status == 'converted' and old_status != 'converted':
 
             from projects.models import Project, ProjectMedia
 
+            # Prevent duplicate project creation
             if not self.projects.exists():
 
                 project = Project.objects.create(
@@ -121,29 +120,30 @@ class Lead(models.Model):
                     status='lead'
                 )
 
-                # ✅ 1. LINK SITE VISITS
+                # ✅ 1. Link all site visits
                 visits = self.site_visits.all()
                 visits.update(project=project)
 
-                # ✅ 2. MOVE PHOTOS TO PROJECT MEDIA
+                # ✅ 2. Move photos → ProjectMedia (Before Media)
+                media_to_create = []
+
                 for visit in visits:
                     for photo in visit.photos.all():
 
-                        # جلوگیری duplicates
-                        exists = ProjectMedia.objects.filter(
-                            project=project,
-                            site_photo=photo
-                        ).exists()
-
-                        if not exists:
-                            ProjectMedia.objects.create(
-                                project=project,
-                                uploaded_by=photo.uploaded_by,
-                                file=photo.photo,  # 🔥 SAME FILE (no duplication)
-                                caption="Site Visit Photo",
-                                category='before_photo',
-                                site_photo=photo
+                        # prevent duplicates
+                        if not ProjectMedia.objects.filter(site_photo=photo).exists():
+                            media_to_create.append(
+                                ProjectMedia(
+                                    project=project,
+                                    uploaded_by=photo.uploaded_by,
+                                    file=photo.photo,  # same file reference ✅
+                                    caption="Site Visit Photo",
+                                    category='before_photo',
+                                    site_photo=photo
+                                )
                             )
+
+                ProjectMedia.objects.bulk_create(media_to_create)
     def __str__(self):
         return f"{self.name} ({self.location})" if self.location else self.name
     

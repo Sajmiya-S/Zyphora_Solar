@@ -6,13 +6,9 @@
 <nav aria-label="breadcrumb" class="mb-3">
   <ol class="breadcrumb">
     <li class="breadcrumb-item">
-        <a href="{% url request.user.role %}">
-            {{ request.user.role|title }} Dashboard
-        </a>
+        <a href="{% url request.user.role %}">{{ request.user.role|title }} Dashboard</a>
     </li>
-    <li class="breadcrumb-item active">
-        Feasibility Study
-    </li>
+    <li class="breadcrumb-item active">Feasibility Study</li>
   </ol>
 </nav>
 
@@ -23,77 +19,70 @@
     </h3>
 
     <!-- Tabs -->
-    <ul class="nav nav-tabs mb-3" id="feasibilityTabs">
-
-        <!-- Pending -->
-        <li class="nav-item">
-            <button class="nav-link {% if request.user.role != 'admin' %}active{% endif %}" 
+    <ul class="nav nav-tabs mb-3 flex-nowrap overflow-auto" id="feasibilityTabs">
+        <li class="nav-item flex-shrink-0">
+            <button class="nav-link {% if request.user.role != 'admin' %}active{% endif %}"
                     data-bs-toggle="tab" data-bs-target="#pending">
                 Pending
             </button>
         </li>
-
-        <!-- Submitted -->
-        <li class="nav-item">
-            <button class="nav-link {% if request.user.role == 'admin' %}active{% endif %}" 
+        <li class="nav-item flex-shrink-0">
+            <button class="nav-link {% if request.user.role == 'admin' %}active{% endif %}"
                     data-bs-toggle="tab" data-bs-target="#submitted">
                 Submitted
             </button>
         </li>
-
-        <!-- Approved -->
-        <li class="nav-item">
+        <li class="nav-item flex-shrink-0">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#approved">
                 Approved
             </button>
         </li>
-
     </ul>
 
     <div class="tab-content">
 
-        <!-- 🔴 Pending -->
+        <!-- PENDING -->
         <div class="tab-pane fade {% if request.user.role != 'admin' %}show active{% endif %}" id="pending">
             <div class="card shadow-sm">
                 <div class="card-body">
 
-                    <!-- Header + Button -->
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <!-- Header + Button: stack on mobile -->
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                         <h5 class="mb-0">Pending Feasibility</h5>
-
-                        <a href="{% url 'create_feasibility_general' %}" 
-                           class="btn btn-sm btn-success">
+                        <a href="{% url 'create_feasibility_general' %}" class="btn btn-sm btn-success">
                             <i class="bi bi-plus-circle"></i> Add Feasibility Study
                         </a>
                     </div>
 
                     {% if pending_projects %}
-                        <table class="table table-hover align-middle">
-                            <thead>
-                                <tr>
-                                    <th>Project</th>
-                                    <th>Client</th>
-                                    <th>Location</th>
-                                    <th class="text-center">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for p in pending_projects %}
-                                <tr>
-                                    <td>{{ p.title }}</td>
-                                    <td>{{ p.lead.name }}</td>
-                                    <td>{{ p.location }}</td>
-                                    <td class="text-center">
-                                        <a href="{% url 'create_feasibility' p.id %}" 
-                                           class="btn btn-sm btn-outline-success"
-                                           title="Add Feasibility">
-                                            <i class="bi bi-plus-circle"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Project</th>
+                                        <th>Client</th>
+                                        <th class="d-none d-sm-table-cell">Location</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in pending_projects %}
+                                    <tr>
+                                        <td>{{ p.title }}</td>
+                                        <td>{{ p.lead.name }}</td>
+                                        <td class="d-none d-sm-table-cell">{{ p.location }}</td>
+                                        <td class="text-center">
+                                            <a href="{% url 'create_feasibility' p.id %}"
+                                               class="btn btn-sm btn-outline-success"
+                                               title="Add Feasibility">
+                                                <i class="bi bi-plus-circle"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     {% else %}
                         <p class="text-muted">No pending feasibility.</p>
                     {% endif %}
@@ -102,128 +91,138 @@
             </div>
         </div>
 
-        <!-- 🟡 Submitted -->
+        <!-- SUBMITTED -->
         <div class="tab-pane fade {% if request.user.role == 'admin' %}show active{% endif %}" id="submitted">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h5 class="mb-3">Submitted Reports</h5>
 
-                    <table class="table table-striped align-middle">
-                        <thead>
-                            <tr>
-                                <th>Project</th>
-                                <th>Capacity (kW)</th>
-                                <th>Status</th>
-                                <th class="text-center">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for r in submitted_reports %}
-                            <tr>
-                                <td>{{ r.project.title }}</td>
-                                <td>{{ r.suggested_capacity }}</td>
-                                <td>
-                                    <span class="badge bg-warning">Pending Approval</span>
-                                </td>
-                                <td class="text-center">
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Project</th>
+                                    <th class="d-none d-sm-table-cell">Capacity (kW)</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in submitted_reports %}
+                                <tr>
+                                    <td>{{ r.project.title }}</td>
+                                    <td class="d-none d-sm-table-cell">{{ r.suggested_capacity }}</td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <!-- Action buttons: wrap on mobile -->
+                                        <div class="d-flex flex-wrap justify-content-center gap-1">
 
-                                    <!-- View -->
-                                    <a href="{% url 'feasibility_detail' r.id %}" 
-                                       class="btn btn-sm btn-outline-primary"
-                                       title="View">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    {% if request.user.role == 'admin' %}
-                                    <!-- Approve -->
-                                    <a href="{% url 'approve_feasibility' r.id %}" 
-                                    class="btn btn-sm btn-outline-success">
-                                        <i class="bi bi-check-circle"></i>
-                                    </a>
+                                            <a href="{% url 'feasibility_detail' r.id %}"
+                                               class="btn btn-sm btn-outline-primary"
+                                               title="View">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
 
-                                    <!-- Reject (opens modal or inline form) -->
-                                    <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="collapse" 
-                                            data-bs-target="#rejectForm">
-                                        <i class="bi bi-x-circle"></i> 
-                                    </button>
-                                    {% endif %}
+                                            {% if request.user.role == 'admin' %}
+                                            <a href="{% url 'approve_feasibility' r.id %}"
+                                               class="btn btn-sm btn-outline-success"
+                                               title="Approve">
+                                                <i class="bi bi-check-circle"></i>
+                                            </a>
 
-                                    <!-- Download -->
-                                    <a href="{% url 'download_report' 'feasibility' r.id %}" 
-                                       class="btn btn-sm btn-outline-success"
-                                       title="Download">
-                                        <i class="bi bi-download"></i>
-                                    </a>
-                                    
-                                    <!-- 🔹 Optional Reject Form -->
-                                    <div class="collapse mt-2" id="rejectForm">
-                                        <form method="POST" action="{% url 'reject_feasibility' r.id %}">
-                                            {% csrf_token %}
-                                            <div class="mb-2">
-                                                <label class="form-label">Rejection Notes</label>
-                                                <textarea name="notes" class="form-control" rows="2" required></textarea>
-                                            </div>
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                Submit Rejection
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#rejectForm{{ r.id }}"
+                                                    title="Reject">
+                                                <i class="bi bi-x-circle"></i>
                                             </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% empty %}
-                                <tr><td colspan="4">No reports</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                            {% endif %}
+
+                                            <a href="{% url 'download_report' 'feasibility' r.id %}"
+                                               class="btn btn-sm btn-outline-secondary"
+                                               title="Download">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+
+                                        </div>
+
+                                        <!-- Reject form: full width below the row -->
+                                        <div class="collapse mt-2 text-start" id="rejectForm{{ r.id }}">
+                                            <form method="POST" action="{% url 'reject_feasibility' r.id %}">
+                                                {% csrf_token %}
+                                                <div class="mb-2">
+                                                    <label class="form-label small fw-semibold">Rejection Notes</label>
+                                                    <textarea name="notes" class="form-control form-control-sm"
+                                                              rows="2" required></textarea>
+                                                </div>
+                                                <button type="submit" class="btn btn-danger btn-sm w-100">
+                                                    Submit Rejection
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-muted text-center py-3">No reports submitted</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
 
                 </div>
             </div>
         </div>
 
-        <!-- 🟢 Approved -->
+        <!-- APPROVED -->
         <div class="tab-pane fade" id="approved">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h5 class="mb-3">Approved Reports</h5>
 
-                    <table class="table table-bordered align-middle">
-                        <thead>
-                            <tr>
-                                <th>Project</th>
-                                <th>Capacity</th>
-                                <th>Status</th>
-                                <th class="text-center">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for r in approved_reports %}
-                            <tr>
-                                <td>{{ r.project.title }}</td>
-                                <td>{{ r.suggested_capacity }}</td>
-                                <td>
-                                    <span class="badge bg-success">Approved</span>
-                                </td>
-                                <td class="text-center">
-                                    <!-- View -->
-                                    <a href="{% url 'feasibility_detail' r.id %}" 
-                                       class="btn btn-sm btn-primary"
-                                       title="View">
-                                        <i class="bi bi-eye"></i>View
-                                    </a>
-                                    
-                                    <!-- Download -->
-                                    <a href="{% url 'download_report' 'feasibility' r.id %}" 
-                                       class="btn btn-sm btn-success"
-                                       title="Download Report">
-                                        <i class="bi bi-download"></i> Download
-                                    </a>
-
-                                </td>
-                            </tr>
-                            {% empty %}
-                                <tr><td colspan="4">No approved reports</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Project</th>
+                                    <th class="d-none d-sm-table-cell">Capacity</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in approved_reports %}
+                                <tr>
+                                    <td>{{ r.project.title }}</td>
+                                    <td class="d-none d-sm-table-cell">{{ r.suggested_capacity }}</td>
+                                    <td>
+                                        <span class="badge bg-success">Approved</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex flex-wrap justify-content-center gap-1">
+                                            <a href="{% url 'feasibility_detail' r.id %}"
+                                               class="btn btn-sm btn-primary"
+                                               title="View">
+                                                <i class="bi bi-eye"></i>
+                                                <span class="d-none d-md-inline"> View</span>
+                                            </a>
+                                            <a href="{% url 'download_report' 'feasibility' r.id %}"
+                                               class="btn btn-sm btn-success"
+                                               title="Download Report">
+                                                <i class="bi bi-download"></i>
+                                                <span class="d-none d-md-inline"> Download</span>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-muted text-center py-3">No approved reports</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
 
                 </div>
             </div>

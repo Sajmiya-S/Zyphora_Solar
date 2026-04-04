@@ -395,3 +395,126 @@ html, body {
     }
 
 }
+
+/* =================================================================
+   NAVBAR — WELCOME TEXT
+   ================================================================= */
+
+.navbar-welcome {
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+@media (max-width: 400px) {
+    .navbar-welcome {
+        max-width: 110px;
+        font-size: 0.85rem;
+    }
+}
+
+/* =================================================================
+   NOTIFICATION DROPDOWN — RESPONSIVE
+   ================================================================= */
+
+/* Desktop: fixed comfortable width */
+.notif-menu {
+    width: 320px;
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+/* Tablet: slightly narrower */
+@media (max-width: 768px) {
+    .notif-menu {
+        width: 290px;
+    }
+}
+
+/* Mobile: fit within the viewport.
+   dropdown-menu-end aligns the right edge of the menu to the
+   right edge of the button. On narrow screens a 320px menu
+   bleeds off the left edge of the screen.
+   calc(100vw - 16px) caps the width to the screen minus 8px margin each side. */
+@media (max-width: 576px) {
+    .notif-menu {
+        width: calc(100vw - 16px) !important;
+        max-width: 340px;
+        /* Shift dropdown so it doesn't overflow left edge */
+        left: auto !important;
+        right: 0 !important;
+        transform: none !important;
+    }
+
+    /* Tighten up notification item padding on small screens */
+    .notif-menu .dropdown-item {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.82rem;
+    }
+
+    /* Truncate long notification titles */
+    .notif-menu .text-truncate {
+        max-width: 200px;
+    }
+}
+
+/* =================================================================
+   NOTIFICATION DROPDOWN — OVERLAP & Z-INDEX FIX
+   ================================================================= */
+
+/* Ensure dropdown sits above ALL page content including KPI cards */
+.notif-dropdown .dropdown-menu {
+    z-index: 1055 !important;   /* above navbar (1000) and sidebar (1050) */
+    position: absolute !important;
+}
+
+/* Prevent the dropdown from inheriting overflow:hidden from parents
+   which clips it and makes it appear behind content */
+.notif-dropdown {
+    position: static;
+}
+
+/* Fix: re-anchor dropdown to the navbar context, not the wrapper */
+.navbar .dropdown-menu {
+    position: absolute !important;
+}
+
+/* Ensure navbar itself has a stacking context above main content */
+.navbar {
+    z-index: 1040 !important;
+    isolation: isolate;
+}
+
+/* =================================================================
+   NOTIFICATION DROPDOWN — FULL MOBILE FIX
+   ================================================================= */
+
+@media (max-width: 576px) {
+
+    /* Cap width to screen */
+    .notif-menu {
+        width: calc(100vw - 24px) !important;
+        max-width: 340px !important;
+        max-height: 70vh !important;   /* never taller than 70% of screen */
+        overflow-y: auto;
+        /* Align to right edge of screen with small margin */
+        right: 4px !important;
+        left: auto !important;
+        transform: none !important;
+        top: 100% !important;
+    }
+
+    /* Tighter item padding */
+    .notif-menu .dropdown-item {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.82rem;
+        white-space: normal;        /* allow text to wrap inside items */
+    }
+
+    .notif-menu .text-truncate {
+        max-width: 180px;
+    }
+
+}

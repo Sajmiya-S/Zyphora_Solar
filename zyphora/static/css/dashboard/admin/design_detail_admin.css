@@ -1,0 +1,104 @@
+/* ================= BREADCRUMB ================= */
+
+.breadcrumb {
+    background: transparent;
+    font-size: 13px;
+}
+
+.breadcrumb a {
+    text-decoration: none;
+    color: #0d6efd;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+/* ================= PREVIEW THUMBNAILS ================= */
+
+.preview-thumb {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 1px solid var(--bs-border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.preview-thumb:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ================= FORM INPUTS ================= */
+
+/* Date inputs: full width on mobile */
+input[type="date"].form-control {
+    min-width: 160px;
+    width: 100%;
+}
+
+/* ================= BUTTONS ================= */
+
+/* Full width on mobile, auto on sm+ */
+.w-sm-auto {
+    width: 100% !important;
+}
+
+@media (min-width: 576px) {
+    .w-sm-auto {
+        width: auto !important;
+    }
+}
+
+/* Action button pairs: flex-fill makes them equal width and never wrap */
+.btn.flex-fill {
+    min-width: 120px;
+}
+
+/* ================= PHASE BADGES ================= */
+
+.badge {
+    font-size: 0.78rem;
+    padding: 0.4em 0.65em;
+    white-space: nowrap;
+}
+
+/* ================= CARDS ================= */
+
+.card {
+    border-radius: 10px;
+}
+
+/* ================= MOBILE (≤ 576px) ================= */
+
+@media (max-width: 576px) {
+
+    /* Tighter card padding */
+    .card-body {
+        padding: 1rem;
+    }
+
+    /* Phase badges: smaller on mobile */
+    .badge {
+        font-size: 0.72rem;
+        padding: 0.3em 0.5em;
+    }
+
+    /* Thumbnails: taller on mobile for easier tapping */
+    .preview-thumb {
+        height: 85px;
+    }
+
+    /* Alert text size */
+    .alert {
+        font-size: 0.9rem;
+    }
+
+    /* h5 headings inside cards */
+    .card-body h5 {
+        font-size: 1rem;
+    }
+
+}

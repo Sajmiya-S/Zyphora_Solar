@@ -1,4 +1,10 @@
 {% extends "dashboard/dashboard.html" %}
+{% load static %}
+
+{% block link %}
+<link rel="stylesheet" href="{% static 'css/dashboard/design_detail_engineer.css' %}">
+{% endblock %}
+
 {% block content %}
 
 <!-- Breadcrumb -->
@@ -10,167 +16,132 @@
     <li class="breadcrumb-item">
         <a href="{% url 'design_list' %}">Design Management</a>
     </li>
-    <li class="breadcrumb-item active">{{ project.title }}</li>
+    <li class="breadcrumb-item active text-truncate" style="max-width:150px;">
+        {{ project.title }}
+    </li>
   </ol>
 </nav>
 
 <!-- HEADER -->
 <div class="mb-3">
-    <h4 class="fw-bold text-primary">
+    <h4 class="fw-bold text-primary text-truncate">
         <i class="bi bi-pencil-square me-2"></i>{{ project.title }}
     </h4>
-    <p class="text-muted">Engineer Design Workflow</p>
+    <p class="text-muted mb-0">Engineer Design Workflow</p>
 </div>
 
 <!-- Phase Flow -->
 <div class="mb-4 d-flex flex-wrap gap-2">
-
-    <!-- Preparation -->
     <span class="badge {% if current_phase == 'preparation' %}bg-primary{% else %}bg-secondary{% endif %}">
         <i class="bi bi-gear-fill me-1"></i> Preparation
     </span>
-
-    <!-- Discussion -->
     <span class="badge {% if current_phase == 'discussion' %}bg-warning{% else %}bg-secondary{% endif %}">
         <i class="bi bi-chat-left-text me-1"></i> Discussion
     </span>
-
-    <!-- Correction -->
     {% if design_documents and design_documents.0.needs_correction %}
     <span class="badge {% if current_phase == 'correction' %}bg-danger{% else %}bg-secondary{% endif %}">
         <i class="bi bi-exclamation-triangle-fill me-1"></i> Correction
     </span>
     {% endif %}
-
-    <!-- Design Cost -->
-    <span class="badge 
-        {% if current_phase == 'design_costing' %}bg-info
-        {% elif current_phase == 'design_costing_review' %}bg-info
-        {% else %}bg-secondary{% endif %}">
+    <span class="badge {% if current_phase == 'design_costing' or current_phase == 'design_costing_review' %}bg-info{% else %}bg-secondary{% endif %}">
         <i class="bi bi-cash-stack me-1"></i> Design Cost
     </span>
-
-    <!-- Cost Approval -->
-    <span class="badge 
-        {% if current_phase == 'design_costing_review' %}bg-warning
-        {% else %}bg-secondary{% endif %}">
+    <span class="badge {% if current_phase == 'design_costing_review' %}bg-warning{% else %}bg-secondary{% endif %}">
         <i class="bi bi-check2-square me-1"></i> Cost Approval
     </span>
-
-    <!-- Project Cost -->
     <span class="badge {% if current_phase == 'project_costing' %}bg-success{% else %}bg-secondary{% endif %}">
         <i class="bi bi-calculator me-1"></i> Project Cost
     </span>
-    
-    <!-- Proposal sent -->
-        <span class="badge 
-        {% if project.project_costing and project.project_costing.proposal_sent and not project.project_costing.client_approved %}
-            bg-warning
-        {% else %}
-            bg-secondary
-        {% endif %}">
-        
+    <span class="badge {% if project.project_costing and project.project_costing.proposal_sent and not project.project_costing.client_approved %}bg-warning{% else %}bg-secondary{% endif %}">
         <i class="bi bi-send-check me-1"></i>
-        {% if project.project_costing and project.project_costing.client_approved %}
-            Proposal Completed
-        {% else %}
-            Proposal Sent
-        {% endif %}
+        {% if project.project_costing and project.project_costing.client_approved %}Proposal Completed{% else %}Proposal Sent{% endif %}
     </span>
-
-
-    <!-- Client Approval -->
-    <span class="badge 
-        {% if current_phase == 'client_approval' %}bg-primary
-        {% elif project.project_costing and project.project_costing.client_approved %}bg-success
-        {% else %}bg-secondary{% endif %}">
+    <span class="badge {% if current_phase == 'client_approval' %}bg-primary{% elif project.project_costing and project.project_costing.client_approved %}bg-success{% else %}bg-secondary{% endif %}">
         <i class="bi bi-person-check me-1"></i> Client Approval
     </span>
-
-    <!-- Completed -->
-    <span class="badge 
-        {% if current_phase == 'completed' %}bg-success
-        {% else %}bg-secondary{% endif %}">
+    <span class="badge {% if current_phase == 'completed' %}bg-success{% else %}bg-secondary{% endif %}">
         <i class="bi bi-check-circle-fill me-1"></i> Completed
     </span>
-
 </div>
 
-<!-- ================= GLOBAL STATUS ================= -->
-
+<!-- STATUS ALERTS -->
 {% if not project.design_documents.exists %}
 <div class="alert alert-warning">
-    ⚠️ You haven't uploaded any design. Please upload to proceed.
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    You haven't uploaded any design. Please upload to proceed.
 </div>
 {% endif %}
 
 {% if current_phase == "discussion" %}
 <div class="alert alert-info">
-    ⏳ Waiting for admin to review your design.
+    <i class="bi bi-hourglass-split me-2"></i>Waiting for admin to review your design.
 </div>
 {% endif %}
 
 {% if current_phase == "correction" %}
 <div class="alert alert-danger">
-    ❌ Correction Required: {{ design_documents.0.notes }}
+    <i class="bi bi-x-circle me-2"></i>
+    <strong>Correction Required:</strong> {{ design_documents.0.notes }}
 </div>
 {% endif %}
 
 {% if project.design_costing and project.design_costing.status == "pending" %}
 <div class="alert alert-info">
-    ⏳ Design cost submitted. Waiting for admin approval.
+    <i class="bi bi-hourglass-split me-2"></i>Design cost submitted. Waiting for admin approval.
 </div>
 {% endif %}
 
 {% if project.design_costing and project.design_costing.status == "approved" %}
 <div class="alert alert-success">
-    ✅ Admin approved your design cost.
+    <i class="bi bi-check-circle me-2"></i>Admin approved your design cost.
 </div>
 {% endif %}
 
 {% if project.design_costing and project.design_costing.status == "approved" and not project.project_costing %}
 <div class="alert alert-warning">
-    ⏳ Waiting for admin to update final project cost.
+    <i class="bi bi-hourglass-split me-2"></i>Waiting for admin to update final project cost.
 </div>
 {% endif %}
 
 {% if project.project_costing and project.project_costing.proposal_sent and not project.project_costing.client_approved %}
 <div class="alert alert-info">
-    📩 Proposal sent to client. Waiting for client approval.
+    <i class="bi bi-envelope me-2"></i>Proposal sent to client. Waiting for client approval.
 </div>
 {% endif %}
 
 {% if project.project_costing and project.project_costing.client_approved %}
 <div class="alert alert-success">
-    🚀 Client approved! You can now proceed with installation.
+    <i class="bi bi-rocket-takeoff me-2"></i>Client approved! You can now proceed with installation.
 </div>
 {% endif %}
 
-<!-- ================= DESIGN DOCUMENTS (VISIBLE ALWAYS) ================= -->
-
+<!-- DESIGN DOCUMENTS -->
 {% if design_documents %}
 <div class="card shadow-sm mb-4">
     <div class="card-body">
         <h5 class="mb-3"><i class="bi bi-folder2-open me-2"></i>Design Documents</h5>
-        <div class="row">
+        <div class="row g-3">
             {% for doc in design_documents %}
-            <div class="col-md-3 col-6 mb-3 text-center">
+            <div class="col-6 col-sm-4 col-md-3 text-center">
                 {% with file_url=doc.file.url %}
                     {% if file_url|lower|slice:"-4:" == ".jpg" or file_url|lower|slice:"-5:" == ".jpeg" or file_url|lower|slice:"-4:" == ".png" %}
-                        <img src="{{ file_url }}" class="img-fluid preview-thumb"
+                        <img src="{{ file_url }}"
+                             class="preview-thumb img-fluid"
                              data-bs-toggle="modal" data-bs-target="#previewModal"
-                             data-type="image" data-src="{{ file_url }}">
+                             data-type="image" data-src="{{ file_url }}"
+                             alt="{{ doc.caption }}">
                     {% elif file_url|lower|slice:"-4:" == ".mp4" or file_url|lower|slice:"-4:" == ".mov" %}
-                        <video src="{{ file_url }}" class="img-fluid preview-thumb"
+                        <video src="{{ file_url }}"
+                               class="preview-thumb img-fluid"
                                data-bs-toggle="modal" data-bs-target="#previewModal"
                                data-type="video" data-src="{{ file_url }}"></video>
                     {% else %}
-                        <a href="{{ file_url }}" target="_blank">
-                            <i class="bi bi-file-earmark-text"></i> {{ doc.caption }}
+                        <a href="{{ file_url }}" target="_blank" class="btn btn-sm btn-outline-primary w-100">
+                            <i class="bi bi-file-earmark me-1"></i>{{ doc.caption }}
                         </a>
                     {% endif %}
                 {% endwith %}
-                <div class="small text-muted">{{ doc.caption }}</div>
+                <div class="small text-muted mt-1 text-truncate">{{ doc.caption }}</div>
             </div>
             {% endfor %}
         </div>
@@ -178,189 +149,228 @@
 </div>
 {% endif %}
 
-<!-- ================= PREPARATION / CORRECTION ================= -->
-
+<!-- UPLOAD DESIGN -->
 {% if current_phase == "preparation" or current_phase == "correction" %}
 <div class="card shadow-sm mb-4">
     <div class="card-body">
-        <h5 class="text-success">
+        <h5 class="text-success mb-3">
             <i class="bi bi-upload me-2"></i>
-            {% if current_phase == "correction" %}
-                Upload Corrected Design
-            {% else %}
-                Upload Design
-            {% endif %}
+            {% if current_phase == "correction" %}Upload Corrected Design{% else %}Upload Design{% endif %}
         </h5>
 
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <div id="file-container">
+            <div id="file-container"></div>
 
-                <div class="file-group d-flex align-items-start gap-2 mb-3 border p-2 rounded">
-
-                    <!-- LEFT SIDE INPUTS -->
-                     <div class="flex-grow-1">
-                        <input type="file" name="design_files[]" class="form-control mb-2" onchange="previewSingle(this)">
-                        <input type="text" name="captions[]" class="form-control mb-2" placeholder="Enter caption">
-                        <div class="preview"></div>
-                    </div>
-                    
-                    <!-- RIGHT SIDE BUTTONS -->
-                    <div class="d-flex flex-column gap-2">
-                        <button type="button" class="btn btn-success btn-sm" onclick="addMoreFiles()">
-                            <i class="bi bi-plus"></i>Add More
-                        </button>
-
-                        <button type="button" class="btn btn-danger btn-sm" onclick="removeFileGroup(this)">
-                            <i class="bi bi-x"></i>Remove
-                        </button>
-                    </div>
-
-
+            <!-- Discussion Date -->
+            <div class="row g-2 align-items-end mb-3">
+                <div class="col-12 col-sm-auto">
+                    <label class="form-label small fw-semibold">Discussion Date</label>
+                    <input type="date"
+                           name="discussion_date"
+                           class="form-control"
+                           min="{{ today|date:'Y-m-d' }}">
                 </div>
-
             </div>
 
-            <div class="d-flex align-items-center mb-3">
-                <label class="mb-0 me-2">Discussion Date:</label>
-                <input type="date" 
-                    name="discussion_date" 
-                    class="form-control w-auto mb-2" 
-                    min="{{ today|date:'Y-m-d' }}">
-            </div>
-
-            <button class="btn btn-primary">Submit</button>
+            <button class="btn btn-primary w-100 w-sm-auto">
+                <i class="bi bi-upload me-1"></i> Submit
+            </button>
         </form>
     </div>
 </div>
 {% endif %}
 
-<!-- ================= DISCUSSION ================= -->
-
+<!-- DISCUSSION -->
 {% if current_phase == "discussion" %}
 <div class="card shadow-sm mb-4">
     <div class="card-body">
-        <h5 class="text-warning">
-            <i class="bi bi-chat me-2"></i>
-            Discussion
+        <h5 class="text-warning mb-3">
+            <i class="bi bi-chat me-2"></i>Discussion
         </h5>
-
         {% if first_doc.discussion_date %}
         <div class="alert alert-warning">
-            📅 Discussion Date: {{ first_doc.discussion_date }}
+            <i class="bi bi-calendar me-2"></i>
+            Discussion Date: <strong>{{ first_doc.discussion_date }}</strong>
         </div>
         {% endif %}
-
         {% if first_doc.notes %}
         <div class="alert alert-info">
-            📝 Remarks: {{ first_doc.notes }}
+            <i class="bi bi-chat-left-text me-2"></i>
+            Remarks: {{ first_doc.notes }}
         </div>
         {% endif %}
-
     </div>
 </div>
 {% endif %}
 
-<!-- ================= DESIGN COSTING ================= -->
-
+<!-- DESIGN COST DETAILS -->
 {% if project.design_costing %}
 <div class="card shadow-sm mb-4">
     <div class="card-body">
-        <h5><i class="bi bi-cash-stack me-2"></i>Design Cost Details</h5>
-        <p><strong>Cost:</strong> ₹{{ project.design_costing.cost }}</p>
-
+        <h5 class="mb-2"><i class="bi bi-cash-stack me-2"></i>Design Cost Details</h5>
+        <p class="mb-2"><strong>Cost:</strong> ₹{{ project.design_costing.cost }}</p>
         {% if project.design_costing.design_file %}
-            <a href="{{ project.design_costing.design_file.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                View Cost Document
-            </a>
+        <a href="{{ project.design_costing.design_file.url }}" target="_blank"
+           class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-eye me-1"></i> View Cost Document
+        </a>
         {% endif %}
     </div>
 </div>
 {% endif %}
 
+<!-- SUBMIT DESIGN COST -->
 {% if current_phase == "design_costing" %}
 <div class="card shadow-sm mb-4">
     <div class="card-body">
-        <h5><i class="bi bi-cash me-2"></i>Submit Design Cost</h5>
-
+        <h5 class="mb-3"><i class="bi bi-cash me-2"></i>Submit Design Cost</h5>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-
-            <input type="number" name="cost" class="form-control mb-2" placeholder="Enter cost" required>
-            <input type="file" name="design_file" class="form-control mb-2">
-
-            <button class="btn btn-success">Submit Cost</button>
+            <div class="mb-3">
+                <label class="form-label small fw-semibold">Cost (₹)</label>
+                <input type="number" name="cost" class="form-control" placeholder="Enter cost" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-semibold">Supporting Document (optional)</label>
+                <input type="file" name="design_file" class="form-control">
+            </div>
+            <button class="btn btn-success w-100 w-sm-auto">
+                <i class="bi bi-check-lg me-1"></i> Submit Cost
+            </button>
         </form>
     </div>
 </div>
 {% endif %}
 
-<!-- ================= PROJECT COST SUMMARY ================= -->
-
+<!-- FINAL PROJECT COST SUMMARY -->
 {% if project.project_costing.system_costing %}
 <div class="card shadow-sm mb-4">
     <div class="card-body">
-        <h5><i class="bi bi-calculator me-2"></i>Final Project Cost</h5>
-
-        <p><strong>Design Cost:</strong> ₹{{ project.design_costing.cost }}</p>
-        <p><strong>System Cost:</strong> ₹{{ project.project_costing.system_costing }}</p>
-        <p><strong>KSEB Cost:</strong> ₹{{ project.project_costing.kseb_cost }}</p>
-
-        <div class="alert alert-success">
+        <h5 class="mb-3"><i class="bi bi-calculator me-2"></i>Final Project Cost</h5>
+        <div class="row g-2">
+            <div class="col-12 col-sm-4">
+                <div class="border rounded p-2 text-center">
+                    <div class="small text-muted">Design Cost</div>
+                    <div class="fw-semibold">₹{{ project.design_costing.cost }}</div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-4">
+                <div class="border rounded p-2 text-center">
+                    <div class="small text-muted">System Cost</div>
+                    <div class="fw-semibold">₹{{ project.project_costing.system_costing }}</div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-4">
+                <div class="border rounded p-2 text-center">
+                    <div class="small text-muted">KSEB Cost</div>
+                    <div class="fw-semibold">₹{{ project.project_costing.kseb_cost }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="alert alert-success mt-3 mb-0 text-center">
             <strong>Total: ₹{{ project.project_costing.estimated_cost }}</strong>
         </div>
     </div>
 </div>
 {% endif %}
 
-<!-- ================= MODAL ================= -->
-
+<!-- PREVIEW MODAL -->
 <div class="modal fade" id="previewModal" tabindex="-1">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-body">
-        <img id="previewImage" class="img-fluid d-none">
+      <div class="modal-header border-0 pb-0">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body pt-0">
+        <img id="previewImage" class="img-fluid d-none w-100" alt="Preview">
         <video id="previewVideo" controls class="w-100 d-none"></video>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ================= JS ================= -->
-
+<!-- JS -->
 <script>
-function previewFile(input){
-    let preview = document.getElementById("preview");
-    preview.innerHTML = "";
-
-    for(let file of input.files){
-        let reader = new FileReader();
-        reader.onload = function(e){
-            if(file.type.startsWith("image/")){
-                preview.innerHTML += `<img src="${e.target.result}" class="img-fluid mb-2"/>`;
-            } else if(file.type.startsWith("video/")){
-                preview.innerHTML += `<video src="${e.target.result}" class="w-100 mb-2" controls></video>`;
-            } else {
-                preview.innerHTML += `<p>${file.name}</p>`;
-            }
-        };
-        reader.readAsDataURL(file);
-    }
+// File group template — responsive layout, buttons below inputs on mobile
+function createFileGroup() {
+    const div = document.createElement("div");
+    div.classList.add("file-group", "border", "rounded", "p-3", "mb-3");
+    div.innerHTML = `
+        <div class="mb-2">
+            <input type="file" name="design_files[]"
+                   class="form-control" onchange="previewSingle(this)">
+        </div>
+        <div class="mb-2">
+            <input type="text" name="captions[]"
+                   class="form-control" placeholder="Enter caption">
+        </div>
+        <div class="preview mb-2"></div>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-success btn-sm"
+                    onclick="addMoreFiles()">
+                <i class="bi bi-plus"></i> Add More
+            </button>
+            <button type="button" class="btn btn-danger btn-sm"
+                    onclick="removeFileGroup(this)">
+                <i class="bi bi-x"></i> Remove
+            </button>
+        </div>
+    `;
+    return div;
 }
 
-document.getElementById("previewModal").addEventListener("show.bs.modal", function (event) {
-    let btn = event.relatedTarget;
-    let type = btn.getAttribute("data-type");
-    let src = btn.getAttribute("data-src");
+// Init first group on page load
+const container = document.getElementById("file-container");
+if (container) {
+    container.appendChild(createFileGroup());
+}
 
-    let img = document.getElementById("previewImage");
-    let vid = document.getElementById("previewVideo");
+function addMoreFiles() {
+    if (container) container.appendChild(createFileGroup());
+}
+
+function removeFileGroup(btn) {
+    const group = btn.closest(".file-group");
+    const total = container.querySelectorAll(".file-group").length;
+    if (total <= 1) {
+        alert("At least one file is required.");
+        return;
+    }
+    group.remove();
+}
+
+function previewSingle(input) {
+    const preview = input.closest(".file-group").querySelector(".preview");
+    preview.innerHTML = "";
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        if (file.type.startsWith("image/")) {
+            preview.innerHTML = `<img src="${e.target.result}" class="preview-uploaded img-fluid">`;
+        } else if (file.type.startsWith("video/")) {
+            preview.innerHTML = `<video src="${e.target.result}" class="w-100" controls></video>`;
+        } else {
+            preview.innerHTML = `<p class="small text-muted">${file.name}</p>`;
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+// Preview modal
+document.getElementById("previewModal").addEventListener("show.bs.modal", function (event) {
+    const btn  = event.relatedTarget;
+    const type = btn.getAttribute("data-type");
+    const src  = btn.getAttribute("data-src");
+    const img  = document.getElementById("previewImage");
+    const vid  = document.getElementById("previewVideo");
 
     img.classList.add("d-none");
     vid.classList.add("d-none");
 
-    if(type === "image"){
+    if (type === "image") {
         img.src = src;
         img.classList.remove("d-none");
     } else {
@@ -368,60 +378,6 @@ document.getElementById("previewModal").addEventListener("show.bs.modal", functi
         vid.classList.remove("d-none");
     }
 });
-
-function addMoreFiles(){
-    let container = document.getElementById("file-container");
-
-    let div = document.createElement("div");
-    div.classList.add("file-group","d-flex","align-items-start","gap-2","mb-3","border","p-2","rounded");
-
-    div.innerHTML = `
-
-        <div class="flex-grow-1">
-            <input type="file" name="design_files[]" class="form-control mb-2" onchange="previewSingle(this)">
-            <input type="text" name="captions[]" class="form-control mb-2" placeholder="Enter caption">
-            <div class="preview"></div>
-        </div>
-
-        <div class="d-flex flex-column gap-2">
-            <button type="button" class="btn btn-success btn-sm" onclick="addMoreFiles()">
-                <i class="bi bi-plus"></i>Add More
-            </button>
-
-            <button type="button" class="btn btn-danger btn-sm" onclick="removeFileGroup(this)">
-                <i class="bi bi-x"></i>Remove
-            </button>
-        </div>
-
-
-    `;
-
-    container.appendChild(div);
-}
-
-function removeFileGroup(btn){
-    const group = btn.closest(".file-group");   // ✅ safer than parentElement
-    const container = document.getElementById("file-container");
-
-    const total = container.querySelectorAll(".file-group").length;
-
-    // ❗ prevent deleting last row
-    if(total <= 1){
-        alert("At least one file is required");
-        return;
-    }
-
-    group.remove();  // ✅ remove correct block
-}
-
 </script>
-
-<style>
-.preview-thumb {
-    max-height:120px;
-    cursor:pointer;
-    border-radius:6px;
-}
-</style>
 
 {% endblock %}

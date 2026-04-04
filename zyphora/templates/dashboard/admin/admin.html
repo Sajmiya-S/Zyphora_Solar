@@ -84,28 +84,34 @@
         <div class="card shadow-sm">
             <div class="card-body">
                 <h5 class="mb-3">Recent Leads</h5>
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Phone</th>
-                            <th>Service</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for lead in recent_leads %}
-                        <tr>
-                            <td>{{ lead.name }}</td>
-                            <td>{{ lead.phone }}</td>
-                            <td>{{ lead.get_service_display }}</td>
-                            <td>
-                                <span class="badge bg-primary">{{ lead.get_status_display }}</span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+
+                <!-- table-responsive-wrapper enables horizontal scroll on mobile
+                     instead of overflowing the page -->
+                <div class="table-responsive-wrapper">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Service</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lead in recent_leads %}
+                            <tr>
+                                <td>{{ lead.name }}</td>
+                                <td>{{ lead.phone }}</td>
+                                <td>{{ lead.get_service_display }}</td>
+                                <td>
+                                    <span class="badge bg-primary">{{ lead.get_status_display }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
         </div>
 
@@ -223,3 +229,5 @@ new Chart(document.getElementById('financeChart'), {
 </script>
 
 {% endblock %}
+
+

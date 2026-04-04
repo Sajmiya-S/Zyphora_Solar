@@ -1,9 +1,8 @@
 /* ================= MAIN CONTENT FIX ================= */
 
 .main-content {
-    overflow-x: hidden;     /* Prevent horizontal scroll */
+    overflow-x: hidden;
 }
-
 
 /* ================= KPI CARD BASE ================= */
 
@@ -21,12 +20,10 @@
     backdrop-filter: blur(8px);
 }
 
-/* Hover Effect */
 .kpi-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
 }
-
 
 /* ================= ICON / TEXT ================= */
 
@@ -49,39 +46,69 @@
     opacity: 0.95;
 }
 
-
 /* ================= GRADIENTS ================= */
 
-/* Leads - Deep Purple */
 .kpi-card.leads {
     background: linear-gradient(135deg, #4b0082, #5f3dc4);
 }
 
-/* Projects - Red to Orange */
 .kpi-card.projects {
     background: linear-gradient(135deg, #c20202, #f76b1c);
 }
 
-/* Revenue - Green */
 .kpi-card.revenue {
     background: linear-gradient(135deg, #2e7d32, #43a047);
 }
 
-/* Payments - Orange to Gold */
 .kpi-card.payments {
     background: linear-gradient(135deg, #e65100, #ffb300);
 }
 
-
 /* ================= RESPONSIVE SAFETY ================= */
 
-/* Ensure wrapping always works */
 .row {
     flex-wrap: wrap;
 }
 
-/* Make sure columns never overflow */
 [class*="col-"] {
     max-width: 100%;
 }
 
+/* ================= RESPONSIVE TABLE ================= */
+
+/* Wrap the table so it scrolls horizontally instead of overflowing */
+.table-responsive-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;     /* smooth scroll on iOS */
+    border-radius: 8px;
+}
+
+/* Ensure table never shrinks below its content */
+.table-responsive-wrapper .table {
+    min-width: 480px;                      /* 4 columns × ~120px — never wrap cells */
+    margin-bottom: 0;
+}
+
+/* ================= MOBILE TABLE TWEAKS (≤ 576px) ================= */
+
+@media (max-width: 576px) {
+
+    /* Slightly smaller text so cells breathe on small screens */
+    .table-responsive-wrapper .table th,
+    .table-responsive-wrapper .table td {
+        font-size: 0.82rem;
+        padding: 0.5rem 0.6rem;
+        white-space: nowrap;               /* keep each cell on one line */
+    }
+
+    /* KPI value smaller on very small screens */
+    .kpi-value {
+        font-size: 1.5rem;
+    }
+
+    .kpi-icon {
+        font-size: 1.8rem;
+    }
+
+}

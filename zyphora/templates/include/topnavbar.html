@@ -4,17 +4,15 @@
     <div class="container-fluid d-flex justify-content-between align-items-center">
 
         <!-- LEFT SIDE -->
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2 navbar-left">
 
-            <!-- ☰ Hamburger: ONLY visible on mobile (hidden on ≥lg desktop) -->
-            <!-- This label controls the same checkbox that the sidebar toggle uses -->
             <label for="sidebarToggleCheckbox"
                    class="btn btn-sm btn-link text-body d-lg-none p-1 me-1"
                    style="font-size: 22px; line-height: 1;">
                 <i class="bi bi-list"></i>
             </label>
 
-            <h4 class="mb-0 fw-semibold text-body ">
+            <h4 class="mb-0 fw-semibold text-body navbar-welcome">
                 Welcome,
                 <span class="text-primary">{{ request.user.username|title }}</span>
             </h4>
@@ -29,68 +27,52 @@
         <div class="ms-auto d-flex align-items-center gap-1">
 
             <!-- NOTIFICATIONS -->
-            <div class="dropdown">
+            <div class="dropdown notif-dropdown">
 
-                <!-- 🔔 Bell Button -->
                 <button class="btn btn-link position-relative p-2 text-body"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-
+                        data-bs-toggle="dropdown"
+                        data-bs-auto-close="outside"
+                        aria-expanded="false">
                     <i class="bi bi-bell fs-5"></i>
-
-                    <!-- Badge -->
                     <span id="notif-count"
-                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger {% if unread_count == 0 %}d-none{% endif %}">
+                          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger {% if unread_count == 0 %}d-none{% endif %}">
                         {{ unread_count }}
                     </span>
-
                 </button>
 
-                <!-- 📩 Notification Dropdown -->
+                <!-- NO inline width style — controlled by CSS only -->
                 <ul id="notif-list"
-                    class="dropdown-menu dropdown-menu-end shadow border-0"
-                    style="width: 320px; max-height: 420px; overflow-y: auto;">
+                    class="dropdown-menu dropdown-menu-end shadow border-0 notif-menu">
 
-                    <!-- Header -->
                     <li class="dropdown-header d-flex justify-content-between align-items-center fw-semibold">
                         <span>Notifications</span>
-
                         <div>
                             {% if unread_count > 0 %}
                             <a href="{% url 'mark_all_as_read' %}?type=all"
-                               class="small text-decoration-none me-2">
-                                Mark all
-                            </a>
+                               class="small text-decoration-none me-2">Mark all</a>
                             {% endif %}
-
                             {% if notifications %}
                             <a href="{% url 'delete_all_notifications' %}?type=all"
                                class="small text-decoration-none text-danger"
-                               onclick="return confirm('Delete all notifications?')">
-                                Delete all
-                            </a>
+                               onclick="return confirm('Delete all notifications?')">Delete all</a>
                             {% endif %}
                         </div>
                     </li>
 
                     <li><hr class="dropdown-divider"></li>
 
-                    <!-- Notifications List -->
                     {% if notifications %}
                         {% for notif in notifications %}
                         <li>
                             <a class="dropdown-item small {% if not notif.is_read %}bg-light fw-semibold{% endif %}"
                                href="{% url 'mark_as_read' notif.id %}?next={{ notif.link|default:request.path|urlencode }}">
-
                                 <div class="d-flex align-items-start">
                                     <i class="bi {{ notif.icon }} me-2 mt-1 flex-shrink-0"></i>
                                     <div class="flex-grow-1 overflow-hidden">
                                         <div class="text-truncate">{{ notif.title|default:'No Title' }}</div>
-                                        <div class="text-muted small">
-                                            {{ notif.created_at|timesince }} ago
-                                        </div>
+                                        <div class="text-muted small">{{ notif.created_at|timesince }} ago</div>
                                     </div>
                                 </div>
-
                             </a>
                         </li>
                         {% endfor %}
@@ -100,7 +82,6 @@
                         </li>
                     {% endif %}
 
-                    <!-- Footer -->
                     <li><hr class="dropdown-divider"></li>
                     <li class="text-center">
                         <a href="{% url 'notifications' %}" class="dropdown-item small text-primary">
@@ -109,7 +90,6 @@
                     </li>
 
                 </ul>
-
             </div>
 
             <!-- THEME TOGGLE -->
@@ -121,18 +101,15 @@
             <div class="dropdown">
                 <a class="dropdown-toggle text-decoration-none d-flex align-items-center gap-2"
                    href="#" data-bs-toggle="dropdown">
-
                     {% if request.user.employee.profile_pic %}
                         <img src="{{ request.user.employee.profile_pic.url }}"
                              class="rounded-circle"
-                             style="width: 32px; height: 32px; object-fit: cover;">
+                             style="width:32px;height:32px;object-fit:cover;">
                     {% else %}
                         <img src="{% static 'images/profile.avif' %}"
                              class="rounded-circle"
-                             style="width: 32px; height: 32px; object-fit: cover;">
+                             style="width:32px;height:32px;object-fit:cover;">
                     {% endif %}
-
-                    <!-- Hide username text on very small screens -->
                     <span class="fw-semibold d-none d-sm-inline">{{ request.user.username }}</span>
                 </a>
 
@@ -144,16 +121,10 @@
                     {% endif %}
                     <li><a class="dropdown-item" href="{% url 'password' %}">Change Password</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <a class="dropdown-item text-danger" href="{% url 'logout' %}">
-                            Logout
-                        </a>
-                    </li>
+                    <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Logout</a></li>
                 </ul>
-
             </div>
 
         </div>
-
     </div>
 </nav>
