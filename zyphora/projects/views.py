@@ -118,7 +118,7 @@ def update_project(request, pid):
     link = reverse('project_detail', kwargs={'pid': project.id})
 
     status_order = [status[0] for status in Project.STATUS_CHOICES]
-    track_fields = ["engineer", "description", "revenue", "location"]
+    track_fields = ["engineer", "description", "location"]
 
     def get_display_value(value):
         if hasattr(value, 'name'):
@@ -126,9 +126,6 @@ def update_project(request, pid):
         if hasattr(value, 'user'):
             return value.user.username
         return str(value) if value else None
-
-    def format_currency(value):
-        return f"₹{value:,.2f}" if value else None
 
     def format_date(value):
         return value.strftime("%d %b %Y") if value else None
@@ -158,7 +155,7 @@ def update_project(request, pid):
         old_data = {}
         for field in track_fields:
             value = getattr(project, field)
-            old_data[field] = format_currency(value) if field == "revenue" else get_display_value(value)
+            old_data[field] = get_display_value(value)
 
         old_start = format_date(project.start_date)
         old_end = format_date(project.end_date)
@@ -179,13 +176,26 @@ def update_project(request, pid):
                 new_data = {}
                 for field in track_fields:
                     value = getattr(project, field)
-                    new_data[field] = format_currency(value) if field == "revenue" else get_display_value(value)
+                    new_data[field] = get_display_value(value)
 
                 for field in track_fields:
-                    log_field_change(field.replace("_", " ").title(), old_data[field], new_data[field])
+                    log_field_change(
+                        field.replace("_", " ").title(),
+                        old_data[field],
+                        new_data[field]
+                    )
 
-                log_field_change("Start Date", old_start, format_date(project.start_date))
-                log_field_change("End Date", old_end, format_date(project.end_date))
+                log_field_change(
+                    "Start Date",
+                    old_start,
+                    format_date(project.start_date)
+                )
+
+                log_field_change(
+                    "End Date",
+                    old_end,
+                    format_date(project.end_date)
+                )
 
                 # FILE UPLOAD
                 valid_categories = [c[0] for c in ProjectMedia.CATEGORY_CHOICES]
