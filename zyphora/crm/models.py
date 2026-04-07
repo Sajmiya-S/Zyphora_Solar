@@ -99,10 +99,10 @@ class Lead(models.Model):
         if not is_new:
             old_status = Lead.objects.filter(pk=self.pk).values_list('status', flat=True).first()
 
-        # ✅ Calculate score BEFORE saving
-        self.score = self.calculate_score()
-
         super().save(*args, **kwargs)
+
+        self.score = self.calculate_score()
+        super().save(update_fields=['score'])
 
         # ✅ Convert to project (ONLY once)
         if self.status == 'converted' and old_status != 'converted':

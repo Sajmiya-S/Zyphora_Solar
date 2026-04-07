@@ -37,7 +37,7 @@ from users.utils import create_notification
 from finance.models import *
 
 
-from ollama import chat
+from groq import Groq
 import calendar
 import json
 
@@ -62,7 +62,7 @@ def login_page(request):
                             message='You logged in to Lumora Solar CRM successfully.',
                             )
             return redirect(dashboard)
-    
+
     return render(request,'public_view/login.html')
 
 
@@ -87,7 +87,8 @@ def dashboard(request):
         return redirect(liaison_dashboard)
 
 
-@login_required(login_url='/users/login')    
+
+@login_required(login_url='/users/login')
 def admin_dashboard(request):
     if request.user.role is None:
         return redirect('dashboard')
@@ -488,7 +489,7 @@ class ChangePassword(PasswordChangeView):
 @login_required
 def admin_profile(request):
     user = request.user
-    
+
     if request.method == 'POST':
         form = AdminProfileForm(request.POST, instance=user)
         if form.is_valid():
@@ -500,7 +501,7 @@ def admin_profile(request):
     context = {
         'form': form
     }
-    
+
     return render(request, 'dashboard/admin/admin_profile.html', context)
 
 # ======================================================
@@ -714,39 +715,40 @@ def view_post(request,id):
 @login_required(login_url='/users/login')
 def edit_post(request, bid):
     post = BlogPost.objects.get(id=bid)
+    client = Groq(api_key=settings.GROQ_API_KEY)
 
     if request.method == 'POST':
 
         plain_content = request.POST.get('content')
 
-        response = chat(
-            model='llama3.2',
+        response = client.chat.completions.create(
             messages=[
                 {
-                    'role': 'user',
-                    'content': f"""
-                                You are a professional SEO blog writer.
+                    "role": "user",
+                    "content": f"""
+You are a professional SEO blog writer.
 
-                                Convert the following blog content into clean HTML format.
+Convert the following blog content into clean HTML format.
 
-                                Title: {post.title}
-                                Content: {plain_content}
+Title: {post.title}
+Content: {plain_content}
 
-                                Formatting rules:
-                                - Use <p> for paragraphs
-                                - Use <h3> for sections
-                                - Use <h4> for subsections
-                                - Use <ul> and <li> for lists
-                                - Use <strong> for important text
+Formatting rules:
+- Use <p> for paragraphs
+- Use <h3> for sections
+- Use <h4> for subsections
+- Use <ul> and <li> for lists
+- Use <strong> for important text
 
-                                Return ONLY HTML.
-                                """
+Return ONLY HTML.
+"""
                 }
             ],
-            options={'temperature': 0.6}
+            model="llama-3.3-70b-versatile",
+            temperature=0.6
         )
 
-        html_content = response.message.content
+        html_content = response.choices[0].message.content
 
         form = BlogPostForm(request.POST, request.FILES, instance=post)
 
@@ -774,6 +776,7 @@ def delete_post(request,bid):
 
 @login_required(login_url='/users/login')
 def add_post(request):
+    client = Groq(api_key=settings.GROQ_API_KEY)
 
     if request.method == 'POST':
         form = BlogPostForm(request.POST, request.FILES)
@@ -783,64 +786,62 @@ def add_post(request):
 
             plain_content = post.content
 
-            response = chat(
-                model='llama3.2',
+            response = client.chat.completions.create(
                 messages=[
                     {
-                        'role': 'user',
-                        'content': f"""
-                                    You are a professional SEO blog writer.
+                        "role": "user",
+                        "content": f"""
+You are a professional SEO blog writer.
 
-                                    Convert the following blog content into clean structured HTML suitable for a blog article.
+Convert the following blog content into clean structured HTML suitable for a blog article.
 
-                                    Title: {post.title}
-                                    Content: {plain_content}
+Title: {post.title}
+Content: {plain_content}
 
-                                    Formatting rules:
+Formatting rules:
 
-                                    - Use <p> for paragraphs
-                                    - Use <h3> for section headings
-                                    - Use <h4> for subheadings
-                                    - Use <ul> and <li> for lists
-                                    - Use <strong> for important phrases
-                                    - Use <table> for comparisons if needed
+- Use <p> for paragraphs
+- Use <h3> for section headings
+- Use <h4> for subheadings
+- Use <ul> and <li> for lists
+- Use <strong> for important phrases
+- Use <table> for comparisons if needed
 
-                                    Return ONLY valid HTML.
-                                    Do not include explanations.
-                                    """
+Return ONLY valid HTML.
+Do not include explanations.
+"""
                     }
                 ],
-                options={
-                    'temperature': 0.6
-                }
+                model="llama-3.3-70b-versatile",
+                temperature=0.6
             )
 
-            post.content = response.message.content
+            post.content = response.choices[0].message.content
+
 
             if not post.summary:
 
-                response = chat(
-                    model='llama3.2',
+                response = client.chat.completions.create(
                     messages=[
                         {
-                            'role': 'user',
-                            'content': f"""
-                                        You are a professional content writer. Write a blog excerpt.
+                            "role": "user",
+                            "content": f"""
+You are a professional content writer. Write a blog excerpt.
 
-                                        Blog Post Title: {post.title}
-                                        Blog Post Content: {plain_content}
+Blog Post Title: {post.title}
+Blog Post Content: {plain_content}
 
-                                        Keep it under 30 words.
-                                        """
+Keep it under 30 words.
+"""
                         }
                     ],
-                    options={'temperature': 0.7}
+                    model="llama-3.3-70b-versatile",
+                    temperature=0.7
                 )
 
-                post.summary = response.message.content
+                post.summary = response.choices[0].message.content
 
             post.save()
-
 
             return redirect('blogposts')
 
@@ -848,7 +849,6 @@ def add_post(request):
         form = BlogPostForm()
 
     return render(request, 'dashboard/admin/add_blog.html', {'form': form})
-
 
 
 # ======================================================
@@ -914,8 +914,8 @@ def get_notifications(request):
     for n in notifications:
         data.append({
             "id": n.id,
-            "title": n.title or "No Title",       
-            "link": n.link or "#", 
+            "title": n.title or "No Title",
+            "link": n.link or "#",
             "is_read": n.is_read,
             "time": n.created_at.strftime("%b %d, %H:%M"),
         })
@@ -1056,7 +1056,7 @@ def notify_admins_and_assigned(sender, instance, title, message, link, admin_cat
     if hasattr(instance, 'assigned_to'):
         assigned_staff = instance.assigned_to
     elif hasattr(instance, 'engineer') and instance.engineer:
-        assigned_staff = instance.engineer.user 
+        assigned_staff = instance.engineer.user
 
     # Notify staff if they exist and are not admins
     if assigned_staff and not admins.filter(id=assigned_staff.id).exists():
